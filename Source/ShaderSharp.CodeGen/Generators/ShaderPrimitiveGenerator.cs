@@ -114,7 +114,7 @@ namespace ShaderSharp.Library.Attributes.Internal
                     return "SlInt";
 
                 case "uint":
-                    return "SlUInt";
+                    return "SlUint";
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type));
