@@ -1,8 +1,6 @@
 ﻿using System;
 
-using ShaderSharp.CodeGen.Models;
-
-namespace ShaderSharp.CodeGen
+namespace ShaderSharp.CodeGen.Models
 {
     public static class TypeContractConverter
     {

@@ -4,9 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-using ShaderSharp.CodeGen.Models;
-
-namespace ShaderSharp.CodeGen
+namespace ShaderSharp.CodeGen.Models
 {
     public class FunctionDefinitionParser : IDisposable
     {
