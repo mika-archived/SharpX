@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.10.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.10.0" />
   </ItemGroup>
+
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
@@ -23,12 +24,21 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>ShaderPrimitiveTemplate.tt</DependentUpon>
     </Compile>
+    <Compile Update="Templates\ShaderSwizzleTemplate.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ShaderSwizzleTemplate.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
     <None Update="Templates\ShaderPrimitiveTemplate.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>ShaderPrimitiveTemplate.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\ShaderSwizzleTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ShaderSwizzleTemplate.cs</LastGenOutput>
     </None>
   </ItemGroup>
 </Project>
