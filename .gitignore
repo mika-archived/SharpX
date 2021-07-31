@@ -364,3 +364,6 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudio
+
+# Roslyn Source Generators - auto-generated C# source files
+Source/ShaderSharp.Library/Generated/
