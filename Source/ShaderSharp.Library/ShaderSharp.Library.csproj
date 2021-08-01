@@ -3,11 +3,23 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <CompilerGeneratedFilesOutputPath>$(ProjectDir)Generated</CompilerGeneratedFilesOutputPath>
+    <CompilerGeneratedFilesOutputPath>$(ProjectDir)..\Generated</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Functions\Resources\builtin.txt" />
+  </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ShaderSharp.CodeGen\ShaderSharp.CodeGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <AdditionalFiles Include="Functions\Resources\builtin.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Interfaces\ShaderLab\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ShaderSharp.CodeGen\ShaderSharp.CodeGen.csproj" OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
 </Project>
