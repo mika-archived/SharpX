@@ -33,7 +33,7 @@ namespace ShaderSharp.CodeGen.Models
                             if (r == "__input__")
                                 r = TypeContractConverter.GetAsCSharpTypeReference(signature.Parameters.First(), i + 2);
 
-                            sb.AppendLine($@"        [ShaderSharp.Library.Attributes.Function(""{Name}"")]");
+                            sb.AppendLine($@"        [ShaderSharp.Compiler.Abstractions.Attributes.Function(""{Name}"")]");
                             sb.AppendLine($@"        public static extern {r} {ConvertName(Name)}({string.Join(", ", args)});");
                             sb.AppendLine();
                         }
@@ -42,7 +42,7 @@ namespace ShaderSharp.CodeGen.Models
                     {
                         var r = TypeContractConverter.GetAsCSharpTypeReference(signature.Returns);
 
-                        sb.AppendLine($@"        [ShaderSharp.Library.Attributes.Function(""{Name}"")]");
+                        sb.AppendLine($@"        [ShaderSharp.Compiler.Abstractions.Attributes.Function(""{Name}"")]");
                         sb.AppendLine($@"        public static extern {r} {ConvertName(Name)}();");
                         sb.AppendLine();
                     }

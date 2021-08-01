@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace ShaderSharp.Library.Attributes
+namespace ShaderSharp.Compiler.Abstractions.Attributes
 {
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class SemanticsAttribute : Attribute
     {
         public string Semantics { get; }

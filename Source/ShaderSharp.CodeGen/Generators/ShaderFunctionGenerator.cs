@@ -79,7 +79,7 @@ namespace ShaderSharp.Library.Attributes.Internal
             sb.AppendLine("{");
 
             if (!string.IsNullOrWhiteSpace(parser.Include))
-                sb.AppendLine($@"    [ShaderSharp.Library.Attributes.Include(""{parser.Include}"")]");
+                sb.AppendLine($@"    [ShaderSharp.Compiler.Abstractions.Attributes.Include(""{parser.Include}"")]");
 
             sb.Append("    public static partial class ").AppendLine(parser.Class);
             sb.AppendLine("    {");

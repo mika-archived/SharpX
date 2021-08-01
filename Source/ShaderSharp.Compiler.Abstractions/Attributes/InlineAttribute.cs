@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ShaderSharp.Library.Attributes
+namespace ShaderSharp.Compiler.Abstractions.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
     public class InlineAttribute : Attribute { }

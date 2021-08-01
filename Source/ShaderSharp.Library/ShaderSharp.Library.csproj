@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ShaderSharp.CodeGen\ShaderSharp.CodeGen.csproj" OutputItemType="Analyzer"
-                      ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\ShaderSharp.CodeGen\ShaderSharp.CodeGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\ShaderSharp.Compiler.Abstractions\ShaderSharp.Compiler.Abstractions.csproj" />
   </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-﻿using ShaderSharp.Library.Attributes;
+﻿using ShaderSharp.Compiler.Abstractions.Attributes;
 
 namespace ShaderSharp.Library.Functions
 {
