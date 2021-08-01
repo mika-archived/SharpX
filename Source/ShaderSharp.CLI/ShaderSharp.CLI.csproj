@@ -5,4 +5,11 @@
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="ConsoleAppFramework" Version="3.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ShaderSharp.Compiler\ShaderSharp.Compiler.csproj" />
+  </ItemGroup>
 </Project>
