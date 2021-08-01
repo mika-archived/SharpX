@@ -2,6 +2,6 @@
 
 namespace ShaderSharp.Library.Primitives
 {
-    [Primitive("bool", typeof(bool), "4")]
+    [Primitive("bool4", typeof(bool), "4")]
     public partial class SlBool4 { }
 }
