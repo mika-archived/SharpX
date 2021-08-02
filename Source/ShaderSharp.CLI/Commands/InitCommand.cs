@@ -27,7 +27,7 @@ namespace ShaderSharp.CLI.Commands
                 {
                     Sources = new[] { "**/*.cs" },
                     References = new string[] { },
-                    Out = "dist",
+                    Out = "dist"
                 };
 
                 var options = new JsonSerializerOptions { WriteIndented = true };

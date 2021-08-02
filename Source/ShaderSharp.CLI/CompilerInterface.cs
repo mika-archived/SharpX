@@ -9,7 +9,7 @@ using ShaderSharp.CLI.Commands;
 
 namespace ShaderSharp.CLI
 {
-    internal class CompilerInterface : ConsoleAppBase
+    public class CompilerInterface : ConsoleAppBase
     {
         private readonly ILogger<CompilerInterface> _logger;
 
@@ -27,6 +27,12 @@ namespace ShaderSharp.CLI
         public int Init([Option(0)] string path = null)
         {
             return new InitCommand(_logger, path).Run();
+        }
+
+        [Command("build")]
+        public int Build([Option("project")] string project = null, [Option("src")] string[] src = null, [Option("out")] string @out = null, [Option("references")] string[] references = null)
+        {
+            return new BuildCommand(_logger, project, src, @out, references).Run();
         }
     }
 }
