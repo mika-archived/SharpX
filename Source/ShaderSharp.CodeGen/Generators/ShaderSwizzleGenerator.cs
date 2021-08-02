@@ -78,7 +78,6 @@ namespace ShaderSharp.Library.Attributes.Internal
                 }
                 catch (Exception e)
                 {
-                    Debugger.Launch();
                     Trace.WriteLine(e);
                 }
             }
