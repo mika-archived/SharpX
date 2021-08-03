@@ -6,7 +6,7 @@ namespace ShaderSharp.Compiler.Abstractions.Attributes
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class PropertyAttribute : Attribute
     {
-        private static readonly Regex ValidComponentNameRegex = new("^[a-zA-Z][a-zA-Z0-9]+$", RegexOptions.Compiled);
+        private static readonly Regex ValidComponentNameRegex = new("^[a-zA-Z_][a-zA-Z0-9_]+$", RegexOptions.Compiled);
 
         public string Name { get; }
 
