@@ -2,7 +2,7 @@
 
 namespace ShaderSharp.Compiler.Abstractions.Attributes
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface)]
     public class ExportAttribute : Attribute
     {
         public string FilePath { get; }
