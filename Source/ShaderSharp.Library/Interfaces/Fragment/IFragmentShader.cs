@@ -1,9 +1,7 @@
 ﻿namespace ShaderSharp.Library.Interfaces.Fragment
 {
-    public interface IFragmentShader<out TGlobals, in TInput, out TOutput> where TGlobals : IGlobals where TInput : IFragmentInput where TOutput : IFragmentOutput
+    public interface IFragmentShader<in TInput, out TOutput> where TInput : IFragmentInput where TOutput : IFragmentOutput
     {
-        protected TGlobals Globals { get; }
-
         TOutput FragmentMain(TInput i);
     }
 }

@@ -1,11 +1,7 @@
-﻿using ShaderSharp.Library.Interfaces.Geometry;
-
-namespace ShaderSharp.Library.Interfaces
+﻿namespace ShaderSharp.Library.Interfaces.Geometry
 {
-    public interface IGeometryShader<out TGlobals, in TInput, TOutput, in TStreamOutputObject> where TGlobals : IGlobals where TInput : IGeometryInput where TOutput : IGeometryOutput where TStreamOutputObject : IStreamOutputObject<TOutput>
+    public interface IGeometryShader<in TInput, TOutput, in TStreamOutputObject> where TInput : IGeometryInput where TOutput : IGeometryOutput where TStreamOutputObject : IStreamOutputObject<TOutput>
     {
-        protected TGlobals Globals { get; }
-
         void GeometryMain(TInput[] i, TStreamOutputObject o);
     }
 }
