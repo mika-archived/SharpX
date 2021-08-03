@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -36,6 +37,18 @@ namespace ShaderSharp.Compiler.CSharp
         public static ClassLikeDeclarationCapture Capture(RecordDeclarationSyntax declaration, SemanticModel semanticModel)
         {
             return new(declaration, semanticModel, CapturedType.Record);
+        }
+
+        public string GetDeclarationName()
+        {
+            return _capturedType switch
+            {
+                CapturedType.Class => ((ClassDeclarationSyntax) _node).Identifier.ValueText,
+                CapturedType.Struct => ((StructDeclarationSyntax) _node).Identifier.ValueText,
+                CapturedType.Interface => ((InterfaceDeclarationSyntax) _node).Identifier.ValueText,
+                CapturedType.Record => ((RecordDeclarationSyntax) _node).Identifier.ValueText,
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
         public bool HasAttribute<T>()

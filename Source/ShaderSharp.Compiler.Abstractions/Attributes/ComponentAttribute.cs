@@ -9,7 +9,7 @@ namespace ShaderSharp.Compiler.Abstractions.Attributes
         private static readonly Regex ValidComponentNameRegex = new("^[a-zA-Z_][a-zA-Z0-9_]+$", RegexOptions.Compiled);
         public string Name { get; }
 
-        public ComponentAttribute(string name)
+        public ComponentAttribute(string name = null)
         {
             Name = name;
         }

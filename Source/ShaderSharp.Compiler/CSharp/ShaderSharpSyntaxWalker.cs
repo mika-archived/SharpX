@@ -92,10 +92,17 @@ namespace ShaderSharp.Compiler.CSharp
             if (capture.HasAttribute<ComponentAttribute>())
             {
                 var attr = capture.GetAttributeData<ComponentAttribute>().AsAttributeInstance<ComponentAttribute>();
-                if (string.IsNullOrWhiteSpace(attr.Name) || !attr.IsValidName())
-                    _errors.Add("The component name must be ASCII strings that does not contain any whitespaces.");
-
-                _currentContext.OpenStruct(attr.Name);
+                if (string.IsNullOrWhiteSpace(attr.Name))
+                {
+                    _currentContext.OpenStruct(capture.GetDeclarationName());
+                }
+                else
+                {
+                    if (attr.IsValidName())
+                        _currentContext.OpenStruct(attr.Name);
+                    else
+                        _errors.Add("The component name must be ASCII strings that does not contain any whitespaces.");
+                }
             }
         }
 
