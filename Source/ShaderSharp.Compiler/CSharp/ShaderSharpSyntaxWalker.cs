@@ -147,10 +147,19 @@ namespace ShaderSharp.Compiler.CSharp
                 return;
 
             if (capture.HasAttributeOfDeclaration<GlobalMemberAttribute>())
+            {
+                if (!capture.IsStaticMember())
+                    _errors.Add("ShaderSharp does not recommend instance member declaration in struct, but worked correctly");
+
+                _currentContext.AddGlobalMember(capture.GetDeclarationType(), capture.GetName());
                 return;
+            }
 
             if (capture.IsStaticMember())
+            {
                 _errors.Add("ShaderSharp does not support static member declaration in struct");
+                return;
+            }
 
             if (capture.HasAttributeOfDeclaration<SemanticsAttribute>())
             {

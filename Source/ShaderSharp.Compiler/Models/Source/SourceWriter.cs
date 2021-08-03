@@ -62,7 +62,7 @@ namespace ShaderSharp.Compiler.Models
 
         public string ToSource()
         {
-            return _sb.ToString();
+            return _sb.ToString().Trim();
         }
     }
 }

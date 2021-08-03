@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 using ShaderSharp.Compiler.Models.Source.Structure.Interfaces;
 
@@ -40,13 +41,17 @@ namespace ShaderSharp.Compiler.Models.Source
 
         public string ToSource()
         {
-            foreach (var header in _headers)
+            foreach (var header in _headers.OrderBy(w => w.Priority))
                 header.WriteTo(_writer);
+
+            _writer.WriteNewLine();
 
             foreach (var declaration in _structDeclarations)
                 declaration.WriteTo(_writer);
 
-            foreach (var footer in _footers)
+            _writer.WriteNewLine();
+
+            foreach (var footer in _footers.OrderBy(w => w.Priority))
                 footer.WriteTo(_writer);
 
             return _writer.ToSource();

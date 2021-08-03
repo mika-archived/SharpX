@@ -19,17 +19,6 @@ namespace ShaderSharp.Compiler.Models.Source
             Scope = new RootContextScope();
         }
 
-        public void Include(string file, bool toHeader = true)
-        {
-            using (IncludeScope.Open(this, Scope))
-            {
-                if (toHeader)
-                    _structure.AddHeader(new IncludeComponent(file));
-                else
-                    _structure.AddFooter(new IncludeComponent(file));
-            }
-        }
-
         public string ToSource()
         {
             _structure.CalcDependencyTree();
@@ -52,6 +41,33 @@ namespace ShaderSharp.Compiler.Models.Source
             Scope = Scope.Close();
         }
 
+        #region Global
+
+        public void Include(string file, bool toHeader = true)
+        {
+            using (IncludeScope.Open(this, Scope))
+            {
+                if (toHeader)
+                    _structure.AddHeader(new IncludeComponent(file));
+                else
+                    _structure.AddFooter(new IncludeComponent(file));
+            }
+        }
+
+        public void AddGlobalMember(string raw)
+        {
+            using (GlobalMemberScope.Open(this, Scope))
+                _structure.AddHeader(new GlobalMemberDeclarationComponent(raw));
+        }
+
+        public void AddGlobalMember(string component, string name)
+        {
+            using (GlobalMemberScope.Open(this, Scope))
+                _structure.AddHeader(new GlobalMemberDeclarationComponent(component, name));
+        }
+
+        #endregion
+
         #region Struct
 
         public void OpenStruct(string name)
@@ -59,6 +75,13 @@ namespace ShaderSharp.Compiler.Models.Source
             EnterNewScope(new StructDefinitionScope(Scope));
 
             _structDeclaration = new StructDeclarationComponent(name);
+        }
+
+        public void AddStructMember(string raw)
+        {
+            VerifyCurrentScope<StructDefinitionScope>();
+
+            _structDeclaration.AddMemberDeclaration(raw);
         }
 
         public void AddStructMember(string component, string name, params KeyValuePair<string, string>[] extras)

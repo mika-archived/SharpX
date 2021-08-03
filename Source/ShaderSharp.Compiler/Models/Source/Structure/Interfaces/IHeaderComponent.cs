@@ -1,4 +1,7 @@
 ﻿namespace ShaderSharp.Compiler.Models.Source.Structure.Interfaces
 {
-    public interface IHeaderComponent : IComponent { }
+    public interface IHeaderComponent : IComponent
+    {
+        int Priority { get; }
+    }
 }

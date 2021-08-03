@@ -11,6 +11,8 @@ namespace ShaderSharp.Compiler.Models.Source.Structure
             _file = file;
         }
 
+        public int Priority => -10000;
+
         public void WriteTo(SourceWriter writer)
         {
             writer.WriteLine($"#include <{_file}>");
