@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.31410.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShaderSharp.CLI", "ShaderSharp.CLI\ShaderSharp.CLI.csproj", "{346B5604-854E-4E22-A7A3-B61103B3856A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShaderSharp.Compiler", "ShaderSharp.Compiler\ShaderSharp.Compiler.csproj", "{855E6D85-E08D-4BE3-8B96-A17113D50AF2}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShaderSharp.Library", "ShaderSharp.Library\ShaderSharp.Library.csproj", "{F60FDBE7-3E8F-4080-8B7C-2BA3216C6F21}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShaderSharp.CodeGen", "ShaderSharp.CodeGen\ShaderSharp.CodeGen.csproj", "{B3BA825E-01D8-4B68-9661-93E807BC892C}"
@@ -21,6 +23,10 @@ Global
 		{346B5604-854E-4E22-A7A3-B61103B3856A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{346B5604-854E-4E22-A7A3-B61103B3856A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{346B5604-854E-4E22-A7A3-B61103B3856A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{855E6D85-E08D-4BE3-8B96-A17113D50AF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{855E6D85-E08D-4BE3-8B96-A17113D50AF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{855E6D85-E08D-4BE3-8B96-A17113D50AF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{855E6D85-E08D-4BE3-8B96-A17113D50AF2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F60FDBE7-3E8F-4080-8B7C-2BA3216C6F21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F60FDBE7-3E8F-4080-8B7C-2BA3216C6F21}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F60FDBE7-3E8F-4080-8B7C-2BA3216C6F21}.Release|Any CPU.ActiveCfg = Release|Any CPU

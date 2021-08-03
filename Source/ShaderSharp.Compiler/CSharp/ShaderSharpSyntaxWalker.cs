@@ -143,6 +143,9 @@ namespace ShaderSharp.Compiler.CSharp
 
         private void ProcessFieldLikeDeclaration(FieldLikeDeclarationCapture capture)
         {
+            if (capture.HasAttributeOfDeclaration<ExternalAttribute>())
+                return;
+
             if (capture.HasAttributeOfDeclaration<GlobalMemberAttribute>())
                 return;
 
