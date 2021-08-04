@@ -39,6 +39,20 @@ The above C# code will be transpiled into ShaderLab HLSL code as follows:
 // TODO
 ```
 
+## Questions
+
+### Should I use ShaderSharp?
+
+No.
+This is a tool I created for me, and I suspect there is a better quality equivalent software.
+I recommend using it.  
+Ref: https://twitter.com/6jz/status/1422703343529390082
+
+### What shaders are using ShaderSharp?
+
+At least, the avatar shaders I use on VRChat are written and compiled in ShaderSharp.
+This includes the Vertex Shader, Fragment Shader, and Geometry Shader.
+
 ## Similar Projects
 
 - [AshleighAdams/ShaderSharp](https://github.com/AshleighAdams/ShaderSharp) - C# to Shader Transpiler for GLSL
