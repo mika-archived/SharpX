@@ -51,8 +51,55 @@ namespace ShaderSharp.CodeGen.Templates
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
+ if (CSharpPrimitive != "bool") { 
+            this.Write("        public static implicit operator bool(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n");
  } 
+            this.Write("\r\n        public static bool operator true(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        public static b" +
+                    "ool operator false(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n");
+ } 
+            this.Write("\r\n");
+ var targets = new string[] { ClassName, "int", "float" }; 
+ foreach (var target in targets ) { 
+            this.Write("        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" operator +(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(target));
+            this.Write(" b)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" operator -(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(target));
+            this.Write(" b)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" operator *(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(target));
+            this.Write(" b)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" operator /(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(target));
+            this.Write(" b)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" operator %(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(target));
+            this.Write(" b)\r\n        {\r\n            return default;\r\n        }\r\n");
+ } 
+            this.Write("\r\n");
  } 
             this.Write("    }\r\n}");
             return this.GenerationEnvironment.ToString();

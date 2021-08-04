@@ -29,7 +29,53 @@ namespace ShaderSharp.Library.Primitives
         {
             return default;
         }
+
+<# if (CSharpPrimitive != "bool") { #>
+        public static implicit operator bool(<#= ClassName #> _)
+        {
+            return default;
+        }
 <# } #>
+
+        public static bool operator true(<#= ClassName #> _)
+        {
+            return default;
+        }
+
+        public static bool operator false(<#= ClassName #> _)
+        {
+            return default;
+        }
+<# } #>
+
+<# var targets = new string[] { ClassName, "int", "float" }; #>
+<# foreach (var target in targets ) { #>
+        public static <#= ClassName #> operator +(<#= ClassName #> a, <#= target #> b)
+        {
+            return default;
+        }
+
+        public static <#= ClassName #> operator -(<#= ClassName #> a, <#= target #> b)
+        {
+            return default;
+        }
+
+        public static <#= ClassName #> operator *(<#= ClassName #> a, <#= target #> b)
+        {
+            return default;
+        }
+
+        public static <#= ClassName #> operator /(<#= ClassName #> a, <#= target #> b)
+        {
+            return default;
+        }
+
+        public static <#= ClassName #> operator %(<#= ClassName #> a, <#= target #> b)
+        {
+            return default;
+        }
+<# } #>
+
 <# } #>
     }
 }
