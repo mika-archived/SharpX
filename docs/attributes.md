@@ -36,6 +36,7 @@ If omitted, all transpiled results will be write as `source.cginc`.
 
 ```csharp
 // @ AppData.cs
+[Component]
 [Export("core.cginc")]
 public record AppData
 {
@@ -67,6 +68,7 @@ It behaves in a similar way to the `DllImportAttribute` that can be placed in a 
 public class SlFloat4 {}
 
 // @ AppData.cs
+[Component]
 public record AppData
 {
     public SlFloat4 SomeProperty { get; init; }
