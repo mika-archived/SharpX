@@ -102,23 +102,16 @@ namespace ShaderSharp.Library.Attributes.Internal
 
         private string GetShaderSharpPrimitiveFromCSharpPrimitive(INamedTypeSymbol type)
         {
-            switch (type.ToDisplayString())
+            var component = type.ToDisplayString() switch
             {
-                case "bool":
-                    return "SlBool";
+                "bool" => "SlBool",
+                "float" => "SlFloat",
+                "int" => "SlInt",
+                "uint" => "SlUint",
+                _ => throw new ArgumentOutOfRangeException(nameof(type))
+            };
 
-                case "float":
-                    return "SlFloat";
-
-                case "int":
-                    return "SlInt";
-
-                case "uint":
-                    return "SlUint";
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(type));
-            }
+            return string.Join(", ", Enumerable.Repeat(component, 4).Select((w, j) => j + 1 == 1 ? w : $"{w}{j + 1}"));
         }
 
         private class SyntaxContextReceiver : ISyntaxContextReceiver

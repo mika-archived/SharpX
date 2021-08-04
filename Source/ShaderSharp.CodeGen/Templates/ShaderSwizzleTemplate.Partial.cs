@@ -12,14 +12,7 @@ namespace ShaderSharp.CodeGen.Templates
 
         private string GetReturnType(int i)
         {
-            switch (i)
-            {
-                case 1:
-                    return "T";
-
-                default:
-                    return $"Vector{i}Component<T>";
-            }
+            return $"T{i}";
         }
 
         private string GetAccessors(string signature)
