@@ -11,5 +11,7 @@ namespace ShaderSharp.Compiler.Models
         public ImmutableArray<string> Plugins { get; init; }
 
         public string OutputDir { get; init; }
+
+        public string Target { get; init; }
     }
 }

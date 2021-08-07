@@ -30,7 +30,7 @@ Build and Compile C# Shaders to ShaderLab HLSL Shaders.
 $ ssc.exe build --project ./path/to/ssconfig.json
 
 # build by sources
-$ ssc.exe build --src **/*.cs --out dist --references ./path/to/ShaderSharp.Library.dll
+$ ssc.exe build --src **/*.cs --out dist --references /path/to/ShaderSharp.Library.ShaderCommon.dll,/path/to/ShaderSharp.Library.ShaderLab.dll --plugins /path/to/ShaderSharp.Compiler.ShaderLab.dll --target ShaderLab
 ```
 
 It is recommended to build in a project format using the following ssconfig (JSON format) file.
@@ -40,8 +40,10 @@ It is recommended to build in a project format using the following ssconfig (JSO
   "Sources": ["**/*.cs"],
   "Out": "dist",
   "References": [
-    "/path/to/ShaderSharp.Library.dll",
-    "/path/to/another/library.dll"
-  ]
+    "/path/to/ShaderSharp.Library.ShaderCommon.dll",
+    "/path/to/ShaderSharp.Library.ShaderLab.dll"
+  ],
+  "Plugins": ["/path/to/ShaderSharp.Compiler.ShaderLab.dll"],
+  "Target": "ShaderLab"
 }
 ```

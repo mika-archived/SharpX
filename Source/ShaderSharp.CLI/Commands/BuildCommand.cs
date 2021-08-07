@@ -19,8 +19,9 @@ namespace ShaderSharp.CLI.Commands
         private readonly string _project;
         private readonly string[] _references;
         private readonly string[] _sources;
+        private readonly string _target;
 
-        public BuildCommand(ILogger<CompilerInterface> logger, string project, string[] sources, string @out, string[] references, string[] plugins)
+        public BuildCommand(ILogger<CompilerInterface> logger, string project, string[] sources, string @out, string[] references, string[] plugins, string target)
         {
             _configuration = new CompilerConfiguration();
             _logger = logger;
@@ -29,6 +30,7 @@ namespace ShaderSharp.CLI.Commands
             _out = @out;
             _references = references;
             _plugins = plugins;
+            _target = target;
         }
 
         public int Run()
@@ -80,6 +82,7 @@ namespace ShaderSharp.CLI.Commands
 
                 _configuration.Sources = obj.Sources;
                 _configuration.Out = obj.Out;
+                _configuration.Target = obj.Target;
                 _configuration.References = obj.References;
                 _configuration.Plugins = obj.Plugins;
 
@@ -98,6 +101,9 @@ namespace ShaderSharp.CLI.Commands
                 return false;
 
             if (string.IsNullOrWhiteSpace(_configuration.Out))
+                return false;
+
+            if (string.IsNullOrWhiteSpace(_configuration.Target))
                 return false;
 
             if (_configuration.References is { Length: > 0 } && _configuration.References.Any(w => !File.Exists(w)))

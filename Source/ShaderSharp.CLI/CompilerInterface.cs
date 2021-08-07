@@ -30,9 +30,9 @@ namespace ShaderSharp.CLI
         }
 
         [Command("build")]
-        public int Build([Option("project")] string project = null, [Option("src")] string[] src = null, [Option("out")] string @out = null, [Option("references")] string[] references = null, [Option("plugins")] string[] plugins = null)
+        public int Build([Option("project")] string project = null, [Option("src")] string[] src = null, [Option("out")] string @out = null, [Option("references")] string[] references = null, [Option("plugins")] string[] plugins = null, [Option("target")] string target = null)
         {
-            return new BuildCommand(_logger, project, src, @out, references, plugins).Run();
+            return new BuildCommand(_logger, project, src, @out, references, plugins, target).Run();
         }
     }
 }
