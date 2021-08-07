@@ -1,6 +1,6 @@
 # ShaderSharp
 
-Experimental C# to ShaderLab Compiler.
+Experimental Extensible C# to Shader Compiler.
 
 ## Motivation
 

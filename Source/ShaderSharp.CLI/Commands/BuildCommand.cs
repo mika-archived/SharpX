@@ -15,11 +15,12 @@ namespace ShaderSharp.CLI.Commands
         private readonly CompilerConfiguration _configuration;
         private readonly ILogger<CompilerInterface> _logger;
         private readonly string _out;
+        private readonly string[] _plugins;
         private readonly string _project;
         private readonly string[] _references;
         private readonly string[] _sources;
 
-        public BuildCommand(ILogger<CompilerInterface> logger, string project, string[] sources, string @out, string[] references)
+        public BuildCommand(ILogger<CompilerInterface> logger, string project, string[] sources, string @out, string[] references, string[] plugins)
         {
             _configuration = new CompilerConfiguration();
             _logger = logger;
@@ -27,6 +28,7 @@ namespace ShaderSharp.CLI.Commands
             _sources = sources;
             _out = @out;
             _references = references;
+            _plugins = plugins;
         }
 
         public int Run()
@@ -57,6 +59,7 @@ namespace ShaderSharp.CLI.Commands
                 _configuration.Sources = _sources;
                 _configuration.Out = _out;
                 _configuration.References = _references;
+                _configuration.Plugins = _plugins;
 
                 return ValidateRawArguments();
             }
@@ -78,6 +81,7 @@ namespace ShaderSharp.CLI.Commands
                 _configuration.Sources = obj.Sources;
                 _configuration.Out = obj.Out;
                 _configuration.References = obj.References;
+                _configuration.Plugins = obj.Plugins;
 
                 return ValidateRawArguments();
             }
@@ -96,8 +100,11 @@ namespace ShaderSharp.CLI.Commands
             if (string.IsNullOrWhiteSpace(_configuration.Out))
                 return false;
 
-            if (_configuration.References is { Length: > 0 })
-                return _configuration.References.All(File.Exists);
+            if (_configuration.References is { Length: > 0 } && _configuration.References.Any(w => !File.Exists(w)))
+                return false;
+
+            if (_configuration.Plugins is { Length: > 0 } && _configuration.Plugins.Any(w => !File.Exists(w)))
+                return false;
 
             return true;
         }

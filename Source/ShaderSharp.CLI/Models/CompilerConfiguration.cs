@@ -15,6 +15,8 @@ namespace ShaderSharp.CLI.Models
 
         public string[] References { get; set; }
 
+        public string[] Plugins { get; set; }
+
         public string Out { get; set; }
 
         public ShaderSharpCompilerOptions ToCompilerOptions()
@@ -28,6 +30,7 @@ namespace ShaderSharp.CLI.Models
             {
                 Items = items.Files.Select(w => w.Path).ToImmutableArray(),
                 References = References.ToImmutableArray(),
+                Plugins = Plugins.ToImmutableArray(),
                 OutputDir = Out
             };
         }

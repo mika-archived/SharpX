@@ -8,6 +8,8 @@ namespace ShaderSharp.Compiler.Models
 
         public ImmutableArray<string> References { get; init; }
 
+        public ImmutableArray<string> Plugins { get; init; }
+
         public string OutputDir { get; init; }
     }
 }
