@@ -55,7 +55,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             if (capture.HasAttribute<ComponentAttribute>())
             {
                 var attr = capture.GetAttribute<ComponentAttribute>()!;
-                ((ShaderLabHLSLSourceContext) context.SourceContext).OpenStruct(string.IsNullOrWhiteSpace(attr.Name) ? capture.GetDeclarationName() : attr.Name);
+                context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.OpenStruct(string.IsNullOrWhiteSpace(attr.Name) ? capture.GetDeclarationName() : attr.Name);
             }
         }
 
@@ -66,10 +66,12 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             Debug.WriteLine(context.GetType());
 
             if (capture.HasAttribute<ExportAttribute>())
-                ((ShaderLabHLSLSourceContext) context.SourceContext).CloseStruct();
+            {
+                if (context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.IsStructOpened() == true)
+                    context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.CloseStruct();
 
-            if (capture.HasAttribute<ExportAttribute>())
                 context.CloseContext();
+            }
         }
     }
 }

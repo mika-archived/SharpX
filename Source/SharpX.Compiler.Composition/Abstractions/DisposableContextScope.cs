@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 
 namespace SharpX.Compiler.Composition.Abstractions
 {
@@ -19,9 +18,11 @@ namespace SharpX.Compiler.Composition.Abstractions
 
         public static T Open<T>(VerifiableSourceContext context, ContextScope scope) where T : DisposableContextScope
         {
-            if (Activator.CreateInstance(typeof(T), BindingFlags.CreateInstance, context, scope) is not T self)
-                throw new InvalidOperationException("Failed to create/open a scope with 2 arguments.");
+            var constructor = typeof(T).GetConstructor(new[] { typeof(VerifiableSourceContext), typeof(ContextScope) });
+            if (constructor == null)
+                throw new InvalidOperationException("Failed to create and open a scope with default 2 arguments.");
 
+            var self = (T) constructor.Invoke(new object?[] { context, scope });
             self.VerifyIntegrity();
             return self;
         }

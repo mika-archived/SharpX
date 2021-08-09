@@ -18,9 +18,17 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             _sb = new ShaderLabHLSLStructuredSourceBuilder();
         }
 
-        public void AddGlobalMember(string str) { }
+        public void AddGlobalMember(string str)
+        {
+            using (DisposableContextScope.Open<GlobalMemberDeclarationScope>(this, Scope))
+                _sb.AddGlobalMember(new GlobalMember(null, str));
+        }
 
-        public void AddGlobalMember(string type, string name) { }
+        public void AddGlobalMember(string type, string name)
+        {
+            using (DisposableContextScope.Open<GlobalMemberDeclarationScope>(this, Scope))
+                _sb.AddGlobalMember(new GlobalMember(type, name));
+        }
 
         public override string ToSourceString()
         {
@@ -34,6 +42,11 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             EnterToNewScope(new HLSLStructDefinitionScope(Scope));
 
             _struct = new StructDeclaration(name);
+        }
+
+        public bool IsStructOpened()
+        {
+            return _struct != null;
         }
 
         public void AddMemberToStruct(string str)

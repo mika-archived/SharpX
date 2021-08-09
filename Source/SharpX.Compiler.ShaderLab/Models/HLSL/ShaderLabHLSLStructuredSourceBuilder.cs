@@ -18,7 +18,10 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
         public void AddHeaderInclude() { }
 
-        public void AddGlobalMember() { }
+        public void AddGlobalMember(GlobalMember member)
+        {
+            Components.Add(member);
+        }
 
         public void AddStruct(StructDeclaration declaration)
         {
