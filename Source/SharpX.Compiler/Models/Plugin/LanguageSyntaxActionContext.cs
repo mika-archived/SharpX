@@ -43,6 +43,7 @@ namespace SharpX.Compiler.Models.Plugin
         public void StopPropagationIncludingSiblingActions()
         {
             ShouldStopPropagationIncludingSiblingActions = true;
+            StopPropagation();
         }
 
         public void CreateOrGetContext(string name)

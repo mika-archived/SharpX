@@ -12,10 +12,15 @@ namespace SharpX.Compiler.Models
     internal class CompilationModule
     {
         private readonly List<string> _errors;
+        private readonly List<string> _warnings;
 
         public bool HasErrors => _errors.Count > 0;
 
+        public bool HasWarnings => _warnings.Count > 0;
+
         public IReadOnlyCollection<string> Errors => _errors.AsReadOnly();
+
+        public IReadOnlyCollection<string> Warnings => _warnings.AsReadOnly();
 
         public SyntaxTree SyntaxTree { get; }
 
@@ -23,6 +28,7 @@ namespace SharpX.Compiler.Models
         {
             SyntaxTree = tree;
             _errors = new List<string>();
+            _warnings = new List<string>();
         }
 
         public void Compile(SemanticModel model, AssemblyContext context)
@@ -47,6 +53,7 @@ namespace SharpX.Compiler.Models
             finally
             {
                 _errors.AddRange(walker.Errors);
+                _warnings.AddRange(walker.Warnings);
             }
         }
     }

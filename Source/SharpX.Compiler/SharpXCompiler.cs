@@ -21,13 +21,17 @@ namespace SharpX.Compiler
         private readonly SharpXPluginHost _host;
         private readonly SharpXCompilerOptions _options;
         private readonly List<MetadataReference> _references;
+        private readonly List<string> _warnings;
 
         public IReadOnlyCollection<string> Errors => _errors.AsReadOnly();
+
+        public IReadOnlyCollection<string> Warnings => _warnings.AsReadOnly();
 
         public SharpXCompiler(SharpXCompilerOptions options)
         {
             _options = options;
             _errors = new List<string>();
+            _warnings = new List<string>();
             _references = new List<MetadataReference>();
             _host = new SharpXPluginHost();
         }
@@ -107,6 +111,9 @@ namespace SharpX.Compiler
                 _errors.AddRange(modules.SelectMany(w => w.Errors));
                 return;
             }
+
+            if (modules.Any(w => w.HasWarnings))
+                _warnings.AddRange(modules.SelectMany(w => w.Warnings));
 
             if (!Directory.Exists(_options.OutputDir))
                 Directory.CreateDirectory(_options.OutputDir);

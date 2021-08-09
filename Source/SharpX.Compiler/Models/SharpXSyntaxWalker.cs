@@ -20,15 +20,19 @@ namespace SharpX.Compiler.Models
         private readonly AssemblyContext _assembly;
         private readonly List<string> _errors;
         private readonly SemanticModel _semanticModel;
+        private readonly List<string> _warnings;
         private ISourceContext _context;
 
         public IReadOnlyCollection<string> Errors => _errors.AsReadOnly();
+
+        public IReadOnlyCollection<string> Warnings => _warnings.AsReadOnly();
 
         public SharpXSyntaxWalker(SemanticModel semanticModel, AssemblyContext context) : base(SyntaxWalkerDepth.Token)
         {
             _semanticModel = semanticModel;
             _assembly = context;
             _errors = new List<string>();
+            _warnings = new List<string>();
             _context = _assembly.Default;
         }
 
@@ -111,6 +115,7 @@ namespace SharpX.Compiler.Models
             finally
             {
                 _errors.AddRange(args.Errors.Select(w => w.GetMessage()));
+                _warnings.AddRange(args.Warnings.Select(w => w.GetMessage()));
 
                 if (args.ShouldStopPropagation)
                     throw new StopPropagationException();
@@ -142,6 +147,7 @@ namespace SharpX.Compiler.Models
             finally
             {
                 _errors.AddRange(args.Errors.Select(w => w.GetMessage()));
+                _warnings.AddRange(args.Warnings.Select(w => w.GetMessage()));
 
                 if (args.ShouldStopPropagation)
                     throw new StopPropagationException();

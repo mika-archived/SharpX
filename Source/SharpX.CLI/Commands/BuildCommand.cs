@@ -47,7 +47,13 @@ namespace SharpX.CLI.Commands
             compiler.Compile();
 
             if (compiler.Errors.Count == 0)
+            {
+                if (compiler.Warnings.Any())
+                    foreach (var warning in compiler.Warnings)
+                        _logger.LogWarning(warning);
+
                 return 0;
+            }
 
             foreach (var error in compiler.Errors)
                 _logger.LogError(error);
