@@ -18,14 +18,7 @@ namespace SharpX.CLI.Models
 
             var items = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(Directory.GetCurrentDirectory())));
 
-            return new SharpXCompilerOptions
-            {
-                Items = items.Files.Select(w => w.Path).ToImmutableArray(),
-                References = References.ToImmutableArray(),
-                Plugins = Plugins.ToImmutableArray(),
-                OutputDir = Out,
-                Target = Target
-            };
+            return new SharpXCompilerOptions(items.Files.Select(w => w.Path).ToImmutableArray(), References.ToImmutableArray(), Plugins.ToImmutableArray(), Out, Target);
         }
     }
 }
