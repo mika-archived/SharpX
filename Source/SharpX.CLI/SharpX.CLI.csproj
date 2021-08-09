@@ -3,7 +3,9 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
-    <AssemblyName>ssc</AssemblyName>
+    <AssemblyName>sxc</AssemblyName>
+    <Authors>Natsuneko</Authors>
+    <Product>SharpX Compiler CLI</Product>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,6 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ShaderSharp.Compiler\ShaderSharp.Compiler.csproj" />
+    <ProjectReference Include="..\SharpX.Compiler\SharpX.Compiler.csproj" />
   </ItemGroup>
 </Project>

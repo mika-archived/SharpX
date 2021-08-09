@@ -5,9 +5,9 @@ using ConsoleAppFramework;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-using ShaderSharp.CLI.Commands;
+using SharpX.CLI.Commands;
 
-namespace ShaderSharp.CLI
+namespace SharpX.CLI
 {
     public class CompilerInterface : ConsoleAppBase
     {

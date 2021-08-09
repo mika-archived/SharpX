@@ -4,9 +4,9 @@ using System.Text.Json;
 
 using Microsoft.Extensions.Logging;
 
-using ShaderSharp.CLI.Models;
+using SharpX.CLI.Models;
 
-namespace ShaderSharp.CLI.Commands
+namespace SharpX.CLI.Commands
 {
     internal class InitCommand
     {

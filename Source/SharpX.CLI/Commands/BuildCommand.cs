@@ -5,10 +5,10 @@ using System.Text.Json;
 
 using Microsoft.Extensions.Logging;
 
-using ShaderSharp.CLI.Models;
-using ShaderSharp.Compiler;
+using SharpX.CLI.Models;
+using SharpX.Compiler;
 
-namespace ShaderSharp.CLI.Commands
+namespace SharpX.CLI.Commands
 {
     public class BuildCommand
     {
@@ -41,8 +41,9 @@ namespace ShaderSharp.CLI.Commands
                 return 1;
             }
 
-            var compiler = new ShaderSharpCompiler(_configuration.ToCompilerOptions());
+            var compiler = new SharpXCompiler(_configuration.ToCompilerOptions());
             compiler.LockReferences();
+            compiler.LoadPluginModules();
             compiler.Compile();
 
             if (compiler.Errors.Count == 0)

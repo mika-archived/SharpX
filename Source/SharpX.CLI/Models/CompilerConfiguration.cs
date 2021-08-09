@@ -5,9 +5,9 @@ using System.Linq;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 
-using ShaderSharp.Compiler.Models;
+using SharpX.Compiler.Models;
 
-namespace ShaderSharp.CLI.Models
+namespace SharpX.CLI.Models
 {
     public record CompilerConfiguration
     {
@@ -21,14 +21,14 @@ namespace ShaderSharp.CLI.Models
 
         public string Target { get; set; }
 
-        public ShaderSharpCompilerOptions ToCompilerOptions()
+        public SharpXCompilerOptions ToCompilerOptions()
         {
             var matcher = new Matcher();
             matcher.AddIncludePatterns(Sources);
 
             var items = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(Directory.GetCurrentDirectory())));
 
-            return new ShaderSharpCompilerOptions
+            return new SharpXCompilerOptions
             {
                 Items = items.Files.Select(w => w.Path).ToImmutableArray(),
                 References = References.ToImmutableArray(),
