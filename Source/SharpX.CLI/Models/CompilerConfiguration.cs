@@ -9,18 +9,8 @@ using SharpX.Compiler.Models;
 
 namespace SharpX.CLI.Models
 {
-    public record CompilerConfiguration
+    public record CompilerConfiguration(string[] Sources, string[] References, string[] Plugins, string Out, string Target)
     {
-        public string[] Sources { get; set; }
-
-        public string[] References { get; set; }
-
-        public string[] Plugins { get; set; }
-
-        public string Out { get; set; }
-
-        public string Target { get; set; }
-
         public SharpXCompilerOptions ToCompilerOptions()
         {
             var matcher = new Matcher();

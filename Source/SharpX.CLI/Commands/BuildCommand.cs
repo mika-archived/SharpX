@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -12,18 +13,17 @@ namespace SharpX.CLI.Commands
 {
     public class BuildCommand
     {
-        private readonly CompilerConfiguration _configuration;
         private readonly ILogger<CompilerInterface> _logger;
-        private readonly string _out;
-        private readonly string[] _plugins;
-        private readonly string _project;
-        private readonly string[] _references;
-        private readonly string[] _sources;
-        private readonly string _target;
+        private readonly string? _out;
+        private readonly string[]? _plugins;
+        private readonly string? _project;
+        private readonly string[]? _references;
+        private readonly string[]? _sources;
+        private readonly string? _target;
+        private CompilerConfiguration? _configuration;
 
-        public BuildCommand(ILogger<CompilerInterface> logger, string project, string[] sources, string @out, string[] references, string[] plugins, string target)
+        public BuildCommand(ILogger<CompilerInterface> logger, string? project, string[]? sources, string? @out, string[]? references, string[]? plugins, string? target)
         {
-            _configuration = new CompilerConfiguration();
             _logger = logger;
             _project = project;
             _sources = sources;
@@ -55,21 +55,16 @@ namespace SharpX.CLI.Commands
             return 1;
         }
 
+        [MemberNotNullWhen(true, nameof(_configuration))]
         private bool ValidateOptions()
         {
             if (string.IsNullOrWhiteSpace(_project))
-            {
-                _configuration.Sources = _sources;
-                _configuration.Out = _out;
-                _configuration.References = _references;
-                _configuration.Plugins = _plugins;
-
-                return ValidateRawArguments();
-            }
+                return ValidateRawArguments(_sources, _out, _references, _plugins, _target);
 
             return ValidateProjectArgument();
         }
 
+        [MemberNotNullWhen(true, nameof(_configuration))]
         private bool ValidateProjectArgument()
         {
             if (!File.Exists(_project))
@@ -81,13 +76,7 @@ namespace SharpX.CLI.Commands
                 if (obj == null)
                     return false;
 
-                _configuration.Sources = obj.Sources;
-                _configuration.Out = obj.Out;
-                _configuration.Target = obj.Target;
-                _configuration.References = obj.References;
-                _configuration.Plugins = obj.Plugins;
-
-                return ValidateRawArguments();
+                return ValidateRawArguments(obj.Sources, obj.Out, obj.References, obj.Plugins, obj.Target);
             }
             catch (Exception e)
             {
@@ -96,23 +85,25 @@ namespace SharpX.CLI.Commands
             }
         }
 
-        private bool ValidateRawArguments()
+        [MemberNotNullWhen(true, nameof(_configuration))]
+        private bool ValidateRawArguments(string[]? sources, string? @out, string[]? references, string[]? plugins, string? target)
         {
-            if (_configuration.Sources == null || _configuration.Sources.Length == 0)
+            if (sources == null || sources.Length == 0)
                 return false;
 
-            if (string.IsNullOrWhiteSpace(_configuration.Out))
+            if (string.IsNullOrWhiteSpace(@out))
                 return false;
 
-            if (string.IsNullOrWhiteSpace(_configuration.Target))
+            if (references is { Length: > 0 } && references.Any(w => !File.Exists(w)))
                 return false;
 
-            if (_configuration.References is { Length: > 0 } && _configuration.References.Any(w => !File.Exists(w)))
+            if (plugins is { Length: > 0 } && plugins.Any(w => !File.Exists(w)))
                 return false;
 
-            if (_configuration.Plugins is { Length: > 0 } && _configuration.Plugins.Any(w => !File.Exists(w)))
+            if (string.IsNullOrWhiteSpace(target))
                 return false;
 
+            _configuration = new CompilerConfiguration(sources, references ?? Array.Empty<string>(), plugins ?? Array.Empty<string>(), @out, target);
             return true;
         }
     }

@@ -24,13 +24,13 @@ namespace SharpX.CLI
         }
 
         [Command("init")]
-        public int Init([Option(0)] string path = null)
+        public int Init([Option(0)] string? path = null)
         {
             return new InitCommand(_logger, path).Run();
         }
 
         [Command("build")]
-        public int Build([Option("project")] string project = null, [Option("src")] string[] src = null, [Option("out")] string @out = null, [Option("references")] string[] references = null, [Option("plugins")] string[] plugins = null, [Option("target")] string target = null)
+        public int Build([Option("project")] string? project = null, [Option("src")] string[]? src = null, [Option("out")] string? @out = null, [Option("references")] string[]? references = null, [Option("plugins")] string[]? plugins = null, [Option("target")] string? target = null)
         {
             return new BuildCommand(_logger, project, src, @out, references, plugins, target).Run();
         }

@@ -13,7 +13,7 @@ namespace SharpX.CLI.Commands
         private readonly ILogger<CompilerInterface> _logger;
         private readonly string _path;
 
-        public InitCommand(ILogger<CompilerInterface> logger, string path)
+        public InitCommand(ILogger<CompilerInterface> logger, string? path)
         {
             _logger = logger;
             _path = path ?? Directory.GetCurrentDirectory();
@@ -23,13 +23,7 @@ namespace SharpX.CLI.Commands
         {
             try
             {
-                var defaultConfig = new CompilerConfiguration
-                {
-                    Sources = new[] { "**/*.cs" },
-                    References = new string[] { },
-                    Out = "dist"
-                };
-
+                var defaultConfig = new CompilerConfiguration(new[] { "**/*.cs" }, Array.Empty<string>(), Array.Empty<string>(), "dist", "None");
                 var options = new JsonSerializerOptions { WriteIndented = true };
                 var json = JsonSerializer.Serialize(defaultConfig, options);
 
