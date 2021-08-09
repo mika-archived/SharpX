@@ -27,7 +27,7 @@ namespace SharpX.CodeGen.ShaderLab.Models
                             if (r == "__input__")
                                 r = TypeContractConverter.GetAsCSharpTypeReference(signature.Parameters.First(), i + 2);
 
-                            sb.AppendLine($@"        [ShaderSharp.Compiler.Abstractions.Attributes.Function(""{Name}"")]");
+                            sb.AppendLine($@"        [SharpX.Library.ShaderLab.Attributes.Function(""{Name}"")]");
                             sb.AppendLine($@"        public static extern {r} {ConvertName(Name)}({string.Join(", ", args)});");
                             sb.AppendLine();
                         }
@@ -36,7 +36,7 @@ namespace SharpX.CodeGen.ShaderLab.Models
                     {
                         var r = TypeContractConverter.GetAsCSharpTypeReference(signature.Returns);
 
-                        sb.AppendLine($@"        [ShaderSharp.Compiler.Abstractions.Attributes.Function(""{Name}"")]");
+                        sb.AppendLine($@"        [SharpX.Library.ShaderLab.Attributes.Function(""{Name}"")]");
                         sb.AppendLine($@"        public static extern {r} {ConvertName(Name)}();");
                         sb.AppendLine();
                     }
@@ -47,35 +47,6 @@ namespace SharpX.CodeGen.ShaderLab.Models
                 }
 
             return sb.ToString();
-        }
-
-        private (string, string, string) CalcTypeContracts(List<Parameter> parameters)
-        {
-            var arguments = new List<string>();
-            var typeArguments = new List<string>();
-            var genericsContract = new List<string>();
-
-            foreach (var parameter in parameters)
-            {
-                var t = TypeContractConverter.GetAsCSharpTypeReference(parameter);
-                if (TypeContractConverter.ShouldUseGenericDefinition(parameter))
-                {
-                    var arg = $"T{arguments.Count + 1}";
-                    arguments.Add($"{arg} {parameter.Name}");
-                    typeArguments.Add(arg);
-                    genericsContract.Add($"{arg} : {t}");
-                }
-                else
-                {
-                    arguments.Add($"{t} {parameter.Name}");
-                }
-            }
-
-            return (
-                string.Join(", ", arguments),
-                typeArguments.Count > 0 ? $"<{string.Join(", ", typeArguments)}>" : "",
-                genericsContract.Count > 0 ? $"where {string.Join("where ", genericsContract)}" : ""
-            );
         }
 
         private string ConvertName(string name)
