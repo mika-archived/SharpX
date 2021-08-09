@@ -1,11 +1,11 @@
 # Attributes
 
-In ShaderSharp, you can control the shader output by using Attributes.
+In SharpX, you can control the shader output by using Attributes.
 
 ## ComponentAttribute
 
 `ComponentAttribute` can be used to output the properties and fields defined in class, interface, record, and others as a `struct` structure.
-This Attribute is also used in `ShaderSharp.Library.Primitives` and can be used to create C# wrappers for existing types defined in the shader side.
+This Attribute is also used in `SharpX.Library.Primitives` and can be used to create C# wrappers for existing types defined in the shader side.
 
 ### Example
 
@@ -199,7 +199,7 @@ Vertex2Fragment vs()
 ## InlineAttribute
 
 `InlineAttribute` outputs the target method in its inline expanded state, rather than as a function call.
-If the first argument is `false`, the method will be expanded by ShaderSharp, and if `true` (default), `inline` will be added to the function.
+If the first argument is `false`, the method will be expanded by SharpX, and if `true` (default), `inline` will be added to the function.
 
 ### Example
 

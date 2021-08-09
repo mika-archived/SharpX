@@ -1,6 +1,6 @@
-# ShaderSharp Function Generator
+# SharpX Function Generator
 
-The ShaderSharp Function Generator is a Roslyn Source Generator provided as ShaderSharp.CodeGen.
+The SharpX Function Generator is a Roslyn Source Generator provided as SharpX.CodeGen.
 These automatically generate C# HLSL function wrappers from DSL definitions.
 
 ## Syntax

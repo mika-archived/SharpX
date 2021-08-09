@@ -1,6 +1,6 @@
 # Compiler CLI
 
-ShaderSharp provides a CLI command to run ShaderSharp from the command line.
+SharpX provides a CLI command to run SharpX from the command line.
 The command can be executed in the following format:
 
 ```bash
@@ -15,7 +15,7 @@ $ dotnet exec ssc.dll
 
 ### `ssc init`
 
-Initializes the ShaderSharp project.
+Initializes the SharpX project.
 
 ```bash
 $ ssc.exe init
@@ -30,7 +30,7 @@ Build and Compile C# Shaders to ShaderLab HLSL Shaders.
 $ ssc.exe build --project ./path/to/ssconfig.json
 
 # build by sources
-$ ssc.exe build --src **/*.cs --out dist --references /path/to/ShaderSharp.Library.ShaderCommon.dll,/path/to/ShaderSharp.Library.ShaderLab.dll --plugins /path/to/ShaderSharp.Compiler.ShaderLab.dll --target ShaderLab
+$ ssc.exe build --src **/*.cs --out dist --references /path/to/SharpX.Library.ShaderCommon.dll,/path/to/SharpX.Library.ShaderLab.dll --plugins /path/to/SharpX.Compiler.ShaderLab.dll --target ShaderLab
 ```
 
 It is recommended to build in a project format using the following ssconfig (JSON format) file.
@@ -40,10 +40,10 @@ It is recommended to build in a project format using the following ssconfig (JSO
   "Sources": ["**/*.cs"],
   "Out": "dist",
   "References": [
-    "/path/to/ShaderSharp.Library.ShaderCommon.dll",
-    "/path/to/ShaderSharp.Library.ShaderLab.dll"
+    "/path/to/SharpX.Library.ShaderCommon.dll",
+    "/path/to/SharpX.Library.ShaderLab.dll"
   ],
-  "Plugins": ["/path/to/ShaderSharp.Compiler.ShaderLab.dll"],
+  "Plugins": ["/path/to/SharpX.Compiler.ShaderLab.dll"],
   "Target": "ShaderLab"
 }
 ```
