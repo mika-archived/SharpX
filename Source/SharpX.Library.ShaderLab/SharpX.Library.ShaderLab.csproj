@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SharpX.CodeGen.ShaderLab\SharpX.CodeGen.ShaderLab.csproj" OutputItemType="Analyzer"
-                      ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\SharpX.CodeGen.ShaderLab\SharpX.CodeGen.ShaderLab.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 </Project>
