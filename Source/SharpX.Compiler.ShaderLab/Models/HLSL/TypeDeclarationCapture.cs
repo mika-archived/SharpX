@@ -38,12 +38,13 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
         public bool HasAttribute<T>() where T : Attribute
         {
-            return _node.HasAttribute<T>(_model);
+            return GetAttribute<T>() != null;
         }
 
         public T? GetAttribute<T>() where T : Attribute
         {
-            return _node.GetAttribute<T>(_model);
+            var s = _model.GetTypeInfo(_node);
+            return s.Type.GetAttribute<T>(_model);
         }
     }
 }
