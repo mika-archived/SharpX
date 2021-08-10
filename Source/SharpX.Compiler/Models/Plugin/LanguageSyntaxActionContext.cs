@@ -1,4 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 using SharpX.Compiler.Composition.Abstractions;
@@ -9,20 +11,25 @@ namespace SharpX.Compiler.Models.Plugin
     internal class LanguageSyntaxActionContext : ILanguageSyntaxActionContext
     {
         private readonly AssemblyContext _assembly;
+        private readonly Action<CSharpSyntaxNode> _visitor;
 
         public bool ShouldStopPropagation { get; private set; }
         public bool ShouldStopPropagationIncludingSiblingActions { get; private set; }
 
-        public LanguageSyntaxActionContext(CSharpSyntaxNode node, SemanticModel model, ISourceContext context, AddOnlyCollection<IError> errors, AddOnlyCollection<IError> warnings, AssemblyContext assembly)
+        public bool ShouldUseDefaultVisit { get; private set; }
+
+        public LanguageSyntaxActionContext(CSharpSyntaxNode node, SemanticModel model, ISourceContext context, Action<CSharpSyntaxNode> visitor, AddOnlyCollection<IError> errors, AddOnlyCollection<IError> warnings, AssemblyContext assembly)
         {
+            _visitor = visitor;
+            _assembly = assembly;
             Node = node;
             SemanticModel = model;
             Errors = errors;
             Warnings = warnings;
+            SourceContext = context;
             ShouldStopPropagation = false;
             ShouldStopPropagationIncludingSiblingActions = false;
-            SourceContext = context;
-            _assembly = assembly;
+            ShouldUseDefaultVisit = true;
         }
 
         public SemanticModel SemanticModel { get; }
@@ -44,6 +51,16 @@ namespace SharpX.Compiler.Models.Plugin
         {
             ShouldStopPropagationIncludingSiblingActions = true;
             StopPropagation();
+        }
+
+        public void SwitchDefaultVisit(bool visit)
+        {
+            ShouldUseDefaultVisit = visit;
+        }
+
+        public void Visit(CSharpSyntaxNode node)
+        {
+            _visitor.Invoke(node);
         }
 
         public void CreateOrGetContext(string name)

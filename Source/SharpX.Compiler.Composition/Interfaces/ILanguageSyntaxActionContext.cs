@@ -21,6 +21,10 @@ namespace SharpX.Compiler.Composition.Interfaces
 
         void StopPropagationIncludingSiblingActions();
 
+        void SwitchDefaultVisit(bool visit);
+
+        void Visit(CSharpSyntaxNode node);
+
         void CreateOrGetContext(string name);
 
         void CreateOrGetContext<T>(string name);
