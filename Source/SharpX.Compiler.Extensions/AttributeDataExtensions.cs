@@ -8,7 +8,7 @@ namespace SharpX.Compiler.Extensions
 {
     public static class AttributeDataExtensions
     {
-        public static T AsAttributeInstance<T>(this AttributeData obj) where T : Attribute
+        public static T? AsAttributeInstance<T>(this AttributeData obj) where T : Attribute
         {
             var t = typeof(T);
             var constructors = t.GetConstructors();
