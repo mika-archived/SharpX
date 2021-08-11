@@ -28,7 +28,10 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             Components.Add(declaration);
         }
 
-        public void AddFunction() { }
+        public void AddFunction(FunctionDeclaration declaration)
+        {
+            Components.Add(declaration);
+        }
 
         public void AddFooterInclude() { }
 
