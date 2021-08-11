@@ -33,6 +33,8 @@ namespace SharpX.Compiler.ShaderLab
             context.RegisterPostSyntaxAction(WellKnownSyntax.StructDeclarationSyntax, ClassLikeDeclarationWalker.PostProcessClassLikeDeclarations, ClassLikeDeclarationWalker.IsProcessingActionContext);
             context.RegisterPreSyntaxAction(WellKnownSyntax.PropertyDeclarationSyntax, FieldLikeDeclarationWalker.ProcessPropertyDeclarations, FieldLikeDeclarationWalker.ShouldProcessFieldLikeDeclarations);
             context.RegisterPreSyntaxAction(WellKnownSyntax.FieldDeclarationSyntax, FieldLikeDeclarationWalker.ProcessFieldDeclarations, FieldLikeDeclarationWalker.ShouldProcessFieldLikeDeclarations);
+            context.RegisterPreSyntaxAction(WellKnownSyntax.MethodDeclarationSyntax, MethodDeclarationWalker.PreProcessMethodDeclarations);
+            context.RegisterPostSyntaxAction(WellKnownSyntax.MethodDeclarationSyntax, MethodDeclarationWalker.PostProcessMethodDeclarations);
         }
 
         private void RegisterComponentsForShader(ILanguageBackendContext context)
