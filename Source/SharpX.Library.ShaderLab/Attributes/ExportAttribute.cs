@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 
+#nullable enable
+
 namespace SharpX.Library.ShaderLab.Attributes
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Struct, Inherited = false)]

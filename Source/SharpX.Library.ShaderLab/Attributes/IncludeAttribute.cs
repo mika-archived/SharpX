@@ -1,5 +1,7 @@
 ﻿using System;
 
+#nullable enable
+
 namespace SharpX.Library.ShaderLab.Attributes
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Struct, Inherited = false)]
