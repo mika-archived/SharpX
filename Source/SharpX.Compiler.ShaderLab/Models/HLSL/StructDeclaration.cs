@@ -14,9 +14,13 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
         {
             _name = name;
             _members = new HashSet<ShaderLabFieldMember>();
+
+            Name = $"Struct_{_name}";
         }
 
         public int Priority { get; set; } = 30000;
+
+        public string Name { get; }
 
         public void WriteTo(SourceBuilder sb)
         {

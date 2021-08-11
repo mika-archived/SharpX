@@ -77,7 +77,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
                 var attr = capture.GetAttribute<SemanticAttribute>()!;
                 var t = capture.GetDeclaredType();
-                context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.AddMemberToStruct(t.GetActualName(), capture.GetIdentifierName(), attr.Semantic);
+                context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.StructDeclaration?.AddMember(t.GetActualName(), capture.GetIdentifierName(), attr.Semantic);
             }
             else
             {
@@ -85,7 +85,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                     context.Warnings.Add(new DefaultError(context.Node, "SharpX.ShaderLab recommend that semantic members be defined as instance properties or fields"));
 
                 var t = capture.GetDeclaredType();
-                context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.AddMemberToStruct(t.GetActualName(), capture.GetIdentifierName(), null);
+                context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.StructDeclaration?.AddMember(t.GetActualName(), capture.GetIdentifierName(), null);
             }
         }
     }

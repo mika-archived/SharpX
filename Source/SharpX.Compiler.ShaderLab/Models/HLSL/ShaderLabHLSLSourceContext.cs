@@ -7,11 +7,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
     {
         private readonly ShaderLabHLSLStructuredSourceBuilder _sb;
 
-        // temporary begin
-
-        private StructDeclaration? _struct;
-
-        // temporary end
+        public StructDeclaration? StructDeclaration { get; private set; }
 
         public ShaderLabHLSLSourceContext()
         {
@@ -41,32 +37,15 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
         {
             EnterToNewScope(new HLSLStructDefinitionScope(Scope));
 
-            _struct = new StructDeclaration(name);
-        }
-
-        public bool IsStructOpened()
-        {
-            return _struct != null;
-        }
-
-        public void AddMemberToStruct(string str)
-        {
-            VerifyCurrentScope<HLSLStructDefinitionScope>();
-
-            _struct!.AddMember(str);
-        }
-
-        public void AddMemberToStruct(string type, string name, string? semantics)
-        {
-            VerifyCurrentScope<HLSLStructDefinitionScope>();
-
-            _struct!.AddMember(type, name, semantics);
+            StructDeclaration = new StructDeclaration(name);
         }
 
         public void CloseStruct()
         {
-            _sb.AddStruct(_struct!);
-            _struct = null;
+            VerifyCurrentScope<HLSLStructDefinitionScope>();
+
+            _sb.AddStruct(StructDeclaration!);
+            StructDeclaration = null;
 
             GetOutFromCurrentScope();
         }

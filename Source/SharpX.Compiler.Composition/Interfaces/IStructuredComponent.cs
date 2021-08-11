@@ -6,6 +6,8 @@ namespace SharpX.Compiler.Composition.Interfaces
     {
         public int Priority { get; set; }
 
+        public string Name { get; }
+
         public void WriteTo(SourceBuilder sb);
     }
 }

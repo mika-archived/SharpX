@@ -16,8 +16,6 @@ namespace SharpX.Compiler.Models
 
         public ISourceContext Default => _contexts["source"];
 
-        private ILanguageBackend CurrentLanguageBackend => _host.CurrentLanguageBackend!;
-
         private LanguageBackendContext CurrentLanguageBackendContext => (LanguageBackendContext) _host.CurrentLanguageBackendContext!;
 
         public AssemblyContext(SharpXPluginHost host)

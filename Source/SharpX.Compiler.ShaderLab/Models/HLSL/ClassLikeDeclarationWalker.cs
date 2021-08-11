@@ -67,7 +67,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
             if (capture.HasAttribute<ExportAttribute>())
             {
-                if (context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.IsStructOpened() == true)
+                if (context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.StructDeclaration != null)
                     context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.CloseStruct();
 
                 context.CloseContext();

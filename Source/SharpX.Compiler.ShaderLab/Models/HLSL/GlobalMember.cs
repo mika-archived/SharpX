@@ -12,9 +12,13 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
         {
             _type = type;
             _name = name;
+
+            Name = $"Global_{_name}";
         }
 
         public int Priority { get; set; } = 2000;
+
+        public string Name { get; }
 
         public void WriteTo(SourceBuilder sb)
         {
