@@ -1,4 +1,6 @@
-﻿#namespace SharpX.Library.ShaderLab.Functions
+﻿// https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-intrinsic-functions
+
+#namespace SharpX.Library.ShaderLab.Functions
 #class Builtin
 #converter UpperCamelCase
 
@@ -274,5 +276,407 @@ function determinant
     signatures
     {
         (x is matrix implements float has TxT elements) => r is scalar implements float
+    }
+}
+
+function distance
+{
+    signatures
+    {
+        (x is vector implements float, y is vector implements float) => r is scalar implements float
+    }
+}
+
+function dot
+{
+    signatures
+    {
+        (x is vector implements float, y is vector implements float) => r is scalar implements float
+        (x is vector implements int, y is vector implements int) => r is scalar implements int
+    }
+}
+
+function exp
+{
+    signatures
+    {
+        (x is scalar implements float) => __input__
+        (x is vector implements float) => __input__
+        (x is matrix implements float) => __input__
+    }
+}
+
+function exp2
+{
+    signatures
+    {
+        (x is scalar implements float) => __input__
+        (x is vector implements float) => __input__
+        (x is matrix implements float) => __input__
+    }
+}
+
+function faceforward
+{
+    signatures
+    {
+        (n is vector implements float, i is vector implements float, ng is vector implements float) => __input__
+    }
+}
+
+function firstbithigh
+{
+    signatures
+    {
+        (value is scalar implements int) => __input__
+        (value is vector implements int) => __input__
+        (value is scalar implements uint) => __input__
+        (value is vector implements uint) => __input__
+    }
+}
+
+function firstbitlow
+{
+    signatures
+    {
+        (value is scalar implements uint) => __input__
+        (value is vector implements uint) => __input__
+    }
+}
+
+function floor
+{
+    signatures
+    {
+        (x is scalar implements float) => __input__
+        (x is vector implements float) => __input__
+        (x is matrix implements float) => __input__
+    }
+}
+
+function fmod
+{
+    signatures
+    {
+        (x is scalar implements float, y is scalar implements float) => __input__
+        (x is vector implements float, y is vector implements float) => __input__
+        (x is matrix implements float, y is matrix implements float) => __input__
+    }
+}
+
+function frac
+{
+    signatures
+    {
+        (x is scalar implements float) => __input__
+        (x is vector implements float) => __input__
+        (x is matrix implements float) => __input__
+    }
+}
+
+function frexp
+{
+    signatures
+    {
+        (x is scalar implements float, [out] exp is scalar implements float) => __input__
+        (x is vector implements float, [out] exp is vector implements float) => __input__
+        (x is matrix implements float, [out] exp is matrix implements float) => __input__
+    }
+}
+
+function fwidth
+{
+    signatures
+    {
+        (x is scalar implements float) => __input__
+        (x is vector implements float) => __input__
+        (x is matrix implements float) => __input__
+    }
+}
+
+function isfinite
+{
+    signatures
+    {
+        (x is scalar implements float) => r is scalar implements bool
+        (x is vector implements float) => r is vector implements bool
+        (x is matrix implements float) => r is matrix implements bool
+    }
+}
+
+function isinf
+{
+    signatures
+    {
+        (x is scalar implements float) => r is scalar implements bool
+        (x is vector implements float) => r is vector implements bool
+        (x is matrix implements float) => r is matrix implements bool
+    }
+}
+
+function isnan
+{
+    signatures
+    {
+        (x is scalar implements float) => r is scalar implements bool
+        (x is vector implements float) => r is vector implements bool
+        (x is matrix implements float) => r is matrix implements bool
+    }
+}
+
+function ldexp
+{
+    signatures
+    {
+        (x is scalar implements float, exp is scalar implements float) => r is scalar implements float
+        (x is vector implements float, exp is vector implements float) => r is vector implements float
+        (x is matrix implements float, exp is matrix implements float) => r is matrix implements float
+    }
+}
+
+function length
+{
+    signatures
+    {
+        (x is vector implements float) => r is scalar implements float
+    }
+}
+
+function lerp
+{
+    signatures
+    {
+        (x is scalar implements float, y is scalar implements float, s is scalar implements float) => __input__
+        (x is vector implements float, y is vector implements float, s is vector implements float) => __input__
+        (x is matrix implements float, y is matrix implements float, s is matrix implements float) => __input__
+    }
+}
+
+function lit
+{
+    signatures
+    {
+        (n_dot_l is scalar implements float, n_dot_h is scalar implements float, m is scalar implements float) => r is vector implements float has 4 elements
+    }
+}
+
+function log
+{
+    signatures
+    {
+        (x is scalar implements float) => __input__
+        (x is vector implements float) => __input__
+        (x is matrix implements float) => __input__
+    }
+}
+
+function log10
+{
+    signatures
+    {
+        (x is scalar implements float) => __input__
+        (x is vector implements float) => __input__
+        (x is matrix implements float) => __input__
+    }
+}
+
+function log2
+{
+    signatures
+    {
+        (x is scalar implements float) => __input__
+        (x is vector implements float) => __input__
+        (x is matrix implements float) => __input__
+    }
+}
+
+function max
+{
+    signatures
+    {
+        (x is scalar implements float, y is scalar implements float) => __input__
+        (x is vector implements float, y is vector implements float) => __input__
+        (x is matrix implements float, y is matrix implements float) => __input__
+        (x is scalar implements int, y is scalar implements int) => __input__
+        (x is vector implements int, y is vector implements int) => __input__
+        (x is matrix implements int, y is matrix implements int) => __input__
+    }
+}
+
+function min
+{
+    signatures
+    {
+        (x is scalar implements float, y is scalar implements float) => __input__
+        (x is vector implements float, y is vector implements float) => __input__
+        (x is matrix implements float, y is matrix implements float) => __input__
+        (x is scalar implements int, y is scalar implements int) => __input__
+        (x is vector implements int, y is vector implements int) => __input__
+        (x is matrix implements int, y is matrix implements int) => __input__
+    }
+}
+
+function modf
+{
+    signatures
+    {
+        (x is scalar implements float, [out] ip is scalar implements float) => __input__
+        (x is vector implements float, [out] ip is vector implements float) => __input__
+        (x is matrix implements float, [out] ip is matrix implements float) => __input__
+        (x is scalar implements int, [out] ip is scalar implements int) => __input__
+        (x is vector implements int, [out] ip is vector implements int) => __input__
+        (x is matrix implements int, [out] ip is matrix implements int) => __input__
+    }
+}
+
+// mul is declared in Builtin.cs directly using Generics
+// function mul
+// {
+//     signatures
+//     {
+//     }
+// }
+
+function noise
+{
+    signatures
+    {
+        (x is vector implements float) => same(x)
+    }
+}
+
+function normalize
+{
+    signatures
+    {
+        (x is vector implements float) => same(x)
+    }
+}
+
+function pow
+{
+    signatures
+    {
+        (x is scalar implements float, y is scalar implements float) => same(x)
+        (x is vector implements float, y is vector implements float) => same(x)
+        (x is matrix implements float, y is matrix implements float) => same(x)
+    }
+}
+
+function radians
+{
+    signatures
+    {
+        (x is scalar implements float) => same(x)
+        (x is vector implements float) => same(x)
+        (x is matrix implements float) => same(x)
+    }
+}
+
+function rcp
+{
+    signatures
+    {
+        (x is scalar implements float) => same(x)
+        (x is vector implements float) => same(x)
+        (x is matrix implements float) => same(x)
+    }
+}
+
+function reflect
+{
+    signatures
+    {
+        (i is vector implements float, n is vector implements float) => same(i)
+    }
+}
+
+function refract
+{
+    signatures
+    {
+        (i is vector implements float, n is vector implements float, q is scalar implements float) => same(i)
+    }
+}
+
+function reversebits
+{
+    signatures
+    {
+        (value is scalar implements uint) => same(value)
+        (value is vector implements uint) => same(value)
+    }
+}
+
+function round
+{
+    signatures
+    {
+        (x is scalar implements float) => same(x)
+        (x is vector implements float) => same(x)
+        (x is matrix implements float) => same(x)
+    }
+}
+
+function rsqrt
+{
+    signatures
+    {
+        (x is scalar implements float) => same(x)
+        (x is vector implements float) => same(x)
+        (x is matrix implements float) => same(x)
+    }
+}
+
+function saturate
+{
+    signatures
+    {
+        (x is scalar implements float) => same(x)
+        (x is vector implements float) => same(x)
+        (x is matrix implements float) => same(x)
+    }
+}
+
+function sign
+{
+    signatures
+    {
+        (x is scalar implements float) => same(x)
+        (x is vector implements float) => same(x)
+        (x is matrix implements float) => same(x)
+        (x is scalar implements int) => same(x)
+        (x is vector implements int) => same(x)
+        (x is matrix implements int) => same(x)
+    }
+}
+
+function sin
+{
+    signatures
+    {
+        (x is scalar implements float) => same(x)
+        (x is vector implements float) => same(x)
+        (x is matrix implements float) => same(x)
+    }
+}
+
+function sincos
+{
+    signatures
+    {
+        (x is scalar implements float, [out] s is scalar implements float, [out] c is scalar implements float) => void
+        (x is vector implements float, [out] s is vector implements float, [out] c is vector implements float) => void
+        (x is matrix implements float, [out] s is matrix implements float, [out] c is matrix implements float) => void
+    }
+}
+
+function sinh
+{
+    signatures
+    {
+        (x is scalar implements float) => same(x)
+        (x is vector implements float) => same(x)
+        (x is matrix implements float) => same(x)
     }
 }
