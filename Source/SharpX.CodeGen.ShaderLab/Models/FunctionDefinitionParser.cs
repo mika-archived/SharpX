@@ -8,7 +8,7 @@ namespace SharpX.CodeGen.ShaderLab.Models
 {
     public class FunctionDefinitionParser : IDisposable
     {
-        private static readonly Regex TypeConstraintRegex = new("(?<param>.*) is (?<template>(scalar|vector|matrix)) implements (?<type>\\w+)( has (?<element>\\w+) elements)?", RegexOptions.Compiled);
+        private static readonly Regex TypeConstraintRegex = new("(?<inout>\\[(in|out)\\])?(?<param>.*) is (?<template>(scalar|vector|matrix)) implements (?<type>\\w+)( has (?<element>\\w+) elements)?", RegexOptions.Compiled);
         private static readonly Regex SignatureRegex = new("\\((?<parameters>.*)\\) => (?<return>.*)", RegexOptions.Compiled);
 
         private readonly StreamReader _sr;
@@ -143,10 +143,10 @@ namespace SharpX.CodeGen.ShaderLab.Models
             static Parameter ParseParameter(string str)
             {
                 if (!TypeConstraintRegex.IsMatch(str))
-                    return new Parameter(null, null, str, null);
+                    return new Parameter(null, null, str, null, false);
 
                 var contract = TypeConstraintRegex.Match(str);
-                var t = new Parameter(contract.Groups["param"].Value, contract.Groups["template"].Value, contract.Groups["type"].Value, null);
+                var t = new Parameter(contract.Groups["param"].Value, contract.Groups["template"].Value, contract.Groups["type"].Value, null, contract.Groups["inout"].Value == "[out]");
                 if (!string.IsNullOrWhiteSpace(contract.Groups["element"].Value))
                     t = t with { Element = contract.Groups["element"].Value };
 
