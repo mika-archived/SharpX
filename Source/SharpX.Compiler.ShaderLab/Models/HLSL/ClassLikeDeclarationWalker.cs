@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-using SharpX.Compiler.Composition.Abstractions;
+﻿using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.Composition.Interfaces;
 using SharpX.Library.ShaderLab.Attributes;
 using SharpX.Library.ShaderLab.Interfaces;
@@ -62,8 +60,6 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
         public static void PostProcessClassLikeDeclarations(ILanguageSyntaxActionContext context)
         {
             var capture = ClassLikeDeclarationCapture.Capture(context.Node, context.SemanticModel)!; // not-null, because StopPropagated in upstream
-
-            Debug.WriteLine(context.GetType());
 
             if (capture.HasAttribute<ExportAttribute>())
             {
