@@ -10,7 +10,7 @@ namespace SharpX.Examples.ShaderLab
     {
         [Function("vs")]
         [VertexMain]
-        public Vertex2Fragment VertexMain(AppDataFull v)
+        public Vertex2Geometry VertexMain(AppDataFull v)
         {
             return new()
             {

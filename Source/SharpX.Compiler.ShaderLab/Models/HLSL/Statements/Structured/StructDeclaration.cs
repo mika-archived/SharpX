@@ -3,7 +3,7 @@
 using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.Composition.Interfaces;
 
-namespace SharpX.Compiler.ShaderLab.Models.HLSL
+namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements.Structured
 {
     internal class StructDeclaration : IStructuredComponent
     {

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using Microsoft.CodeAnalysis.CSharp;
+
 using SharpX.Compiler.Composition.Enums;
 using SharpX.Compiler.Composition.Interfaces;
 
@@ -13,6 +15,9 @@ namespace SharpX.Compiler.Models.Plugin
         private readonly Dictionary<WellKnownSyntax, List<(Action<ILanguageSyntaxActionContext> Action, Func<ILanguageSyntaxActionContext, bool> Predicator)>> _beforeActions;
         private readonly Dictionary<string, string> _extensionsMappings;
         private readonly Dictionary<string, Func<ISourceContextGeneratorArgs, ISourceContext>> _generatorMappings;
+        private readonly List<Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker>> _walkers;
+
+        public IReadOnlyCollection<Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker>> Walkers => _walkers.AsReadOnly();
 
         public LanguageBackendContext()
         {
@@ -20,6 +25,7 @@ namespace SharpX.Compiler.Models.Plugin
             _beforeActions = new Dictionary<WellKnownSyntax, List<(Action<ILanguageSyntaxActionContext> Action, Func<ILanguageSyntaxActionContext, bool> Predicator)>>();
             _extensionsMappings = new Dictionary<string, string>();
             _generatorMappings = new Dictionary<string, Func<ISourceContextGeneratorArgs, ISourceContext>>();
+            _walkers = new List<Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker>>();
         }
 
         public void RegisterExtension(string extension)
@@ -56,6 +62,11 @@ namespace SharpX.Compiler.Models.Plugin
                 _afterActions[syntax].Add((action, predicate ?? DefaultPredicator));
             else
                 _afterActions.Add(syntax, new List<(Action<ILanguageSyntaxActionContext> Action, Func<ILanguageSyntaxActionContext, bool> Predicator)> { (action, predicate ?? DefaultPredicator) });
+        }
+
+        public void RegisterCSharpSyntaxWalker(Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker> generator)
+        {
+            _walkers.Add(generator);
         }
 
         public string GetExtensionFor<T>()

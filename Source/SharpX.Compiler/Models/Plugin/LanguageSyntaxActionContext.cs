@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -30,6 +31,7 @@ namespace SharpX.Compiler.Models.Plugin
             ShouldStopPropagation = false;
             ShouldStopPropagationIncludingSiblingActions = false;
             ShouldUseDefaultVisit = true;
+            ContextStore = new Dictionary<string, object>();
         }
 
         public SemanticModel SemanticModel { get; }
@@ -37,6 +39,8 @@ namespace SharpX.Compiler.Models.Plugin
         public CSharpSyntaxNode Node { get; }
 
         public ISourceContext SourceContext { get; private set; }
+
+        public Dictionary<string, object> ContextStore { get; }
 
         public AddOnlyCollection<IError> Errors { get; }
 

@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 
 using SharpX.Compiler.Composition.Abstractions;
+using SharpX.Compiler.ShaderLab.Models.HLSL.ScopeVerifiers;
+using SharpX.Compiler.ShaderLab.Models.HLSL.Statements.Structured;
 
 namespace SharpX.Compiler.ShaderLab.Models.HLSL
 {
@@ -45,6 +47,14 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             EnterToNewScope(new HLSLFunctionDefinitionScope(Scope));
 
             FunctionDeclaration = new FunctionDeclaration(name, returns);
+            FunctionDependencyTree.Add(FunctionDeclaration.Name, new List<string>());
+        }
+
+        public void AddDependencyTree(string name)
+        {
+            VerifyCurrentScope<HLSLFunctionDefinitionScope>();
+
+            FunctionDependencyTree[FunctionDeclaration!.Name].Add(name);
         }
 
         public void CloseFunction()
@@ -55,6 +65,11 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             FunctionDeclaration = null;
 
             GetOutFromCurrentScope();
+        }
+
+        public void AddRawFunction(FunctionDeclaration declaration)
+        {
+            _sb.AddFunction(declaration);
         }
 
         #endregion

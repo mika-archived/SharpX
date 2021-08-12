@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Microsoft.CodeAnalysis.CSharp;
+
 using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.Composition.Enums;
 using SharpX.Compiler.Composition.Interfaces;
@@ -49,6 +51,11 @@ namespace SharpX.Compiler.Models
             if (HasContext<T>(name, out var fullName))
                 return _contexts[fullName];
             throw new ArgumentException($"{fullName} is not found in context");
+        }
+
+        public IReadOnlyCollection<Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker>> GetProvidedWalkers()
+        {
+            return CurrentLanguageBackendContext.Walkers;
         }
 
         public List<(Action<ILanguageSyntaxActionContext> Action, Func<ILanguageSyntaxActionContext, bool> Predicator)> GetPreSyntaxActions(WellKnownSyntax syntax)

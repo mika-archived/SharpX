@@ -1,4 +1,5 @@
 ﻿using SharpX.Compiler.Composition.Abstractions;
+using SharpX.Compiler.ShaderLab.Models.HLSL.Statements.Structured;
 
 namespace SharpX.Compiler.ShaderLab.Models.HLSL
 {

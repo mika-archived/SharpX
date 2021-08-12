@@ -1,6 +1,6 @@
 ﻿using SharpX.Compiler.Composition.Abstractions;
 
-namespace SharpX.Compiler.ShaderLab.Models.HLSL
+namespace SharpX.Compiler.ShaderLab.Models.HLSL.ScopeVerifiers
 {
     // ReSharper disable once InconsistentNaming
     internal class HLSLFunctionDefinitionScope : ContextScope

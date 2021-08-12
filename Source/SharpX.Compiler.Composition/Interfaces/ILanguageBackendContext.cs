@@ -1,5 +1,7 @@
 ﻿using System;
 
+using Microsoft.CodeAnalysis.CSharp;
+
 using SharpX.Compiler.Composition.Enums;
 
 namespace SharpX.Compiler.Composition.Interfaces
@@ -51,5 +53,11 @@ namespace SharpX.Compiler.Composition.Interfaces
         /// <param name="action"></param>
         /// <param name="predicate"></param>
         void RegisterPostSyntaxAction(WellKnownSyntax syntax, Action<ILanguageSyntaxActionContext> action, Func<ILanguageSyntaxActionContext, bool>? predicate = null);
+
+        /// <summary>
+        ///     Register your own CSharpSyntaxWalker and use it.
+        /// </summary>
+        /// <param name="generator"></param>
+        void RegisterCSharpSyntaxWalker(Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker> generator);
     }
 }

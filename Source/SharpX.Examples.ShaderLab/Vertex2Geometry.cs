@@ -3,9 +3,9 @@ using SharpX.Library.ShaderLab.Primitives;
 
 namespace SharpX.Examples.ShaderLab
 {
-    [Component("v2f")]
+    [Component("v2g")]
     [Export("core.{extension}")]
-    public class Vertex2Fragment
+    public class Vertex2Geometry
     {
         [Semantic("SV_POSITION")]
         [Property("vertex")]

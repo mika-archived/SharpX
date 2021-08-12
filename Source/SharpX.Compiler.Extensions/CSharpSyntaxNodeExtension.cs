@@ -45,5 +45,10 @@ namespace SharpX.Compiler.Extensions
             var t = model.Compilation.GetTypeByMetadataName(s.FullName ?? throw new InvalidOperationException());
             return inherits.Any(w => w?.Equals(t, SymbolEqualityComparer.Default) == true);
         }
+
+        public static bool HasModifiers(this MemberDeclarationSyntax obj, SyntaxKind token)
+        {
+            return obj.Modifiers.Any(w => w.Kind() == token);
+        }
     }
 }
