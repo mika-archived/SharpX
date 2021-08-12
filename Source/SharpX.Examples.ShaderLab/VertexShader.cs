@@ -8,13 +8,16 @@ namespace SharpX.Examples.ShaderLab
     [Export("vert.{extension}")]
     public class VertexShader
     {
-        public SlInt HelloWorld() => 1;
+        public SlInt HelloWorld()
+        {
+            return 1;
+        }
 
         [Function("vs")]
         [VertexMain]
         public Vertex2Geometry VertexMain(AppDataFull v)
         {
-            return new()
+            var o = new Vertex2Geometry
             {
                 Vertex = UnityCg.UnityObjectToClipPos(v.Vertex),
                 Normal = UnityCg.UnityObjectToWorldNormal(v.Normal),
@@ -22,6 +25,8 @@ namespace SharpX.Examples.ShaderLab
                 WorldPos = Builtin.Mul<SlFloat3>(UnityCg.UnityObjectToWorld, v.Vertex),
                 LocalPos = v.Vertex.XYZ
             };
+
+            return o;
         }
     }
 }

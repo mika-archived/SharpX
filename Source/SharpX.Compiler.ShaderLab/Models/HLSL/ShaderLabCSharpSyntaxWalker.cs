@@ -24,6 +24,8 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
         public Stack<WellKnownSyntax> CapturingStack { get; }
 
+        public INestableStatement? Statement { get; internal set; }
+
         public ShaderLabCSharpSyntaxWalker(ILanguageSyntaxWalkerContext context) : base(SyntaxWalkerDepth.Token)
         {
             _context = context;
@@ -213,6 +215,30 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 }
         }
 
+        public override void VisitReturnStatement(ReturnStatementSyntax node)
+        {
+            var declaration = _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.FunctionDeclaration;
+            if (declaration == null)
+                return;
+
+            if (declaration.PopLastSourcePartIfAvailable<Block>(out var block))
+                using (var scope = SyntaxCaptureScope<ReturnStatement>.Create(this, WellKnownSyntax.ReturnStatementSyntax, new ReturnStatement()))
+                {
+                    Visit(node.Expression);
+                    block.AddSourcePart(scope.Statement);
+                }
+        }
+
+        public override void VisitLiteralExpression(LiteralExpressionSyntax node)
+        {
+            var declaration = _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.FunctionDeclaration;
+            if (declaration == null)
+                return;
+
+            if (CurrentCapturing == WellKnownSyntax.ReturnStatementSyntax)
+                Statement!.AddSourcePart(new Span(node.ToFullString()));
+        }
+
         private void VisitTypeDeclaration(TypeDeclarationSyntax node)
         {
             var declarator = TypeDeclarationDeclarator.Create(node, _context.SemanticModel);
@@ -296,5 +322,39 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                     _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.CloseStruct();
             }
         }
+
+        #region Unsupported Syntaxes
+
+        public override void VisitAwaitExpression(AwaitExpressionSyntax node)
+        {
+            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support async-await expressions"));
+        }
+
+        public override void VisitTryStatement(TryStatementSyntax node)
+        {
+            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support try-catch(-finally) statements"));
+        }
+
+        public override void VisitCatchClause(CatchClauseSyntax node)
+        {
+            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support try-catch(-finally) statements"));
+        }
+
+        public override void VisitCatchDeclaration(CatchDeclarationSyntax node)
+        {
+            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support try-catch(-finally) statements"));
+        }
+
+        public override void VisitCatchFilterClause(CatchFilterClauseSyntax node)
+        {
+            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support try-catch(-finally) statements"));
+        }
+
+        public override void VisitFinallyClause(FinallyClauseSyntax node)
+        {
+            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support try-catch(-finally) statements"));
+        }
+
+        #endregion
     }
 }

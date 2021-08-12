@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 using SharpX.Compiler.Composition.Abstractions;
@@ -68,7 +69,20 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements.Structured
             _statements.Add(statement);
         }
 
-        public bool PopLastSourcePartIfAvailable<T>(out T? s) where T : INestableStatement
+        public bool PopLastSourcePartIfAvailable([NotNullWhen(true)] out INestableStatement? s)
+        {
+            var statement = _statements.Last();
+            if (statement is INestableStatement nestable)
+            {
+                s = nestable;
+                return true;
+            }
+
+            s = default;
+            return false;
+        }
+
+        public bool PopLastSourcePartIfAvailable<T>([NotNullWhen(true)] out T? s) where T : INestableStatement
         {
             var statement = _statements.Last();
             if (statement is T nestable)
