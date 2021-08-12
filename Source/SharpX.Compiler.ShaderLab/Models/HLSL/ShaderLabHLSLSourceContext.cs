@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.ShaderLab.Models.HLSL.ScopeVerifiers;
@@ -42,6 +43,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
         #region Function
 
+        [MemberNotNull(nameof(FunctionDeclaration))]
         public void OpenFunction(string name, string returns)
         {
             EnterToNewScope(new HLSLFunctionDefinitionScope(Scope));

@@ -4,16 +4,17 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 using SharpX.Compiler.Extensions;
+using SharpX.Compiler.ShaderLab.Models.HLSL.Captures;
 using SharpX.Library.ShaderLab.Attributes;
 
-namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
+namespace SharpX.Compiler.ShaderLab.Models.HLSL.Declarators
 {
-    internal class PropertyDeclarationCapture
+    internal class PropertyDeclarationDeclarator
     {
         private readonly SemanticModel _model;
         private readonly PropertyDeclarationSyntax _node;
 
-        public PropertyDeclarationCapture(PropertyDeclarationSyntax node, SemanticModel model)
+        public PropertyDeclarationDeclarator(PropertyDeclarationSyntax node, SemanticModel model)
         {
             _node = node;
             _model = model;

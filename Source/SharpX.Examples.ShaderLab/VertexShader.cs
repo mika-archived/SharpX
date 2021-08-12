@@ -8,6 +8,8 @@ namespace SharpX.Examples.ShaderLab
     [Export("vert.{extension}")]
     public class VertexShader
     {
+        public SlInt HelloWorld() => 1;
+
         [Function("vs")]
         [VertexMain]
         public Vertex2Geometry VertexMain(AppDataFull v)

@@ -11,21 +11,23 @@ using SharpX.Compiler.Composition.Interfaces;
 using SharpX.Compiler.Extensions;
 using SharpX.Compiler.ShaderLab.Models.HLSL.Captures;
 using SharpX.Compiler.ShaderLab.Models.HLSL.Declarators;
+using SharpX.Compiler.ShaderLab.Models.HLSL.Statements;
 using SharpX.Library.ShaderLab.Attributes;
 
 namespace SharpX.Compiler.ShaderLab.Models.HLSL
 {
     public class ShaderLabCSharpSyntaxWalker : CSharpSyntaxWalker
     {
-        private readonly Stack<WellKnownSyntax> _capturing;
         private readonly ILanguageSyntaxWalkerContext _context;
 
-        public WellKnownSyntax? CurrentCapturing => _capturing.Count > 0 ? _capturing.Peek() : null;
+        public WellKnownSyntax? CurrentCapturing => CapturingStack.Count > 0 ? CapturingStack.Peek() : null;
+
+        public Stack<WellKnownSyntax> CapturingStack { get; }
 
         public ShaderLabCSharpSyntaxWalker(ILanguageSyntaxWalkerContext context) : base(SyntaxWalkerDepth.Token)
         {
             _context = context;
-            _capturing = new Stack<WellKnownSyntax>();
+            CapturingStack = new Stack<WellKnownSyntax>();
         }
 
         public override void DefaultVisit(SyntaxNode node)
@@ -72,7 +74,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             if (node.HasAttribute<ExternalAttribute>(_context.SemanticModel))
                 return; // skipped to transpile
 
-            var capture = new PropertyDeclarationCapture(node, _context.SemanticModel);
+            var capture = new PropertyDeclarationDeclarator(node, _context.SemanticModel);
 
             if (capture.HasAttribute<GlobalMemberAttribute>())
             {
@@ -120,7 +122,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             if (node.HasAttribute<ExternalAttribute>(_context.SemanticModel))
                 return; // skipped to transpile
 
-            var capture = new FieldDeclarationCapture(node, _context.SemanticModel);
+            var capture = new FieldDeclarationDeclarator(node, _context.SemanticModel);
 
             if (capture.HasAttribute<GlobalMemberAttribute>())
             {
@@ -152,6 +154,63 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
             _context.Warnings.Add(new DefaultError(node, "The SharpX.ShaderLab compiler will transpile without SEMANTIC specification, but this may cause the ShaderLab compiler to throw an error "));
             context.StructDeclaration.AddMember(capture.GetDeclaredType(), capture.GetIdentifierName(), null);
+        }
+
+        public override void VisitMethodDeclaration(MethodDeclarationSyntax node)
+        {
+            var declarator = new MethodDeclarationDeclarator(node, _context.SemanticModel);
+
+            if (declarator.HasAttribute<ExternalAttribute>())
+                return; // skipped to transpile
+
+            var context = _context.SourceContext.OfType<ShaderLabHLSLSourceContext>();
+            if (context == null)
+                return;
+
+            context.OpenFunction(declarator.GetIdentifierName(), declarator.GetDeclaredReturnType());
+
+            using (SyntaxCaptureScope.Create(this, WellKnownSyntax.MethodDeclarationSyntax))
+            {
+                Visit(node.ParameterList);
+
+                if (node.Body != null)
+                    Visit(node.Body);
+
+                if (node.ExpressionBody != null)
+                    using (SyntaxCaptureScope.Create(this, WellKnownSyntax.BlockSyntax))
+                    {
+                        context.FunctionDeclaration.AddSourcePart(new Block());
+                        Visit(node.ExpressionBody);
+                    }
+            }
+
+            context.CloseFunction();
+        }
+
+        public override void VisitParameter(ParameterSyntax node)
+        {
+            if (node.Type == null)
+            {
+                _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler requires the type to be specified for parameters"));
+                return;
+            }
+
+            var capture = TypeDeclarationCapture.Capture(node.Type, _context.SemanticModel);
+
+            if (CurrentCapturing == WellKnownSyntax.MethodDeclarationSyntax)
+                _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.FunctionDeclaration!.AddArgument(capture.GetActualName(), node.Identifier.ValueText);
+        }
+
+        public override void VisitBlock(BlockSyntax node)
+        {
+            if (CurrentCapturing == WellKnownSyntax.MethodDeclarationSyntax)
+                using (SyntaxCaptureScope.Create(this, WellKnownSyntax.BlockSyntax))
+                {
+                    _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.FunctionDeclaration!.AddSourcePart(new Block());
+
+                    foreach (var statement in node.Statements)
+                        Visit(statement);
+                }
         }
 
         private void VisitTypeDeclaration(TypeDeclarationSyntax node)
