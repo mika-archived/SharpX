@@ -22,14 +22,14 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
         public void Dispose()
         {
             _walker.CapturingStack.Pop();
-            _walker.Statement = null;
+            _walker.StatementStack.Pop();
         }
 
         public static SyntaxCaptureScope<T> Create(ShaderLabCSharpSyntaxWalker walker, WellKnownSyntax syntax, T statement)
         {
             var scope = new SyntaxCaptureScope<T>(walker, syntax, statement);
             scope._walker.CapturingStack.Push(syntax);
-            scope._walker.Statement = statement;
+            scope._walker.StatementStack.Push(statement);
 
             return scope;
         }
