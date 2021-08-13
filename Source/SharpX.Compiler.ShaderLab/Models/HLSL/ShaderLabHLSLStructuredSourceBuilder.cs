@@ -1,4 +1,6 @@
-﻿using SharpX.Compiler.Composition.Abstractions;
+﻿using System.Linq;
+
+using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.ShaderLab.Models.HLSL.Statements.Structured;
 
 namespace SharpX.Compiler.ShaderLab.Models.HLSL
@@ -17,7 +19,13 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
         public void AddHeaderComments() { }
 
-        public void AddHeaderInclude() { }
+        public void AddHeaderInclude(Include include)
+        {
+            if (Components.Any(w => w.Name == include.Name))
+                return;
+
+            Components.Add(include);
+        }
 
         public void AddGlobalMember(GlobalMember member)
         {

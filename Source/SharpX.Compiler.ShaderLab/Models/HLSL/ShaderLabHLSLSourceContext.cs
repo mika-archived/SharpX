@@ -24,6 +24,11 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             FunctionDependencyTree = new Dictionary<string, List<string>>();
         }
 
+        public void AddGlobalInclude(string str)
+        {
+            _sb.AddHeaderInclude(new Include(str));
+        }
+
         public void AddGlobalMember(string str)
         {
             using (DisposableContextScope.Open<GlobalMemberDeclarationScope>(this, Scope))

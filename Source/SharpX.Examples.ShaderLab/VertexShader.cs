@@ -1,4 +1,5 @@
-﻿using SharpX.Library.ShaderLab.Attributes;
+﻿using SharpX.Examples.ShaderLab.Stubs;
+using SharpX.Library.ShaderLab.Attributes;
 using SharpX.Library.ShaderLab.Functions;
 using SharpX.Library.ShaderLab.Predefined;
 using SharpX.Library.ShaderLab.Primitives;
@@ -8,9 +9,9 @@ namespace SharpX.Examples.ShaderLab
     [Export("vert.{extension}")]
     public class VertexShader
     {
-        public SlInt HelloWorld()
+        public SlFloat HelloWorld()
         {
-            return 1;
+            return Builtin.Max(Builtin.Min(1.0f, 1.0f), 1.0f);
         }
 
         [Function("vs")]

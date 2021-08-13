@@ -9,5 +9,12 @@ namespace SharpX.Compiler.Composition.Interfaces
     public interface IStatement
     {
         public void WriteTo(SourceBuilder sb);
+
+        public T? OfType<T>() where T : IStatement
+        {
+            if (this is T instance)
+                return instance;
+            return default;
+        }
     }
 }
