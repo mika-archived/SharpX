@@ -5,13 +5,15 @@ namespace SharpX.Compiler.Composition.Abstractions
     public class SourceBuilder
     {
         private readonly StringBuilder _sb;
-
         private int _indent;
+
+        public bool IsIndented { get; private set; }
 
         public SourceBuilder()
         {
             _sb = new StringBuilder();
             _indent = 0;
+            IsIndented = false;
         }
 
         public void IncrementIndent()
@@ -26,11 +28,13 @@ namespace SharpX.Compiler.Composition.Abstractions
 
         public void WriteIndent(int chars = 4)
         {
+            IsIndented = true;
             _sb.Append("".PadLeft(_indent * chars, ' '));
         }
 
         public void WriteLine(string str)
         {
+            IsIndented = false;
             _sb.AppendLine(str);
         }
 
@@ -42,6 +46,7 @@ namespace SharpX.Compiler.Composition.Abstractions
 
         public void WriteNewLine()
         {
+            IsIndented = false;
             _sb.AppendLine();
         }
 
