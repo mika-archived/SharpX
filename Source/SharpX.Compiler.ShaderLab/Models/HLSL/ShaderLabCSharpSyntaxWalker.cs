@@ -250,9 +250,12 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             if (declaration == null)
                 return;
 
-            var statement = new ReturnStatement();
-            using (SyntaxCaptureScope<ReturnStatement>.Create(this, WellKnownSyntax.ReturnStatementSyntax, statement))
+            var statement = new Statement();
+            using (var scope = SyntaxCaptureScope<ReturnStatement>.Create(this, WellKnownSyntax.ReturnStatementSyntax, new ReturnStatement()))
+            {
                 Visit(node.Expression);
+                statement.AddSourcePart(scope.Statement);
+            }
 
             Statement?.AddSourcePart(statement);
         }

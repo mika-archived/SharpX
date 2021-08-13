@@ -23,10 +23,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
             if (string.IsNullOrWhiteSpace(_identifier))
                 throw new InvalidOperationException($"missing {nameof(_identifier)}");
 
-            if (!sb.IsIndented)
-                sb.WriteSpanWithIndent(_identifier);
-            else
-                sb.WriteSpan(_identifier);
+            sb.WriteSpan(_identifier);
             sb.WriteSpan("(");
 
             foreach (var (statement, i) in _statements.Select((w, i) => (w, i)))

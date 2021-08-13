@@ -5,27 +5,25 @@ using SharpX.Compiler.Composition.Interfaces;
 
 namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
 {
-    public class ReturnStatement : INestableStatement
+    internal class Statement : INestableStatement
     {
         private readonly List<IStatement> _statements;
 
-        public ReturnStatement()
+        public Statement()
         {
             _statements = new List<IStatement>();
         }
 
         public void WriteTo(SourceBuilder sb)
         {
-            if (_statements.Count == 0)
-            {
-                sb.WriteSpan("return");
-            }
-            else
-            {
-                sb.WriteSpan("return ");
-                foreach (var statement in _statements)
-                    statement.WriteTo(sb);
-            }
+            if (!sb.IsIndented)
+                sb.WriteSpanWithIndent("");
+
+            foreach (var statement in _statements)
+                statement.WriteTo(sb);
+
+            sb.WriteSpan(";");
+            sb.WriteNewLine();
         }
 
         public void AddSourcePart(INestableStatement statement)
