@@ -24,17 +24,45 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
         public Stack<WellKnownSyntax> CapturingStack { get; }
 
-        public INestableStatement? Statement { get; internal set; }
+        public Stack<INestableStatement> StatementStack { get; }
+
+        public INestableStatement? Statement => StatementStack.Count > 0 ? StatementStack.Peek() : null;
 
         public ShaderLabCSharpSyntaxWalker(ILanguageSyntaxWalkerContext context) : base(SyntaxWalkerDepth.Token)
         {
             _context = context;
             CapturingStack = new Stack<WellKnownSyntax>();
+            StatementStack = new Stack<INestableStatement>();
         }
 
         public override void DefaultVisit(SyntaxNode node)
         {
             base.DefaultVisit(node);
+        }
+
+        public override void VisitIdentifierName(IdentifierNameSyntax node)
+        {
+            var reference = _context.SemanticModel.GetSymbolInfo(node);
+            switch (reference.Symbol)
+            {
+                case ITypeSymbol t:
+                {
+                    var capture = TypeDeclarationCapture.Capture(t, _context.SemanticModel);
+                    if (capture.HasAttribute<IncludeAttribute>())
+                    {
+                        var attr = capture.GetAttribute<IncludeAttribute>();
+                        _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.AddGlobalInclude(attr!.FileName);
+                    }
+
+                    break;
+                }
+
+                case INamespaceOrTypeSymbol:
+
+                    // NOTHING TO DO
+                    break;
+
+            }
         }
 
         public override void VisitClassDeclaration(ClassDeclarationSyntax node)
@@ -179,10 +207,11 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                     Visit(node.Body);
 
                 if (node.ExpressionBody != null)
-                    using (SyntaxCaptureScope.Create(this, WellKnownSyntax.BlockSyntax))
+                    using (var scope = SyntaxCaptureScope<Block>.Create(this, WellKnownSyntax.BlockSyntax, new Block()))
                     {
-                        context.FunctionDeclaration.AddSourcePart(new Block());
                         Visit(node.ExpressionBody);
+
+                        context.FunctionDeclaration.AddSourcePart(scope.Statement);
                     }
             }
 
@@ -206,12 +235,12 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
         public override void VisitBlock(BlockSyntax node)
         {
             if (CurrentCapturing == WellKnownSyntax.MethodDeclarationSyntax)
-                using (SyntaxCaptureScope.Create(this, WellKnownSyntax.BlockSyntax))
+                using (var scope = SyntaxCaptureScope<Block>.Create(this, WellKnownSyntax.BlockSyntax, new Block()))
                 {
-                    _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.FunctionDeclaration!.AddSourcePart(new Block());
-
                     foreach (var statement in node.Statements)
                         Visit(statement);
+
+                    _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.FunctionDeclaration!.AddSourcePart(scope.Statement);
                 }
         }
 
@@ -221,22 +250,43 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             if (declaration == null)
                 return;
 
-            if (declaration.PopLastSourcePartIfAvailable<Block>(out var block))
-                using (var scope = SyntaxCaptureScope<ReturnStatement>.Create(this, WellKnownSyntax.ReturnStatementSyntax, new ReturnStatement()))
-                {
-                    Visit(node.Expression);
-                    block.AddSourcePart(scope.Statement);
-                }
+            var statement = new ReturnStatement();
+            using (SyntaxCaptureScope<ReturnStatement>.Create(this, WellKnownSyntax.ReturnStatementSyntax, statement))
+                Visit(node.Expression);
+
+            Statement?.AddSourcePart(statement);
+        }
+
+        public override void VisitInvocationExpression(InvocationExpressionSyntax node)
+        {
+            var function = new FunctionCall();
+
+            using (SyntaxCaptureScope<FunctionCall>.Create(this, WellKnownSyntax.InvocationExpressionSyntax, function))
+            {
+                Visit(node.Expression);
+                Visit(node.ArgumentList);
+            }
+
+            Statement?.AddSourcePart(function);
+        }
+
+        public override void VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
+        {
+            var s = _context.SemanticModel.GetSymbolInfo(node);
+            if (s.Symbol is IMethodSymbol m)
+            {
+                var capture = new MethodSymbolCapture(m, _context.SemanticModel);
+                Statement?.OfType<FunctionCall>()?.AddIdentifier(capture.GetIdentifierName());
+
+                Visit(node.Expression);
+            }
         }
 
         public override void VisitLiteralExpression(LiteralExpressionSyntax node)
         {
-            var declaration = _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.FunctionDeclaration;
-            if (declaration == null)
-                return;
-
-            if (CurrentCapturing == WellKnownSyntax.ReturnStatementSyntax)
-                Statement!.AddSourcePart(new Span(node.ToFullString()));
+            var value = _context.SemanticModel.GetConstantValue(node);
+            if (value.HasValue)
+                Statement?.AddSourcePart(new Span(value!.Value!.ToString()!));
         }
 
         private void VisitTypeDeclaration(TypeDeclarationSyntax node)
