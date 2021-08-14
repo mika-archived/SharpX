@@ -104,15 +104,18 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
         public override void VisitInvocationExpression(InvocationExpressionSyntax node)
         {
-            var function = new FunctionCall("");
-
-            using (SyntaxCaptureScope<FunctionCall>.Create(this, WellKnownSyntax.InvocationExpressionSyntax, function))
+            var info = _context.SemanticModel.GetSymbolInfo(node.Expression);
+            if (info.Symbol is IMethodSymbol symbol)
             {
-                Visit(node.Expression);
-                Visit(node.ArgumentList);
-            }
+                var capture = new MethodSymbolCapture(symbol, _context.SemanticModel);
+                if (capture.HasAttribute<CompilerAnnotatedAttribute>())
+                    return;
 
-            Statement?.AddSourcePart(function);
+                var function = new FunctionCall(capture.GetIdentifierName());
+                using (SyntaxCaptureScope<FunctionCall>.Create(this, WellKnownSyntax.InvocationExpressionSyntax, function))
+                    Visit(node.ArgumentList);
+                Statement?.AddSourcePart(function);
+            }
         }
 
         public override void VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
@@ -384,7 +387,25 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             if (CurrentCapturing == WellKnownSyntax.MethodDeclarationSyntax)
             {
                 ProcessInclude(capture);
-                _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.FunctionDeclaration!.AddArgument(capture.GetActualName(), node.Identifier.ValueText);
+
+                var type = capture.GetActualName();
+                var name = node.Identifier.ValueText;
+
+                if (capture.IsArray())
+                {
+                    var attr = node.GetAttribute<InputPrimitiveAttribute>(_context.SemanticModel);
+                    if (attr == null)
+                    {
+                        name = $"{node.Identifier.ValueText}[]";
+                    }
+                    else
+                    {
+                        type = $"{attr.Primitives.ToString().ToLowerInvariant()} {capture.GetActualName()}";
+                        name = $"{node.Identifier.ValueText}[{attr.Primitives.GetArrayElement()}]";
+                    }
+                }
+
+                _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.FunctionDeclaration!.AddArgument(type, name);
             }
         }
 

@@ -74,14 +74,57 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
                 var attr = GetAttribute<ComponentAttribute>();
                 if (attr != null && attr.IsValidName())
                     return attr.Name;
+                if (attr != null && attr.HasGenericName())
+                {
+                    var generics = _captured switch
+                    {
+                        CapturedAs.Info => _info!.Value.Type as INamedTypeSymbol,
+                        CapturedAs.Symbol => _symbol! as INamedTypeSymbol,
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+
+                    if (generics != null)
+                        return attr.GetActualName(Capture(generics.TypeArguments.First(), _model).GetActualName());
+                }
             }
 
-            return _captured switch
+            var symbol = _captured switch
             {
-                CapturedAs.Info => _info!.Value.Type?.Name ?? "",
-                CapturedAs.Symbol => _symbol!.Name,
+                CapturedAs.Info => _info!.Value.Type as INamedTypeSymbol,
+                CapturedAs.Symbol => _symbol! as INamedTypeSymbol,
                 _ => throw new ArgumentOutOfRangeException()
             };
+
+            // enums
+            if (symbol?.EnumUnderlyingType != null)
+                return "int";
+            if (symbol?.Name == "Void")
+                return "void";
+
+            // arrays
+            var array = _captured switch
+            {
+                CapturedAs.Info => _info!.Value.Type as IArrayTypeSymbol,
+                CapturedAs.Symbol => _symbol! as IArrayTypeSymbol,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            if (array != null)
+                return $"{Capture(array.ElementType, _model).GetActualName()}";
+
+            return "void /* UNKNOWN */";
+        }
+
+        public bool IsArray()
+        {
+            var array = _captured switch
+            {
+                CapturedAs.Info => _info!.Value.Type as IArrayTypeSymbol,
+                CapturedAs.Symbol => _symbol! as IArrayTypeSymbol,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            return array != null;
         }
 
         public bool HasAttribute<T>() where T : Attribute

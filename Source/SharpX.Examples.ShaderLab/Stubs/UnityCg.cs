@@ -14,6 +14,9 @@ namespace SharpX.Examples.ShaderLab.Stubs
         public static extern SlFloat4 UnityObjectToClipPos(SlFloat4 a);
 
         [External]
+        public static extern SlFloat4 UnityWorldToClipPos(SlFloat3 a);
+
+        [External]
         public static extern SlFloat3 UnityObjectToWorldNormal(SlFloat3 a);
 
         [Function("TRANSFORM_TEX")]

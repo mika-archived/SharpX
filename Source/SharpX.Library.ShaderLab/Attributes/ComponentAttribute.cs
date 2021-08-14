@@ -10,6 +10,7 @@ namespace SharpX.Library.ShaderLab.Attributes
     public class ComponentAttribute : Attribute
     {
         private static readonly Regex ValidComponentNameRegex = new("^[a-zA-Z_][a-zA-Z0-9_]*$", RegexOptions.Compiled);
+        private static readonly Regex HasGenericNameRegex = new("<&[A-Z][A-Za-z0-9]*>", RegexOptions.Compiled);
 
         public string? Name { get; }
 
@@ -24,6 +25,21 @@ namespace SharpX.Library.ShaderLab.Attributes
             if (string.IsNullOrWhiteSpace(Name))
                 return false;
             return ValidComponentNameRegex.IsMatch(Name);
+        }
+
+        public bool HasGenericName()
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+                return false;
+            return HasGenericNameRegex.IsMatch(Name);
+        }
+
+        public string GetActualName(string generics)
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+                return string.Empty;
+
+            return HasGenericNameRegex.Replace(Name, $"<{generics}>");
         }
     }
 }
