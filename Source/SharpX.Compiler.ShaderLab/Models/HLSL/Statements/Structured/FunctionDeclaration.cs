@@ -55,6 +55,11 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements.Structured
                 _arguments.Add(new KeyValuePair<string, string>(type, $"{name} = {@default}"));
         }
 
+        public void AddArgumentWithSemantics(string type, string name, string semantics)
+        {
+            _arguments.Add(new KeyValuePair<string, string>(type, $"{name} : {semantics}"));
+        }
+
         public void AddAttributedArgument(string attribute, string type, string name, string? @default = null)
         {
             if (string.IsNullOrWhiteSpace(@default))

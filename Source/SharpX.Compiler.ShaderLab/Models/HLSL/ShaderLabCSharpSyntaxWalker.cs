@@ -383,29 +383,39 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             }
 
             var capture = TypeDeclarationCapture.Capture(node.Type, _context.SemanticModel);
+            var context = _context.SourceContext.OfType<ShaderLabHLSLSourceContext>();
 
             if (CurrentCapturing == WellKnownSyntax.MethodDeclarationSyntax)
             {
                 ProcessInclude(capture);
 
-                var type = capture.GetActualName();
-                var name = node.Identifier.ValueText;
-
                 if (capture.IsArray())
                 {
+                    // NOTE: Is it possible to have a function that accepts an array with Semantics?
                     var attr = node.GetAttribute<InputPrimitiveAttribute>(_context.SemanticModel);
                     if (attr == null)
                     {
-                        name = $"{node.Identifier.ValueText}[]";
+                        var name = $"{node.Identifier.ValueText}[]";
+                        context?.FunctionDeclaration?.AddArgument(capture.GetActualName(), name);
                     }
                     else
                     {
-                        type = $"{attr.Primitives.ToString().ToLowerInvariant()} {capture.GetActualName()}";
-                        name = $"{node.Identifier.ValueText}[{attr.Primitives.GetArrayElement()}]";
+                        var name = $"{node.Identifier.ValueText}[{attr.Primitives.GetArrayElement()}]";
+                        context?.FunctionDeclaration?.AddAttributedArgument(attr.Primitives.ToString().ToLowerInvariant(), capture.GetActualName(), name);
                     }
                 }
+                else if (node.HasAttribute<SemanticAttribute>(_context.SemanticModel))
+                {
+                    var attr = node.GetAttribute<SemanticAttribute>(_context.SemanticModel);
+                    if (!attr!.IsValidSemantics())
+                        _context.Warnings.Add(new DefaultError(node, "The format of the string specified for Semantics is not correct"));
 
-                _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.FunctionDeclaration!.AddArgument(type, name);
+                    context?.FunctionDeclaration?.AddArgumentWithSemantics(capture.GetActualName(), node.Identifier.ValueText, attr.Semantic);
+                }
+                else
+                {
+                    context?.FunctionDeclaration!.AddArgument(capture.GetActualName(), node.Identifier.ValueText);
+                }
             }
         }
 
