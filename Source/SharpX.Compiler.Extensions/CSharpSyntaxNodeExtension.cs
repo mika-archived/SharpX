@@ -50,5 +50,18 @@ namespace SharpX.Compiler.Extensions
         {
             return obj.Modifiers.Any(w => w.Kind() == token);
         }
+
+        public static bool InParent(this SyntaxNode obj, SyntaxNode? node)
+        {
+            var r = obj;
+            while (r != null)
+            {
+                if (r == node)
+                    return true;
+                r = r.Parent;
+            }
+
+            return false;
+        }
     }
 }
