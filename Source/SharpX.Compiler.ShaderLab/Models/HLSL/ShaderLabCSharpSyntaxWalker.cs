@@ -176,6 +176,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
         public override void VisitBlock(BlockSyntax node)
         {
             if (CurrentCapturing == WellKnownSyntax.MethodDeclarationSyntax)
+            {
                 using (var scope = SyntaxCaptureScope<Block>.Create(this, WellKnownSyntax.BlockSyntax, new Block()))
                 {
                     foreach (var statement in node.Statements)
@@ -183,6 +184,19 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
                     _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.FunctionDeclaration?.AddSourcePart(scope.Statement);
                 }
+            }
+            else
+            {
+                var block = new Block();
+
+                using (SyntaxCaptureScope<Block>.Create(this, WellKnownSyntax.BlockSyntax, block))
+                {
+                    foreach (var statement in node.Statements)
+                        Visit(statement);
+                }
+
+                Statement?.AddSourcePart(block);
+            }
         }
 
         public override void VisitVariableDeclaration(VariableDeclarationSyntax node)
@@ -217,6 +231,23 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 Visit(node.Expression);
                 statement.AddSourcePart(scope.Statement);
             }
+
+            Statement?.AddSourcePart(statement);
+        }
+
+        public override void VisitIfStatement(IfStatementSyntax node)
+        {
+            var statement = new IfStatement();
+
+            using (var scope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.IfStatementSyntax, new Expression()))
+            {
+                Visit(node.Condition);
+
+                statement.AddCondition(scope.Statement);
+            }
+
+            using (SyntaxCaptureScope<IfStatement>.Create(this, WellKnownSyntax.IfStatementSyntax, statement))
+                Visit(node.Statement);
 
             Statement?.AddSourcePart(statement);
         }

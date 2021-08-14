@@ -16,6 +16,7 @@ namespace SharpX.Examples.ShaderLab
                                  Vertex2Geometry[] i, [Semantic("SV_PRIMITIVEID")] SlUint id, [InOut] ITriangleStream<Geometry2Fragment> stream)
         {
             if (!Globals.EnableVoxelization)
+            {
                 ForStatement.AttributedFor("unroll", () =>
                 {
                     for (var j = 0; j < 3; j++)
@@ -34,7 +35,14 @@ namespace SharpX.Examples.ShaderLab
                             LocalPos = localPos
                         });
                     }
+
+                    stream.RestartStrip();
                 });
+
+                return;
+            }
+
+            stream.RestartStrip();
         }
     }
 }
