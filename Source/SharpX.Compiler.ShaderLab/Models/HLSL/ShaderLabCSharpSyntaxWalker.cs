@@ -252,6 +252,25 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 }
         }
 
+        public override void VisitAssignmentExpression(AssignmentExpressionSyntax node)
+        {
+            Assignment assignment;
+
+            using (var leftScope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.AssignmentExpressionSyntax, new Expression()))
+            {
+                Visit(node.Left);
+
+                using (var rightScope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.AssignmentExpressionSyntax, new Expression()))
+                {
+                    Visit(node.Right);
+
+                    assignment = new Assignment(node.OperatorToken.ValueText, leftScope.Statement, rightScope.Statement);
+                }
+            }
+
+            Statement?.AddSourcePart(assignment);
+        }
+
         public override void VisitInitializerExpression(InitializerExpressionSyntax node)
         {
             foreach (var expression in node.Expressions)
