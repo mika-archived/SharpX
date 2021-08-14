@@ -47,16 +47,22 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             var reference = _context.SemanticModel.GetSymbolInfo(node);
             switch (reference.Symbol)
             {
-                case ITypeSymbol t:
-                    ProcessInclude(TypeDeclarationCapture.Capture(t, _context.SemanticModel));
+                case ITypeSymbol type:
+                    ProcessInclude(TypeDeclarationCapture.Capture(type, _context.SemanticModel));
                     break;
 
                 case INamespaceOrTypeSymbol:
                     break;
 
-                case IPropertySymbol p:
+                case IParameterSymbol parameter:
                 {
-                    var capture = new PropertySymbolCapture(p, _context.SemanticModel);
+                    Statement?.AddSourcePart(new Span(parameter.Name));
+                    break;
+                }
+
+                case IPropertySymbol property:
+                {
+                    var capture = new PropertySymbolCapture(property, _context.SemanticModel);
 
                     if (CapturingStack.Contains(WellKnownSyntax.InitializerExpressionSyntax))
                         Statement?.AddSourcePart(new Span("_auto_generated_initializer_."));
@@ -64,8 +70,8 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                     break;
                 }
 
-                case ILocalSymbol l:
-                    Statement?.AddSourcePart(new Span(l.Name));
+                case ILocalSymbol local:
+                    Statement?.AddSourcePart(new Span(local.Name));
                     break;
             }
         }
@@ -112,18 +118,31 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
         public override void VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
         {
             var s = _context.SemanticModel.GetSymbolInfo(node);
-            if (s.Symbol is IMethodSymbol m)
+
+            switch (s.Symbol)
             {
-                var capture = new MethodSymbolCapture(m, _context.SemanticModel);
-                Statement?.OfType<FunctionCall>()?.AddIdentifier(capture.GetIdentifierName());
+                case IMethodSymbol m:
+                {
+                    var capture = new MethodSymbolCapture(m, _context.SemanticModel);
+                    Statement?.OfType<FunctionCall>()?.AddIdentifier(capture.GetIdentifierName());
 
-                Visit(node.Expression);
+                    Visit(node.Expression);
+                    break;
+                }
+
+                case IPropertySymbol p:
+                {
+                    var memberAccess = new MemberAccess();
+                    using (SyntaxCaptureScope<MemberAccess>.Create(this, WellKnownSyntax.MemberAccessExpressionSyntax, memberAccess))
+                        Visit(node.Expression);
+
+                    var capture = new PropertySymbolCapture(p, _context.SemanticModel);
+                    memberAccess.AddSourcePart(new Span(capture.GetIdentifierName()));
+                    Statement?.AddSourcePart(memberAccess);
+
+                    break;
+                }
             }
-        }
-
-        public override void VisitArgument(ArgumentSyntax node)
-        {
-            base.VisitArgument(node);
         }
 
         public override void VisitInitializerExpression(InitializerExpressionSyntax node)
