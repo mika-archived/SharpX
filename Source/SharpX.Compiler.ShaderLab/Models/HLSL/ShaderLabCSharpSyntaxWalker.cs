@@ -157,73 +157,17 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             }
         }
 
+        public override void VisitImplicitObjectCreationExpression(ImplicitObjectCreationExpressionSyntax node)
+        {
+            var t = _context.SemanticModel.GetTypeInfo(node);
+            var capture = TypeDeclarationCapture.Capture(t, _context.SemanticModel);
+            VisitObjectCreation(node, capture);
+        }
+
         public override void VisitObjectCreationExpression(ObjectCreationExpressionSyntax node)
         {
             var capture = TypeDeclarationCapture.Capture(node.Type, _context.SemanticModel);
-            if (node.Initializer == null)
-            {
-                if (capture.HasAttribute<ExternalAttribute>() && capture.GetConstructors().Any(w => w.HasAttribute<ConstructorAttribute>()))
-                {
-                    // allowed constructors
-                    var constructor = new Constructor(capture.GetActualName());
-                    using (SyntaxCaptureScope<Constructor>.Create(this, WellKnownSyntax.ObjectCreationExpressionSyntax, constructor))
-                        Visit(node.ArgumentList);
-
-                    Statement?.AddSourcePart(constructor);
-                }
-                else
-                {
-                    _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab only allows externally defined constructors. Use Initializer instead of constructor to initialize self-defined structures"));
-                }
-            }
-            else
-            {
-                if (node.ArgumentList != null)
-                    _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab does not allow you to use Initializer and constructor at the same time"));
-
-                if (CapturingStack.Contains(WellKnownSyntax.ObjectCreationExpressionSyntax))
-                    _context.Errors.Add(new DefaultError(node, "Initializer cannot be nested in SharpX.ShaderLab at this time"));
-
-                var context = _context.SourceContext.OfType<ShaderLabHLSLSourceContext>();
-
-                // create a internal function for initialize user-defined struct
-                var constructor = Naming.GetSafeName($"internal_constructor_{capture.GetActualName()}");
-                context?.OpenFunction(constructor, capture.GetActualName());
-
-                var arguments = new List<ISymbol>();
-                foreach (var symbol in _context.SemanticModel.LookupSymbols(node.SpanStart).Where(w => w is ILocalSymbol or IParameterSymbol).ToList())
-                    if (symbol.DeclaringSyntaxReferences.All(w => !node.InParent(w.GetSyntax())))
-                    {
-                        var t = symbol switch
-                        {
-                            ILocalSymbol l => l.Type,
-                            IParameterSymbol p => p.Type,
-                            _ => throw new ArgumentOutOfRangeException()
-                        };
-
-                        var c = TypeDeclarationCapture.Capture(t, _context.SemanticModel);
-                        context?.FunctionDeclaration?.AddArgument(c.GetActualName(), symbol.Name);
-                        arguments.Add(symbol);
-                    }
-
-                using (var scope = SyntaxCaptureScope<Block>.Create(this, WellKnownSyntax.ObjectCreationExpressionSyntax, new Block()))
-                {
-                    scope.Statement.AddSourcePart(new VariableDeclaration(capture.GetActualName(), "_auto_generated_initializer_", new Span($"({capture.GetActualName()}) 0")).IntoStatement());
-                    Visit(node.Initializer);
-                    scope.Statement.AddSourcePart(new ReturnStatement(new Span("_auto_generated_initializer_")).IntoStatement());
-
-                    context?.FunctionDeclaration?.AddSourcePart(scope.Statement);
-                }
-
-                context?.CloseFunction();
-
-                var call = new FunctionCall(constructor);
-                foreach (var argument in arguments)
-                    call.AddSourcePart(new Span(argument.Name));
-                Statement?.AddSourcePart(call);
-
-                context?.AddDependencyTree(constructor);
-            }
+            VisitObjectCreation(node, capture);
         }
 
         public override void VisitBlock(BlockSyntax node)
@@ -452,6 +396,74 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             {
                 var attr = capture.GetAttribute<IncludeAttribute>();
                 _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.AddGlobalInclude(attr!.FileName);
+            }
+        }
+
+        private void VisitObjectCreation(BaseObjectCreationExpressionSyntax node, TypeDeclarationCapture capture)
+        {
+            if (node.Initializer == null)
+            {
+                if (capture.HasAttribute<ExternalAttribute>() && capture.GetConstructors().Any(w => w.HasAttribute<ConstructorAttribute>()))
+                {
+                    // allowed constructors
+                    var constructor = new Constructor(capture.GetActualName());
+                    using (SyntaxCaptureScope<Constructor>.Create(this, WellKnownSyntax.ObjectCreationExpressionSyntax, constructor))
+                        Visit(node.ArgumentList);
+
+                    Statement?.AddSourcePart(constructor);
+                }
+                else
+                {
+                    _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab only allows externally defined constructors. Use Initializer instead of constructor to initialize self-defined structures"));
+                }
+            }
+            else
+            {
+                if (node.ArgumentList?.Arguments.Count > 0)
+                    _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab does not allow you to use Initializer and constructor at the same time"));
+
+                if (CapturingStack.Contains(WellKnownSyntax.ObjectCreationExpressionSyntax))
+                    _context.Errors.Add(new DefaultError(node, "Initializer cannot be nested in SharpX.ShaderLab at this time"));
+
+                var context = _context.SourceContext.OfType<ShaderLabHLSLSourceContext>();
+
+                // create a internal function for initialize user-defined struct
+                var constructor = Naming.GetSafeName($"internal_constructor_{capture.GetActualName()}");
+                context?.OpenFunction(constructor, capture.GetActualName());
+
+                var arguments = new List<ISymbol>();
+                foreach (var symbol in _context.SemanticModel.LookupSymbols(node.SpanStart).Where(w => w is ILocalSymbol or IParameterSymbol).ToList())
+                    if (symbol.DeclaringSyntaxReferences.All(w => !node.InParent(w.GetSyntax())))
+                    {
+                        var s = symbol switch
+                        {
+                            ILocalSymbol l => l.Type,
+                            IParameterSymbol p => p.Type,
+                            _ => throw new ArgumentOutOfRangeException()
+                        };
+
+                        var c = TypeDeclarationCapture.Capture(s, _context.SemanticModel);
+                        context?.FunctionDeclaration?.AddArgument(c.GetActualName(), symbol.Name);
+                        arguments.Add(symbol);
+                    }
+
+                using (var scope = SyntaxCaptureScope<Block>.Create(this, WellKnownSyntax.ObjectCreationExpressionSyntax, new Block()))
+                {
+                    scope.Statement.AddSourcePart(new VariableDeclaration(capture.GetActualName(), "_auto_generated_initializer_", new Span($"({capture.GetActualName()}) 0")).IntoStatement());
+                    Visit(node.Initializer);
+                    scope.Statement.AddSourcePart(new ReturnStatement(new Span("_auto_generated_initializer_")).IntoStatement());
+
+                    context?.FunctionDeclaration?.AddSourcePart(scope.Statement);
+                }
+
+                context?.CloseFunction();
+
+                var call = new FunctionCall(constructor);
+                foreach (var argument in arguments)
+                    call.AddSourcePart(new Span(argument.Name));
+                Statement?.AddSourcePart(call);
+
+                context?.AddDependencyTree(constructor);
             }
         }
 
