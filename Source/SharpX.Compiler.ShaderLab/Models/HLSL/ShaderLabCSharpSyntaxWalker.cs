@@ -389,6 +389,18 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             {
                 ProcessInclude(capture);
 
+                var hasInOut = node.HasAttribute<InOutAttribute>(_context.SemanticModel);
+                var hasOut = node.Modifiers.Any(SyntaxKind.OutKeyword);
+
+                if (hasInOut && hasOut)
+                    _context.Errors.Add(new DefaultError(node, "The out modifier and the InOut attribute cannot be attached at the same time"));
+
+                var attribute = "";
+                if (hasInOut)
+                    attribute = "inout";
+                else if (hasOut)
+                    attribute = "out";
+
                 if (capture.IsArray())
                 {
                     // NOTE: Is it possible to have a function that accepts an array with Semantics?
@@ -396,12 +408,13 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                     if (attr == null)
                     {
                         var name = $"{node.Identifier.ValueText}[]";
-                        context?.FunctionDeclaration?.AddArgument(capture.GetActualName(), name);
+                        context?.FunctionDeclaration?.AddAttributedArgument(attribute, capture.GetActualName(), name);
                     }
                     else
                     {
                         var name = $"{node.Identifier.ValueText}[{attr.Primitives.GetArrayElement()}]";
-                        context?.FunctionDeclaration?.AddAttributedArgument(attr.Primitives.ToString().ToLowerInvariant(), capture.GetActualName(), name);
+                        attribute += $" {attr.Primitives.ToString().ToLowerInvariant()}";
+                        context?.FunctionDeclaration?.AddAttributedArgument(attribute, capture.GetActualName(), name);
                     }
                 }
                 else if (node.HasAttribute<SemanticAttribute>(_context.SemanticModel))
@@ -410,11 +423,11 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                     if (!attr!.IsValidSemantics())
                         _context.Warnings.Add(new DefaultError(node, "The format of the string specified for Semantics is not correct"));
 
-                    context?.FunctionDeclaration?.AddArgumentWithSemantics(capture.GetActualName(), node.Identifier.ValueText, attr.Semantic);
+                    context?.FunctionDeclaration?.AddAttributedArgumentWithSemantics(attribute, capture.GetActualName(), node.Identifier.ValueText, attr.Semantic);
                 }
                 else
                 {
-                    context?.FunctionDeclaration!.AddArgument(capture.GetActualName(), node.Identifier.ValueText);
+                    context?.FunctionDeclaration!.AddAttributedArgument(attribute, capture.GetActualName(), node.Identifier.ValueText);
                 }
             }
         }

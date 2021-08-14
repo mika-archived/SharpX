@@ -63,9 +63,14 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements.Structured
         public void AddAttributedArgument(string attribute, string type, string name, string? @default = null)
         {
             if (string.IsNullOrWhiteSpace(@default))
-                _arguments.Add(new KeyValuePair<string, string>($"{attribute} {type}", name));
+                _arguments.Add(new KeyValuePair<string, string>($"{attribute} {type}".Trim(), name));
             else
-                _arguments.Add(new KeyValuePair<string, string>($"{attribute} {type}", $"{name} = {@default}"));
+                _arguments.Add(new KeyValuePair<string, string>($"{attribute} {type}".Trim(), $"{name} = {@default}"));
+        }
+
+        public void AddAttributedArgumentWithSemantics(string attribute, string type, string name, string semantics)
+        {
+            _arguments.Add(new KeyValuePair<string, string>($"{attribute} {type}".Trim(), $"{name} : {semantics}"));
         }
 
         public void AddSourcePart(IStatement statement)

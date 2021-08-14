@@ -13,7 +13,7 @@ namespace SharpX.Examples.ShaderLab
         [GeometryMain]
         [MaxVertexCount(24)]
         public void GeometryMain([InputPrimitive(InputPrimitiveAttribute.InputPrimitives.Triangle)]
-                                 Vertex2Geometry[] i, [Semantic("SV_PRIMITIVEID")] SlUint id, ITriangleStream<Geometry2Fragment> stream)
+                                 Vertex2Geometry[] i, [Semantic("SV_PRIMITIVEID")] SlUint id, [InOut] ITriangleStream<Geometry2Fragment> stream)
         {
             if (!Globals.EnableVoxelization)
                 ForStatement.AttributedFor("unroll", () =>
