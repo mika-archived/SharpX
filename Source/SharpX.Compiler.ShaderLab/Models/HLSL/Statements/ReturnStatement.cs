@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.Composition.Interfaces;
@@ -12,6 +13,11 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
         public ReturnStatement()
         {
             _statements = new List<IStatement>();
+        }
+
+        public ReturnStatement(params IStatement[] statements)
+        {
+            _statements = statements.ToList();
         }
 
         public void WriteTo(SourceBuilder sb)

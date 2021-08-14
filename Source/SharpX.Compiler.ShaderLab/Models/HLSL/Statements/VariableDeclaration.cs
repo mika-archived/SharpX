@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.Composition.Interfaces;
@@ -16,6 +17,13 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
             _type = type;
             _identifier = identifier;
             _initializer = new List<IStatement>();
+        }
+
+        public VariableDeclaration(string type, string identifier, params IStatement[] initializer)
+        {
+            _type = type;
+            _identifier = identifier;
+            _initializer = initializer.ToList();
         }
 
         public void WriteTo(SourceBuilder sb)

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.Composition.Interfaces;
@@ -14,10 +15,15 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
             _statements = new List<IStatement>();
         }
 
+        public Statement(params IStatement[] statements)
+        {
+            _statements = statements.ToList();
+        }
+
         public void WriteTo(SourceBuilder sb)
         {
             if (!sb.IsIndented)
-                sb.WriteSpanWithIndent("");
+                sb.WriteIndent();
 
             foreach (var statement in _statements)
                 statement.WriteTo(sb);

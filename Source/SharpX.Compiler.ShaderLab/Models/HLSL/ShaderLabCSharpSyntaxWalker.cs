@@ -10,6 +10,7 @@ using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.Composition.Enums;
 using SharpX.Compiler.Composition.Interfaces;
 using SharpX.Compiler.Extensions;
+using SharpX.Compiler.ShaderLab.Extensions;
 using SharpX.Compiler.ShaderLab.Models.HLSL.Captures;
 using SharpX.Compiler.ShaderLab.Models.HLSL.Declarators;
 using SharpX.Compiler.ShaderLab.Models.HLSL.Statements;
@@ -57,6 +58,8 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 {
                     var capture = new PropertySymbolCapture(p, _context.SemanticModel);
 
+                    if (CapturingStack.Contains(WellKnownSyntax.InitializerExpressionSyntax))
+                        Statement?.AddSourcePart(new Span("_auto_generated_initializer_."));
                     Statement?.AddSourcePart(new Span(capture.GetIdentifierName()));
                     break;
                 }
@@ -252,12 +255,13 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
         public override void VisitInitializerExpression(InitializerExpressionSyntax node)
         {
             foreach (var expression in node.Expressions)
-                using (var scope = SyntaxCaptureScope<Statement>.Create(this, WellKnownSyntax.InitializerExpressionSyntax, new Statement()))
-                {
+            {
+                var statement = new Statement();
+                using (SyntaxCaptureScope<Statement>.Create(this, WellKnownSyntax.InitializerExpressionSyntax, statement))
                     Visit(expression);
 
-                    Statement?.AddSourcePart(scope.Statement);
-                }
+                Statement?.AddSourcePart(statement);
+            }
         }
 
         public override void VisitVariableDeclaration(VariableDeclarationSyntax node)
@@ -331,7 +335,10 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
                 using (var scope = SyntaxCaptureScope<Block>.Create(this, WellKnownSyntax.ObjectCreationExpressionSyntax, new Block()))
                 {
+                    scope.Statement.AddSourcePart(new VariableDeclaration(capture.GetActualName(), "_auto_generated_initializer_", new Span($"({capture.GetActualName()}) 0")).IntoStatement());
                     Visit(node.Initializer);
+                    scope.Statement.AddSourcePart(new ReturnStatement(new Span("_auto_generated_initializer_")).IntoStatement());
+
                     context?.FunctionDeclaration?.AddSourcePart(scope.Statement);
                 }
 
