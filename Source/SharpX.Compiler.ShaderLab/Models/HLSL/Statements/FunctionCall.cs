@@ -12,9 +12,9 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
         private readonly List<IStatement> _statements;
         private string? _identifier;
 
-        public FunctionCall()
+        public FunctionCall(string identifier)
         {
-            _identifier = null;
+            _identifier = identifier;
             _statements = new List<IStatement>();
         }
 

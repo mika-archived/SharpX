@@ -58,6 +58,15 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
             return new(symbol, model, CapturedAs.Symbol);
         }
 
+        public ImmutableArray<MethodSymbolCapture> GetConstructors()
+        {
+            var s = _captured == CapturedAs.Info ? _info!.Value.Type : _symbol;
+            if (s is INamedTypeSymbol t)
+                return t.Constructors.Select(w => new MethodSymbolCapture(w, _model)).ToImmutableArray();
+
+            return ImmutableArray<MethodSymbolCapture>.Empty;
+        }
+
         public string GetActualName()
         {
             if (HasAttribute<ComponentAttribute>())

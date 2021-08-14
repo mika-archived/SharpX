@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 using SharpX.Compiler.Composition.Abstractions;
@@ -26,7 +25,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements.Structured
 
         public int Priority { get; set; } = 40000;
 
-        public string Name => $"Function_{_name}_{_returns}__{string.Join("_", _arguments)}";
+        public string Name => $"Function_{_name}_{_returns}";
 
         public void WriteTo(SourceBuilder sb)
         {
@@ -67,32 +66,6 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements.Structured
         public void AddSourcePart(IStatement statement)
         {
             _statements.Add(statement);
-        }
-
-        public bool PopLastSourcePartIfAvailable([NotNullWhen(true)] out INestableStatement? s)
-        {
-            var statement = _statements.Last();
-            if (statement is INestableStatement nestable)
-            {
-                s = nestable;
-                return true;
-            }
-
-            s = default;
-            return false;
-        }
-
-        public bool PopLastSourcePartIfAvailable<T>([NotNullWhen(true)] out T? s) where T : INestableStatement
-        {
-            var statement = _statements.Last();
-            if (statement is T nestable)
-            {
-                s = nestable;
-                return true;
-            }
-
-            s = default;
-            return false;
         }
     }
 }

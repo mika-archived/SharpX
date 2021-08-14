@@ -10,17 +10,19 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
     // ReSharper disable once InconsistentNaming
     internal class ShaderLabHLSLSourceContext : VerifiableSourceContext
     {
+        private readonly Stack<FunctionDeclaration> _declarations;
         private readonly ShaderLabHLSLStructuredSourceBuilder _sb;
 
         public StructDeclaration? StructDeclaration { get; private set; }
 
-        public FunctionDeclaration? FunctionDeclaration { get; private set; }
+        public FunctionDeclaration? FunctionDeclaration => _declarations.Count > 0 ? _declarations.Peek() : null;
 
         public Dictionary<string, List<string>> FunctionDependencyTree { get; }
 
         public ShaderLabHLSLSourceContext()
         {
             _sb = new ShaderLabHLSLStructuredSourceBuilder();
+            _declarations = new Stack<FunctionDeclaration>();
             FunctionDependencyTree = new Dictionary<string, List<string>>();
         }
 
@@ -51,27 +53,18 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
         [MemberNotNull(nameof(FunctionDeclaration))]
         public void OpenFunction(string name, string returns)
         {
-            EnterToNewScope(new HLSLFunctionDefinitionScope(Scope));
-
-            FunctionDeclaration = new FunctionDeclaration(name, returns);
-            FunctionDependencyTree.Add(FunctionDeclaration.Name, new List<string>());
+            _declarations.Push(new FunctionDeclaration(name, returns));
+            FunctionDependencyTree.Add(FunctionDeclaration!.Name, new List<string>());
         }
 
         public void AddDependencyTree(string name)
         {
-            VerifyCurrentScope<HLSLFunctionDefinitionScope>();
-
             FunctionDependencyTree[FunctionDeclaration!.Name].Add(name);
         }
 
         public void CloseFunction()
         {
-            VerifyCurrentScope<HLSLFunctionDefinitionScope>();
-
-            _sb.AddFunction(FunctionDeclaration!);
-            FunctionDeclaration = null;
-
-            GetOutFromCurrentScope();
+            _sb.AddFunction(_declarations.Pop());
         }
 
         public void AddRawFunction(FunctionDeclaration declaration)
