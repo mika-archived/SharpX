@@ -70,12 +70,192 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             }
         }
 
-        public override void VisitClassDeclaration(ClassDeclarationSyntax node)
+        public override void VisitAssignmentExpression(AssignmentExpressionSyntax node)
         {
-            VisitTypeDeclaration(node);
+            Assignment assignment;
+
+            using (var leftScope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.AssignmentExpressionSyntax, new Expression()))
+            {
+                Visit(node.Left);
+
+                using (var rightScope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.AssignmentExpressionSyntax, new Expression()))
+                {
+                    Visit(node.Right);
+
+                    assignment = new Assignment(node.OperatorToken.ValueText, leftScope.Statement, rightScope.Statement);
+                }
+            }
+
+            Statement?.AddSourcePart(assignment);
         }
 
-        public override void VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)
+        public override void VisitLiteralExpression(LiteralExpressionSyntax node)
+        {
+            var value = _context.SemanticModel.GetConstantValue(node);
+            if (value.HasValue)
+                Statement?.AddSourcePart(new Span(value!.Value!.ToString()!));
+        }
+
+        public override void VisitInvocationExpression(InvocationExpressionSyntax node)
+        {
+            var function = new FunctionCall("");
+
+            using (SyntaxCaptureScope<FunctionCall>.Create(this, WellKnownSyntax.InvocationExpressionSyntax, function))
+            {
+                Visit(node.Expression);
+                Visit(node.ArgumentList);
+            }
+
+            Statement?.AddSourcePart(function);
+        }
+
+        public override void VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
+        {
+            var s = _context.SemanticModel.GetSymbolInfo(node);
+            if (s.Symbol is IMethodSymbol m)
+            {
+                var capture = new MethodSymbolCapture(m, _context.SemanticModel);
+                Statement?.OfType<FunctionCall>()?.AddIdentifier(capture.GetIdentifierName());
+
+                Visit(node.Expression);
+            }
+        }
+
+        public override void VisitArgument(ArgumentSyntax node)
+        {
+            base.VisitArgument(node);
+        }
+
+        public override void VisitInitializerExpression(InitializerExpressionSyntax node)
+        {
+            foreach (var expression in node.Expressions)
+            {
+                var statement = new Statement();
+                using (SyntaxCaptureScope<Statement>.Create(this, WellKnownSyntax.InitializerExpressionSyntax, statement))
+                    Visit(expression);
+
+                Statement?.AddSourcePart(statement);
+            }
+        }
+
+        public override void VisitObjectCreationExpression(ObjectCreationExpressionSyntax node)
+        {
+            var capture = TypeDeclarationCapture.Capture(node.Type, _context.SemanticModel);
+            if (node.Initializer == null)
+            {
+                if (capture.HasAttribute<ExternalAttribute>() && capture.GetConstructors().Any(w => w.HasAttribute<ConstructorAttribute>()))
+                {
+                    // allowed constructors
+                    var constructor = new Constructor(capture.GetActualName());
+                    using (SyntaxCaptureScope<Constructor>.Create(this, WellKnownSyntax.ObjectCreationExpressionSyntax, constructor))
+                        Visit(node.ArgumentList);
+
+                    Statement?.AddSourcePart(constructor);
+                }
+                else
+                {
+                    _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab only allows externally defined constructors. Use Initializer instead of constructor to initialize self-defined structures"));
+                }
+            }
+            else
+            {
+                if (node.ArgumentList != null)
+                    _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab does not allow you to use Initializer and constructor at the same time"));
+
+                if (CapturingStack.Contains(WellKnownSyntax.ObjectCreationExpressionSyntax))
+                    _context.Errors.Add(new DefaultError(node, "Initializer cannot be nested in SharpX.ShaderLab at this time"));
+
+                var context = _context.SourceContext.OfType<ShaderLabHLSLSourceContext>();
+
+                // create a internal function for initialize user-defined struct
+                var constructor = Naming.GetSafeName($"internal_constructor_{capture.GetActualName()}");
+                context?.OpenFunction(constructor, capture.GetActualName());
+
+                var arguments = new List<ISymbol>();
+                foreach (var symbol in _context.SemanticModel.LookupSymbols(node.SpanStart).Where(w => w is ILocalSymbol or IParameterSymbol).ToList())
+                    if (symbol.DeclaringSyntaxReferences.All(w => !node.InParent(w.GetSyntax())))
+                    {
+                        var t = symbol switch
+                        {
+                            ILocalSymbol l => l.Type,
+                            IParameterSymbol p => p.Type,
+                            _ => throw new ArgumentOutOfRangeException()
+                        };
+
+                        var c = TypeDeclarationCapture.Capture(t, _context.SemanticModel);
+                        context?.FunctionDeclaration?.AddArgument(c.GetActualName(), symbol.Name);
+                        arguments.Add(symbol);
+                    }
+
+                using (var scope = SyntaxCaptureScope<Block>.Create(this, WellKnownSyntax.ObjectCreationExpressionSyntax, new Block()))
+                {
+                    scope.Statement.AddSourcePart(new VariableDeclaration(capture.GetActualName(), "_auto_generated_initializer_", new Span($"({capture.GetActualName()}) 0")).IntoStatement());
+                    Visit(node.Initializer);
+                    scope.Statement.AddSourcePart(new ReturnStatement(new Span("_auto_generated_initializer_")).IntoStatement());
+
+                    context?.FunctionDeclaration?.AddSourcePart(scope.Statement);
+                }
+
+                context?.CloseFunction();
+
+                var call = new FunctionCall(constructor);
+                foreach (var argument in arguments)
+                    call.AddSourcePart(new Span(argument.Name));
+                Statement?.AddSourcePart(call);
+
+                context?.AddDependencyTree(constructor);
+            }
+        }
+
+        public override void VisitBlock(BlockSyntax node)
+        {
+            if (CurrentCapturing == WellKnownSyntax.MethodDeclarationSyntax)
+                using (var scope = SyntaxCaptureScope<Block>.Create(this, WellKnownSyntax.BlockSyntax, new Block()))
+                {
+                    foreach (var statement in node.Statements)
+                        Visit(statement);
+
+                    _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.FunctionDeclaration?.AddSourcePart(scope.Statement);
+                }
+        }
+
+        public override void VisitVariableDeclaration(VariableDeclarationSyntax node)
+        {
+            var capture = TypeDeclarationCapture.Capture(node.Type, _context.SemanticModel);
+
+            foreach (var variable in node.Variables)
+            {
+                if (variable.ArgumentList != null)
+                    _context.Errors.Add(new DefaultError(variable.ArgumentList, "SharpX.ShaderLab does not currently supports bracket argument list yet"));
+
+                var statement = new Statement();
+                using (var scope = SyntaxCaptureScope<VariableDeclaration>.Create(this, WellKnownSyntax.VariableDeclarationSyntax, new VariableDeclaration(capture.GetActualName(), variable.Identifier.ValueText)))
+                {
+                    Visit(variable.Initializer);
+                    statement.AddSourcePart(scope.Statement);
+                }
+
+                Statement?.AddSourcePart(statement);
+            }
+        }
+
+        public override void VisitReturnStatement(ReturnStatementSyntax node)
+        {
+            var declaration = _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.FunctionDeclaration;
+            if (declaration == null)
+                return;
+
+            var statement = new Statement();
+            using (var scope = SyntaxCaptureScope<ReturnStatement>.Create(this, WellKnownSyntax.ReturnStatementSyntax, new ReturnStatement()))
+            {
+                Visit(node.Expression);
+                statement.AddSourcePart(scope.Statement);
+            }
+
+            Statement?.AddSourcePart(statement);
+        }
+
+        public override void VisitClassDeclaration(ClassDeclarationSyntax node)
         {
             VisitTypeDeclaration(node);
         }
@@ -85,62 +265,14 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             VisitTypeDeclaration(node);
         }
 
-        public override void VisitRecordDeclaration(RecordDeclarationSyntax node)
+        public override void VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)
         {
             VisitTypeDeclaration(node);
         }
 
-        public override void VisitPropertyDeclaration(PropertyDeclarationSyntax node)
+        public override void VisitRecordDeclaration(RecordDeclarationSyntax node)
         {
-            var context = _context.SourceContext.OfType<ShaderLabHLSLSourceContext>();
-            if (!_context.IsContextOpened() || context == null)
-                return;
-
-            if (node.Initializer != null)
-                _context.Warnings.Add(new DefaultError(node.Initializer, "SharpX.ShaderLab Compiler does not support property initializers"));
-
-            if (node.AccessorList != null)
-                foreach (var accessor in node.AccessorList.Accessors.Where(w => w.Body != null || w.ExpressionBody != null))
-                    _context.Warnings.Add(new DefaultError(accessor, "SharpX.ShaderLab Compiler does not support property bodies / expression bodies in set/get accessors"));
-
-            if (node.ExpressionBody != null)
-                _context.Warnings.Add(new DefaultError(node.ExpressionBody, "SharpX.ShaderLab Compiler does not support property expression bodies in get accessor"));
-
-            if (node.HasAttribute<ExternalAttribute>(_context.SemanticModel))
-                return; // skipped to transpile
-
-            var capture = new PropertyDeclarationDeclarator(node, _context.SemanticModel);
-
-            if (capture.HasAttribute<GlobalMemberAttribute>())
-            {
-                if (!node.HasModifiers(SyntaxKind.StaticKeyword))
-                    _context.Warnings.Add(new DefaultError(node, "SharpX.ShaderLab Compiler recommended to declare global member as static properties or fields"));
-
-                context.AddGlobalMember(capture.GetDeclaredType(), capture.GetIdentifierName());
-                return;
-            }
-
-            if (context.StructDeclaration == null)
-            {
-                _context.Warnings.Add(new DefaultError(node, "Property declaration found outside of structure definition"));
-                return;
-            }
-
-            if (capture.HasAttribute<SemanticAttribute>())
-            {
-                if (node.HasModifiers(SyntaxKind.StaticKeyword))
-                    _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not process semantic members to be declared as static modifier"));
-
-                var attr = capture.GetAttribute<SemanticAttribute>()!;
-                if (attr.IsValidSemantics())
-                {
-                    context.StructDeclaration.AddMember(capture.GetDeclaredType(), capture.GetIdentifierName(), attr.Semantic);
-                    return;
-                }
-            }
-
-            _context.Warnings.Add(new DefaultError(node, "The SharpX.ShaderLab compiler will transpile without SEMANTIC specification, but this may cause the ShaderLab compiler to throw an error "));
-            context.StructDeclaration.AddMember(capture.GetDeclaredType(), capture.GetIdentifierName(), null);
+            VisitTypeDeclaration(node);
         }
 
         public override void VisitFieldDeclaration(FieldDeclarationSyntax node)
@@ -223,6 +355,59 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             context.CloseFunction();
         }
 
+        public override void VisitPropertyDeclaration(PropertyDeclarationSyntax node)
+        {
+            var context = _context.SourceContext.OfType<ShaderLabHLSLSourceContext>();
+            if (!_context.IsContextOpened() || context == null)
+                return;
+
+            if (node.Initializer != null)
+                _context.Warnings.Add(new DefaultError(node.Initializer, "SharpX.ShaderLab Compiler does not support property initializers"));
+
+            if (node.AccessorList != null)
+                foreach (var accessor in node.AccessorList.Accessors.Where(w => w.Body != null || w.ExpressionBody != null))
+                    _context.Warnings.Add(new DefaultError(accessor, "SharpX.ShaderLab Compiler does not support property bodies / expression bodies in set/get accessors"));
+
+            if (node.ExpressionBody != null)
+                _context.Warnings.Add(new DefaultError(node.ExpressionBody, "SharpX.ShaderLab Compiler does not support property expression bodies in get accessor"));
+
+            if (node.HasAttribute<ExternalAttribute>(_context.SemanticModel))
+                return; // skipped to transpile
+
+            var capture = new PropertyDeclarationDeclarator(node, _context.SemanticModel);
+
+            if (capture.HasAttribute<GlobalMemberAttribute>())
+            {
+                if (!node.HasModifiers(SyntaxKind.StaticKeyword))
+                    _context.Warnings.Add(new DefaultError(node, "SharpX.ShaderLab Compiler recommended to declare global member as static properties or fields"));
+
+                context.AddGlobalMember(capture.GetDeclaredType(), capture.GetIdentifierName());
+                return;
+            }
+
+            if (context.StructDeclaration == null)
+            {
+                _context.Warnings.Add(new DefaultError(node, "Property declaration found outside of structure definition"));
+                return;
+            }
+
+            if (capture.HasAttribute<SemanticAttribute>())
+            {
+                if (node.HasModifiers(SyntaxKind.StaticKeyword))
+                    _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not process semantic members to be declared as static modifier"));
+
+                var attr = capture.GetAttribute<SemanticAttribute>()!;
+                if (attr.IsValidSemantics())
+                {
+                    context.StructDeclaration.AddMember(capture.GetDeclaredType(), capture.GetIdentifierName(), attr.Semantic);
+                    return;
+                }
+            }
+
+            _context.Warnings.Add(new DefaultError(node, "The SharpX.ShaderLab compiler will transpile without SEMANTIC specification, but this may cause the ShaderLab compiler to throw an error "));
+            context.StructDeclaration.AddMember(capture.GetDeclaredType(), capture.GetIdentifierName(), null);
+        }
+
         public override void VisitParameter(ParameterSyntax node)
         {
             if (node.Type == null)
@@ -238,186 +423,6 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 ProcessInclude(capture);
                 _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.FunctionDeclaration!.AddArgument(capture.GetActualName(), node.Identifier.ValueText);
             }
-        }
-
-        public override void VisitBlock(BlockSyntax node)
-        {
-            if (CurrentCapturing == WellKnownSyntax.MethodDeclarationSyntax)
-                using (var scope = SyntaxCaptureScope<Block>.Create(this, WellKnownSyntax.BlockSyntax, new Block()))
-                {
-                    foreach (var statement in node.Statements)
-                        Visit(statement);
-
-                    _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.FunctionDeclaration?.AddSourcePart(scope.Statement);
-                }
-        }
-
-        public override void VisitAssignmentExpression(AssignmentExpressionSyntax node)
-        {
-            Assignment assignment;
-
-            using (var leftScope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.AssignmentExpressionSyntax, new Expression()))
-            {
-                Visit(node.Left);
-
-                using (var rightScope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.AssignmentExpressionSyntax, new Expression()))
-                {
-                    Visit(node.Right);
-
-                    assignment = new Assignment(node.OperatorToken.ValueText, leftScope.Statement, rightScope.Statement);
-                }
-            }
-
-            Statement?.AddSourcePart(assignment);
-        }
-
-        public override void VisitInitializerExpression(InitializerExpressionSyntax node)
-        {
-            foreach (var expression in node.Expressions)
-            {
-                var statement = new Statement();
-                using (SyntaxCaptureScope<Statement>.Create(this, WellKnownSyntax.InitializerExpressionSyntax, statement))
-                    Visit(expression);
-
-                Statement?.AddSourcePart(statement);
-            }
-        }
-
-        public override void VisitVariableDeclaration(VariableDeclarationSyntax node)
-        {
-            var capture = TypeDeclarationCapture.Capture(node.Type, _context.SemanticModel);
-
-            foreach (var variable in node.Variables)
-            {
-                if (variable.ArgumentList != null)
-                    _context.Errors.Add(new DefaultError(variable.ArgumentList, "SharpX.ShaderLab does not currently supports bracket argument list yet"));
-
-                var statement = new Statement();
-                using (var scope = SyntaxCaptureScope<VariableDeclaration>.Create(this, WellKnownSyntax.VariableDeclarationSyntax, new VariableDeclaration(capture.GetActualName(), variable.Identifier.ValueText)))
-                {
-                    Visit(variable.Initializer);
-                    statement.AddSourcePart(scope.Statement);
-                }
-
-                Statement?.AddSourcePart(statement);
-            }
-        }
-
-        public override void VisitObjectCreationExpression(ObjectCreationExpressionSyntax node)
-        {
-            var capture = TypeDeclarationCapture.Capture(node.Type, _context.SemanticModel);
-            if (node.Initializer == null)
-            {
-                if (capture.HasAttribute<ExternalAttribute>() && capture.GetConstructors().Any(w => w.HasAttribute<ConstructorAttribute>()))
-                {
-                    // allowed constructors
-                    var constructor = new Constructor(capture.GetActualName());
-                    using (SyntaxCaptureScope<Constructor>.Create(this, WellKnownSyntax.ObjectCreationExpressionSyntax, constructor))
-                        Visit(node.ArgumentList);
-
-                    Statement?.AddSourcePart(constructor);
-                }
-                else
-                {
-                    _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab only allows externally defined constructors. Use Initializer instead of constructor to initialize self-defined structures"));
-                }
-            }
-            else
-            {
-                if (node.ArgumentList != null)
-                    _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab does not allow you to use Initializer and constructor at the same time"));
-
-                if (CapturingStack.Contains(WellKnownSyntax.ObjectCreationExpressionSyntax))
-                    _context.Errors.Add(new DefaultError(node, "Initializer cannot be nested in SharpX.ShaderLab at this time"));
-
-                var context = _context.SourceContext.OfType<ShaderLabHLSLSourceContext>();
-
-                // create a internal function for initialize user-defined struct
-                var constructor = Naming.GetSafeName($"internal_constructor_{capture.GetActualName()}");
-                context?.OpenFunction(constructor, capture.GetActualName());
-
-                var arguments = new List<ISymbol>();
-                foreach (var symbol in _context.SemanticModel.LookupSymbols(node.SpanStart).Where(w => w is ILocalSymbol or IParameterSymbol).ToList())
-                    if (symbol.DeclaringSyntaxReferences.All(w => !node.InParent(w.GetSyntax())))
-                    {
-                        var t = symbol switch
-                        {
-                            ILocalSymbol l => l.Type,
-                            IParameterSymbol p => p.Type,
-                            _ => throw new ArgumentOutOfRangeException()
-                        };
-
-                        var c = TypeDeclarationCapture.Capture(t, _context.SemanticModel);
-                        context?.FunctionDeclaration?.AddArgument(c.GetActualName(), symbol.Name);
-                        arguments.Add(symbol);
-                    }
-
-                using (var scope = SyntaxCaptureScope<Block>.Create(this, WellKnownSyntax.ObjectCreationExpressionSyntax, new Block()))
-                {
-                    scope.Statement.AddSourcePart(new VariableDeclaration(capture.GetActualName(), "_auto_generated_initializer_", new Span($"({capture.GetActualName()}) 0")).IntoStatement());
-                    Visit(node.Initializer);
-                    scope.Statement.AddSourcePart(new ReturnStatement(new Span("_auto_generated_initializer_")).IntoStatement());
-
-                    context?.FunctionDeclaration?.AddSourcePart(scope.Statement);
-                }
-
-                context?.CloseFunction();
-
-                var call = new FunctionCall(constructor);
-                foreach (var argument in arguments)
-                    call.AddSourcePart(new Span(argument.Name));
-                Statement?.AddSourcePart(call);
-
-                context?.AddDependencyTree(constructor);
-            }
-        }
-
-        public override void VisitReturnStatement(ReturnStatementSyntax node)
-        {
-            var declaration = _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.FunctionDeclaration;
-            if (declaration == null)
-                return;
-
-            var statement = new Statement();
-            using (var scope = SyntaxCaptureScope<ReturnStatement>.Create(this, WellKnownSyntax.ReturnStatementSyntax, new ReturnStatement()))
-            {
-                Visit(node.Expression);
-                statement.AddSourcePart(scope.Statement);
-            }
-
-            Statement?.AddSourcePart(statement);
-        }
-
-        public override void VisitInvocationExpression(InvocationExpressionSyntax node)
-        {
-            var function = new FunctionCall("");
-
-            using (SyntaxCaptureScope<FunctionCall>.Create(this, WellKnownSyntax.InvocationExpressionSyntax, function))
-            {
-                Visit(node.Expression);
-                Visit(node.ArgumentList);
-            }
-
-            Statement?.AddSourcePart(function);
-        }
-
-        public override void VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
-        {
-            var s = _context.SemanticModel.GetSymbolInfo(node);
-            if (s.Symbol is IMethodSymbol m)
-            {
-                var capture = new MethodSymbolCapture(m, _context.SemanticModel);
-                Statement?.OfType<FunctionCall>()?.AddIdentifier(capture.GetIdentifierName());
-
-                Visit(node.Expression);
-            }
-        }
-
-        public override void VisitLiteralExpression(LiteralExpressionSyntax node)
-        {
-            var value = _context.SemanticModel.GetConstantValue(node);
-            if (value.HasValue)
-                Statement?.AddSourcePart(new Span(value!.Value!.ToString()!));
         }
 
         #region Common Utilities
