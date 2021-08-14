@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Immutable;
+using System.Linq;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -8,7 +10,7 @@ using SharpX.Library.ShaderLab.Attributes;
 
 namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
 {
-    public class TypeDeclarationCapture
+    internal class TypeDeclarationCapture
     {
         private readonly CapturedAs _captured;
         private readonly TypeInfo? _info;
@@ -32,7 +34,18 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
         public static TypeDeclarationCapture Capture(TypeSyntax node, SemanticModel model)
         {
             var info = model.GetTypeInfo(node);
-            return new TypeDeclarationCapture(info, model, CapturedAs.Info);
+            if (info.Type != null)
+                return new TypeDeclarationCapture(info, model, CapturedAs.Info);
+
+            var symbol = model.GetDeclaredSymbol(node);
+            if (symbol is ITypeSymbol s1)
+                return new TypeDeclarationCapture(s1, model, CapturedAs.Symbol);
+
+            var symbolInfo = model.GetSymbolInfo(node);
+            if (symbolInfo.Symbol is ITypeSymbol s2)
+                return new TypeDeclarationCapture(s2, model, CapturedAs.Symbol);
+
+            return new TypeDeclarationCapture(info, model, CapturedAs.Unknown);
         }
 
         public static TypeDeclarationCapture Capture(TypeInfo info, SemanticModel model)
@@ -81,7 +94,9 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
         {
             Info,
 
-            Symbol
+            Symbol,
+
+            Unknown
         }
     }
 }
