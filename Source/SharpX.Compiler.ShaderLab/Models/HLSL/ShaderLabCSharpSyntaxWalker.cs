@@ -60,6 +60,10 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                     Statement?.AddSourcePart(new Span(capture.GetIdentifierName()));
                     break;
                 }
+
+                case ILocalSymbol l:
+                    Statement?.AddSourcePart(new Span(l.Name));
+                    break;
             }
         }
 
@@ -254,6 +258,26 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
                     Statement?.AddSourcePart(scope.Statement);
                 }
+        }
+
+        public override void VisitVariableDeclaration(VariableDeclarationSyntax node)
+        {
+            var capture = TypeDeclarationCapture.Capture(node.Type, _context.SemanticModel);
+
+            foreach (var variable in node.Variables)
+            {
+                if (variable.ArgumentList != null)
+                    _context.Errors.Add(new DefaultError(variable.ArgumentList, "SharpX.ShaderLab does not currently supports bracket argument list yet"));
+
+                var statement = new Statement();
+                using (var scope = SyntaxCaptureScope<VariableDeclaration>.Create(this, WellKnownSyntax.VariableDeclarationSyntax, new VariableDeclaration(capture.GetActualName(), variable.Identifier.ValueText)))
+                {
+                    Visit(variable.Initializer);
+                    statement.AddSourcePart(scope.Statement);
+                }
+
+                Statement?.AddSourcePart(statement);
+            }
         }
 
         public override void VisitObjectCreationExpression(ObjectCreationExpressionSyntax node)
