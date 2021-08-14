@@ -12,12 +12,14 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements.Structured
         private readonly List<string> _attributes;
         private readonly string _name;
         private readonly string _returns;
+        private readonly string? _returnsSemantics;
         private readonly List<IStatement> _statements;
 
-        public FunctionDeclaration(string name, string returns)
+        public FunctionDeclaration(string name, string returns, string? semantics = null)
         {
             _name = name;
             _returns = returns;
+            _returnsSemantics = semantics;
             _arguments = new List<KeyValuePair<string, string>>();
             _attributes = new List<string>();
             _statements = new List<IStatement>();
@@ -34,7 +36,12 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements.Structured
 
             sb.WriteSpan($"{_returns} {_name}(");
             sb.WriteSpan(string.Join(", ", _arguments.Select(w => $"{w.Key} {w.Value}")));
-            sb.WriteLine(")");
+            sb.WriteSpan(")");
+
+            if (string.IsNullOrWhiteSpace(_returnsSemantics))
+                sb.WriteNewLine();
+            else
+                sb.WriteLine($" : {_returnsSemantics}");
 
             foreach (var statement in _statements)
                 statement.WriteTo(sb);

@@ -13,6 +13,8 @@ namespace SharpX.Compiler.Extensions
             var t = typeof(T);
             var constructors = t.GetConstructors();
             var constructorArguments = obj.ConstructorArguments;
+
+            // TODO: Type Checking
             var constructor = constructors.FirstOrDefault(w => w.GetParameters().Length == constructorArguments.Length);
 
             if (constructor == null)

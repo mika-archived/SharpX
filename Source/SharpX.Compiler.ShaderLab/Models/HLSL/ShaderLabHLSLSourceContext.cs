@@ -51,9 +51,9 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
         #region Function
 
         [MemberNotNull(nameof(FunctionDeclaration))]
-        public void OpenFunction(string name, string returns)
+        public void OpenFunction(string name, string returns, string? semantics = null)
         {
-            _declarations.Push(new FunctionDeclaration(name, returns));
+            _declarations.Push(new FunctionDeclaration(name, returns, semantics));
             FunctionDependencyTree.Add(FunctionDeclaration!.Name, new List<string>());
         }
 

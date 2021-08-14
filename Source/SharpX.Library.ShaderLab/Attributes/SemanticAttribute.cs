@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace SharpX.Library.ShaderLab.Attributes
 {
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Parameter)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Parameter | AttributeTargets.ReturnValue)]
     public class SemanticAttribute : Attribute
     {
         private static readonly Regex SemanticNameRegex = new("^[A-Za-z_][A-Za-z0-9_]*$", RegexOptions.Compiled);

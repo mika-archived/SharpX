@@ -331,7 +331,10 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             if (context == null)
                 return;
 
-            context.OpenFunction(declarator.GetIdentifierName(), declarator.GetDeclaredReturnType());
+            if (declarator.HasAttribute<SemanticAttribute>("return"))
+                context.OpenFunction(declarator.GetIdentifierName(), declarator.GetDeclaredReturnType(), declarator.GetAttribute<SemanticAttribute>("return")!.Semantic);
+            else
+                context.OpenFunction(declarator.GetIdentifierName(), declarator.GetDeclaredReturnType());
 
             using (SyntaxCaptureScope.Create(this, WellKnownSyntax.MethodDeclarationSyntax))
             {

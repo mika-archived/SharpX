@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -49,6 +51,44 @@ namespace SharpX.Compiler.Extensions
         public static bool HasModifiers(this MemberDeclarationSyntax obj, SyntaxKind token)
         {
             return obj.Modifiers.Any(w => w.Kind() == token);
+        }
+
+        public static T? AsAttributeInstance<T>(this AttributeSyntax obj, SemanticModel model)
+        {
+            var fullyQualifiedMetadataName = typeof(T).FullName;
+            if (string.IsNullOrWhiteSpace(fullyQualifiedMetadataName))
+                return default;
+
+            var n = model.GetSymbolInfo(obj);
+            if (n.Symbol?.ContainingType?.Equals(model.Compilation.GetTypeByMetadataName(fullyQualifiedMetadataName), SymbolEqualityComparer.Default) != true)
+                return default;
+
+            var t = typeof(T);
+            var constructors = t.GetConstructors();
+            var constructorArguments = obj.ArgumentList?.Arguments.Where(w => w.NameEquals == null).ToList() ?? new List<AttributeArgumentSyntax>();
+            var namedArguments = obj.ArgumentList?.Arguments.Where(w => w.NameEquals != null).ToList() ?? new List<AttributeArgumentSyntax>();
+
+            // TODO: Type Checking
+            var constructor = constructors.FirstOrDefault(w => w.GetParameters().Length == constructorArguments.Count);
+            if (constructor == null)
+                return default;
+
+            var instance = (T) constructor.Invoke(constructorArguments.Select(w => model.GetConstantValue(w.Expression).Value).ToArray());
+
+            if (namedArguments.Count == 0)
+                return instance;
+
+            foreach (var argument in namedArguments)
+            {
+                var name = argument.NameEquals!.Name.Identifier.ValueText;
+                var property = t.GetProperty(name, BindingFlags.Public);
+                if (property == null)
+                    continue;
+
+                property.SetValue(instance, model.GetConstantValue(argument.Expression));
+            }
+
+            return instance;
         }
 
         public static bool InParent(this SyntaxNode obj, SyntaxNode? node)

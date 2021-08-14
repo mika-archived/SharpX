@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -20,14 +21,27 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Declarators
             _model = model;
         }
 
-        public bool HasAttribute<T>() where T : Attribute
+        public bool HasAttribute<T>(string? target = null) where T : Attribute
         {
-            return _node.HasAttribute<T>(_model);
+            if (string.IsNullOrWhiteSpace(target))
+                return _node.HasAttribute<T>(_model);
+            return GetAttribute<T>(target) != null;
         }
 
-        public T? GetAttribute<T>() where T : Attribute
+        public T? GetAttribute<T>(string? target = null) where T : Attribute
         {
-            return _node.GetAttribute<T>(_model);
+            if (string.IsNullOrWhiteSpace(target))
+                return _node.GetAttribute<T>(_model);
+
+            foreach (var attributes in _node.AttributeLists)
+            {
+                if (attributes.Target?.Identifier.ValueText != target)
+                    continue;
+
+                return attributes.Attributes.Select(w => w.AsAttributeInstance<T>(_model)).FirstOrDefault(w => w != null);
+            }
+
+            return null;
         }
 
         public string GetIdentifierName()
