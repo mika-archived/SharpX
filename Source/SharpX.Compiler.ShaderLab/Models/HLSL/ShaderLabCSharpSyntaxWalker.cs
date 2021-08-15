@@ -76,6 +76,19 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             }
         }
 
+        public override void VisitParenthesizedExpression(ParenthesizedExpressionSyntax node)
+        {
+            var expression = new Expression();
+            expression.AddSourcePart(new Span("("));
+
+            using (SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.ParenthesizedExpressionSyntax, expression))
+                Visit(node.Expression);
+
+            expression.AddSourcePart(new Span(")"));
+
+            Statement?.AddSourcePart(expression);
+        }
+
         public override void VisitAssignmentExpression(AssignmentExpressionSyntax node)
         {
             Assignment assignment;
