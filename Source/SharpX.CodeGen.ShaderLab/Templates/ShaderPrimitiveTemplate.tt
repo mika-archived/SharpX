@@ -15,6 +15,7 @@ namespace SharpX.Library.ShaderLab.Primitives
     [External]
     public partial class <#= ClassName #> <#= string.IsNullOrWhiteSpace(Inheritance) ? "" : (": " + Inheritance) #>
     {
+        [Constructor]
         public <#= ClassName #>(<#= CSharpPrimitive #> a) {}
 
 <# if (IsVector()) { #>
@@ -29,17 +30,20 @@ namespace SharpX.Library.ShaderLab.Primitives
             return default;
         }
 
-        public static implicit operator <#= ClassNameWithoutComponent #>2(<#= ClassName #> _)
+        [ImplicitCastInCompiler]
+        public static explicit operator <#= ClassNameWithoutComponent #>2(<#= ClassName #> _)
         {
             return default;
         }
 
-        public static implicit operator <#= ClassNameWithoutComponent #>3(<#= ClassName #> _)
+        [ImplicitCastInCompiler]
+        public static explicit operator <#= ClassNameWithoutComponent #>3(<#= ClassName #> _)
         {
             return default;
         }
 
-        public static implicit operator <#= ClassNameWithoutComponent #>4(<#= ClassName #> _)
+        [ImplicitCastInCompiler]
+        public static explicit operator <#= ClassNameWithoutComponent #>4(<#= ClassName #> _)
         {
             return default;
         }
@@ -63,44 +67,113 @@ namespace SharpX.Library.ShaderLab.Primitives
 <# } #>
 <# if (Template == "2") { #>
 
+        [Constructor]
         public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= CSharpPrimitive #> b) {}
+
+        [ImplicitCastInCompiler]
+        public static explicit operator <#= ClassNameWithoutComponent #>(<#= ClassName #> _)
+        {
+            return default;
+        }
+
+        [ImplicitCastInCompiler]
+        public static explicit operator <#= ClassNameWithoutComponent #>3(<#= ClassName #> _)
+        {
+            return default;
+        }
+
+        [ImplicitCastInCompiler]
+        public static explicit operator <#= ClassNameWithoutComponent #>4(<#= ClassName #> _)
+        {
+            return default;
+        }
 
 <# } #>
 <# if (Template == "3") { #>
 
+        [Constructor]
         public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= CSharpPrimitive #> b) {}
 
+        [Constructor]
         public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= CSharpPrimitive #> b, <#= CSharpPrimitive #> c) {}
 
+        [Constructor]
         public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= ClassNameWithoutComponent #>2 b) {}
 
+        [Constructor]
         public <#= ClassName #>(<#= ClassNameWithoutComponent #>2 a, <#= CSharpPrimitive #> b) {}
+
+        [ImplicitCastInCompiler]
+        public static explicit operator <#= ClassNameWithoutComponent #>(<#= ClassName #> _)
+        {
+            return default;
+        }
+
+        [ImplicitCastInCompiler]
+        public static explicit operator <#= ClassNameWithoutComponent #>2(<#= ClassName #> _)
+        {
+            return default;
+        }
+
+        [ImplicitCastInCompiler]
+        public static explicit operator <#= ClassNameWithoutComponent #>4(<#= ClassName #> _)
+        {
+            return default;
+        }
 
 <# } #>
 <# if (Template == "4") { #>
 
+        [Constructor]
         public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= CSharpPrimitive #> b) {}
 
+        [Constructor]
         public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= CSharpPrimitive #> b, <#= CSharpPrimitive #> c) {}
 
+        [Constructor]
         public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= CSharpPrimitive #> b, <#= CSharpPrimitive #> c, <#= CSharpPrimitive #> d) {}
 
+        [Constructor]
         public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= CSharpPrimitive #> b, <#= ClassNameWithoutComponent #>2 c) {}
 
+        [Constructor]
         public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= ClassNameWithoutComponent #>2 b, <#= CSharpPrimitive #> c) {}
 
+        [Constructor]
         public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= ClassNameWithoutComponent #>3 b) {}
 
+        [Constructor]
         public <#= ClassName #>(<#= ClassNameWithoutComponent #>2 a, <#= CSharpPrimitive #> b, <#= CSharpPrimitive #> c) {}
 
+        [Constructor]
         public <#= ClassName #>(<#= ClassNameWithoutComponent #>2 a, <#= ClassNameWithoutComponent #>2 b) {}
 
+        [Constructor]
         public <#= ClassName #>(<#= ClassNameWithoutComponent #>3 a, <#= CSharpPrimitive #> b) {}
+
+
+        [ImplicitCastInCompiler]
+        public static explicit operator <#= ClassNameWithoutComponent #>(<#= ClassName #> _)
+        {
+            return default;
+        }
+
+        [ImplicitCastInCompiler]
+        public static explicit operator <#= ClassNameWithoutComponent #>2(<#= ClassName #> _)
+        {
+            return default;
+        }
+
+        [ImplicitCastInCompiler]
+        public static explicit operator <#= ClassNameWithoutComponent #>3(<#= ClassName #> _)
+        {
+            return default;
+        }
 
 <# } #>
 
-<# var targets = new string[] { ClassName, "int", "float" }; #>
-<# foreach (var target in targets ) { #>
+<# var targets = new string[] { ClassName, "int", "float", "SlFloat", "SlFloat2", "SlFloat3", "SlFloat4", "SlInt", "SlInt2", "SlInt3", "SlInt4" }; #>
+<# foreach (var target in targets.Distinct() ) { #>
         public static <#= ClassName #> operator +(<#= ClassName #> a, <#= target #> b)
         {
             return default;

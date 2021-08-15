@@ -34,7 +34,7 @@ namespace SharpX.CodeGen.ShaderLab.Templates
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write(" ");
             this.Write(this.ToStringHelper.ToStringWithCulture(string.IsNullOrWhiteSpace(Inheritance) ? "" : (": " + Inheritance)));
-            this.Write("\r\n    {\r\n        public ");
+            this.Write("\r\n    {\r\n        [Constructor]\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
@@ -50,18 +50,18 @@ namespace SharpX.CodeGen.ShaderLab.Templates
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
-            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        public static i" +
-                    "mplicit operator ");
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        [ImplicitCastIn" +
+                    "Compiler]\r\n        public static explicit operator ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
             this.Write("2(");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
-            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        public static i" +
-                    "mplicit operator ");
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        [ImplicitCastIn" +
+                    "Compiler]\r\n        public static explicit operator ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
             this.Write("3(");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
-            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        public static i" +
-                    "mplicit operator ");
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        [ImplicitCastIn" +
+                    "Compiler]\r\n        public static explicit operator ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
             this.Write("4(");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
@@ -79,22 +79,37 @@ namespace SharpX.CodeGen.ShaderLab.Templates
             this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n");
  } 
  if (Template == "2") { 
-            this.Write("\r\n        public ");
+            this.Write("\r\n        [Constructor]\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
             this.Write(" a, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
-            this.Write(" b) {}\r\n\r\n");
+            this.Write(" b) {}\r\n\r\n        [ImplicitCastInCompiler]\r\n        public static explicit operat" +
+                    "or ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        [ImplicitCastIn" +
+                    "Compiler]\r\n        public static explicit operator ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("3(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        [ImplicitCastIn" +
+                    "Compiler]\r\n        public static explicit operator ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("4(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
  } 
  if (Template == "3") { 
-            this.Write("\r\n        public ");
+            this.Write("\r\n        [Constructor]\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
             this.Write(" a, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
-            this.Write(" b) {}\r\n\r\n        public ");
+            this.Write(" b) {}\r\n\r\n        [Constructor]\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
@@ -102,28 +117,43 @@ namespace SharpX.CodeGen.ShaderLab.Templates
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
             this.Write(" b, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
-            this.Write(" c) {}\r\n\r\n        public ");
+            this.Write(" c) {}\r\n\r\n        [Constructor]\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
             this.Write(" a, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
-            this.Write("2 b) {}\r\n\r\n        public ");
+            this.Write("2 b) {}\r\n\r\n        [Constructor]\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
             this.Write("2 a, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
-            this.Write(" b) {}\r\n\r\n");
+            this.Write(" b) {}\r\n\r\n        [ImplicitCastInCompiler]\r\n        public static explicit operat" +
+                    "or ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        [ImplicitCastIn" +
+                    "Compiler]\r\n        public static explicit operator ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("2(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        [ImplicitCastIn" +
+                    "Compiler]\r\n        public static explicit operator ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("4(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
  } 
  if (Template == "4") { 
-            this.Write("\r\n        public ");
+            this.Write("\r\n        [Constructor]\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
             this.Write(" a, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
-            this.Write(" b) {}\r\n\r\n        public ");
+            this.Write(" b) {}\r\n\r\n        [Constructor]\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
@@ -131,7 +161,7 @@ namespace SharpX.CodeGen.ShaderLab.Templates
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
             this.Write(" b, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
-            this.Write(" c) {}\r\n\r\n        public ");
+            this.Write(" c) {}\r\n\r\n        [Constructor]\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
@@ -141,7 +171,7 @@ namespace SharpX.CodeGen.ShaderLab.Templates
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
             this.Write(" c, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
-            this.Write(" d) {}\r\n\r\n        public ");
+            this.Write(" d) {}\r\n\r\n        [Constructor]\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
@@ -149,7 +179,7 @@ namespace SharpX.CodeGen.ShaderLab.Templates
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
             this.Write(" b, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
-            this.Write("2 c) {}\r\n\r\n        public ");
+            this.Write("2 c) {}\r\n\r\n        [Constructor]\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
@@ -157,13 +187,13 @@ namespace SharpX.CodeGen.ShaderLab.Templates
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
             this.Write("2 b, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
-            this.Write(" c) {}\r\n\r\n        public ");
+            this.Write(" c) {}\r\n\r\n        [Constructor]\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
             this.Write(" a, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
-            this.Write("3 b) {}\r\n\r\n        public ");
+            this.Write("3 b) {}\r\n\r\n        [Constructor]\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
@@ -171,23 +201,38 @@ namespace SharpX.CodeGen.ShaderLab.Templates
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
             this.Write(" b, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
-            this.Write(" c) {}\r\n\r\n        public ");
+            this.Write(" c) {}\r\n\r\n        [Constructor]\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
             this.Write("2 a, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
-            this.Write("2 b) {}\r\n\r\n        public ");
+            this.Write("2 b) {}\r\n\r\n        [Constructor]\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
             this.Write("3 a, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
-            this.Write(" b) {}\r\n\r\n");
+            this.Write(" b) {}\r\n\r\n\r\n        [ImplicitCastInCompiler]\r\n        public static explicit oper" +
+                    "ator ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        [ImplicitCastIn" +
+                    "Compiler]\r\n        public static explicit operator ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("2(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        [ImplicitCastIn" +
+                    "Compiler]\r\n        public static explicit operator ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("3(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
  } 
             this.Write("\r\n");
- var targets = new string[] { ClassName, "int", "float" }; 
- foreach (var target in targets ) { 
+ var targets = new string[] { ClassName, "int", "float", "SlFloat", "SlFloat2", "SlFloat3", "SlFloat4", "SlInt", "SlInt2", "SlInt3", "SlInt4" }; 
+ foreach (var target in targets.Distinct() ) { 
             this.Write("        public static ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write(" operator +(");
