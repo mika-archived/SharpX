@@ -187,6 +187,31 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
                     break;
                 }
+
+                case IFieldSymbol f:
+                {
+                    if (f.IsConst || f.HasConstantValue)
+                    {
+                        var value = _context.SemanticModel.GetConstantValue(node);
+                        if (value.HasValue)
+                        {
+                            Statement?.AddSourcePart(new Span(value.Value!.ToString()!));
+                            break;
+                        }
+
+                        _context.Errors.Add(new DefaultError(node, "Invalid constant value, SharpX.ShaderLab could not transpile to constant value"));
+                        break;
+                    }
+
+                    var memberAccess = new MemberAccess();
+                    using (SyntaxCaptureScope<MemberAccess>.Create(this, WellKnownSyntax.MemberAccessExpressionSyntax, memberAccess))
+                        Visit(node.Expression);
+
+                    var capture = new FieldSymbolCapture(f, _context.SemanticModel);
+                    memberAccess.AddSourcePart(new Span(capture.GetIdentifierName()));
+                    Statement?.AddSourcePart(memberAccess);
+                    break;
+                }
             }
         }
 
