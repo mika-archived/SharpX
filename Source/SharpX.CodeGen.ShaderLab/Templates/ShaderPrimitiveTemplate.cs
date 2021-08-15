@@ -50,6 +50,21 @@ namespace SharpX.CodeGen.ShaderLab.Templates
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        public static i" +
+                    "mplicit operator ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("2(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        public static i" +
+                    "mplicit operator ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("3(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        public static i" +
+                    "mplicit operator ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("4(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
  if (CSharpPrimitive != "bool") { 
             this.Write("        public static implicit operator bool(");

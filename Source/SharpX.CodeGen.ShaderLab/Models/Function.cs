@@ -36,7 +36,7 @@ namespace SharpX.CodeGen.ShaderLab.Models
                             }
 
                             sb.AppendLine($@"        [SharpX.Library.ShaderLab.Attributes.Function(""{Name}"")]");
-                            sb.AppendLine($@"        public static extern {r} {ConvertName(Name)}({string.Join(", ", args)});");
+                            sb.AppendLine($@"        public static extern {r} {ConvertName(Name, i + 2)}({string.Join(", ", args)});");
                             sb.AppendLine();
                         }
                     }
@@ -57,15 +57,15 @@ namespace SharpX.CodeGen.ShaderLab.Models
             return sb.ToString();
         }
 
-        private string ConvertName(string name)
+        private string ConvertName(string name, int i = 0)
         {
             switch (Converter)
             {
                 case "UpperCamelCase":
-                    return name.ToUpperCamelCase();
+                    return name.ToUpperCamelCase() + (i == 0 ? "" : $"_{i}");
 
                 case "LowerCamelCase":
-                    return name.ToLowerCamelCase();
+                    return name.ToLowerCamelCase() + (i == 0 ? "" : $"_{i}");
 
                 default:
                     return name;

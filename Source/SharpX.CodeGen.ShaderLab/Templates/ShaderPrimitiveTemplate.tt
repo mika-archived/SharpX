@@ -29,6 +29,21 @@ namespace SharpX.Library.ShaderLab.Primitives
             return default;
         }
 
+        public static implicit operator <#= ClassNameWithoutComponent #>2(<#= ClassName #> _)
+        {
+            return default;
+        }
+
+        public static implicit operator <#= ClassNameWithoutComponent #>3(<#= ClassName #> _)
+        {
+            return default;
+        }
+
+        public static implicit operator <#= ClassNameWithoutComponent #>4(<#= ClassName #> _)
+        {
+            return default;
+        }
+
 <# if (CSharpPrimitive != "bool") { #>
         public static implicit operator bool(<#= ClassName #> _)
         {
