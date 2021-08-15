@@ -8,5 +8,8 @@ namespace SharpX.Library.ShaderLab.Functions
     {
         [Function("mul")]
         public static extern T Mul<T>(object a, object b);
-    }
+
+		[Function("transpose")]
+		public static extern T Transpose<T>(object a);
+	}
 }

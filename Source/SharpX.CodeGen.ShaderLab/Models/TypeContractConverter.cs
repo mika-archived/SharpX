@@ -1,5 +1,7 @@
 ﻿using System;
 
+using SharpX.CodeGen.ShaderLab.Extensions;
+
 namespace SharpX.CodeGen.ShaderLab.Models
 {
     public static class TypeContractConverter
@@ -23,6 +25,9 @@ namespace SharpX.CodeGen.ShaderLab.Models
 
                 case "matrix":
                     return "object";
+
+                case "object":
+                    return $"{PrimitiveNamespace}.{parameter.Type.ToUpperCamelCase()}";
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(parameter.Component));
@@ -53,6 +58,9 @@ namespace SharpX.CodeGen.ShaderLab.Models
 
                 case "matrix" when int.TryParse(parameter.Element, out _):
                     return 0; // 1;
+
+                case "object":
+                    return 1;
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(parameter.Component));

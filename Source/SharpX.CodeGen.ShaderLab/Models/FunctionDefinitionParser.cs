@@ -8,7 +8,7 @@ namespace SharpX.CodeGen.ShaderLab.Models
 {
     public class FunctionDefinitionParser : IDisposable
     {
-        private static readonly Regex TypeConstraintRegex = new("(?<inout>\\[(in|out)\\])?(?<param>.*) is (?<template>(scalar|vector|matrix)) implements (?<type>\\w+)( has (?<element>\\w+) elements)?", RegexOptions.Compiled);
+        private static readonly Regex TypeConstraintRegex = new("(?<inout>\\[(in|out)\\])?(?<param>.*) is (?<template>(scalar|vector|matrix|object)) implements (?<type>\\w+)( has (?<element>\\w+) elements)?", RegexOptions.Compiled);
         private static readonly Regex SignatureRegex = new("\\((?<parameters>.*)\\) => (?<return>.*)", RegexOptions.Compiled);
 
         private readonly StreamReader _sr;

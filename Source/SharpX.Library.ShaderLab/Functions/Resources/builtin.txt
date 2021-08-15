@@ -680,3 +680,229 @@ function sinh
         (x is matrix implements float) => same(x)
     }
 }
+
+function smoothstep
+{
+    signatures
+    {
+        (x is scalar implements float, min is scalar implements float, max is scalar implements float) => same(x)
+        (x is vector implements float, min is vector implements float, max is vector implements float) => same(x)
+        (x is matrix implements float, min is matrix implements float, max is matrix implements float) => same(x)
+    }
+}
+
+function sqrt
+{
+    signatures
+    {
+        (x is scalar implements float) => same(x)
+        (x is vector implements float) => same(x)
+        (x is matrix implements float) => same(x)
+    }
+}
+
+function step
+{
+    signatures
+    {
+        (y is scalar implements float, x is scalar implements float) => same(y)
+        (y is vector implements float, x is vector implements float) => same(y)
+        (y is matrix implements float, x is matrix implements float) => same(y)
+    }
+}
+
+function tan
+{
+    signatures
+    {
+        (x is scalar implements float) => same(x)
+        (x is vector implements float) => same(x)
+        (x is matrix implements float) => same(x)
+    }
+}
+
+function tanh
+{
+    signatures
+    {
+        (x is scalar implements float) => same(x)
+        (x is vector implements float) => same(x)
+        (x is matrix implements float) => same(x)
+    }
+}
+
+function tex1D
+{
+    signatures
+    {
+        (x is object implements sampler1D, t is scalar implements float) => r is vector implements float has 4 elements
+        (x is object implements sampler1D, t is scalar implements float, ddx is scalar implements float, ddy is scalar implements float) => r is vector implements float has 4 elements
+    }
+}
+
+function tex1Dbias
+{
+    signatures
+    {
+        (s is object implements sampler1D, t is vector implements float has 4 elements) => r is vector implements float has 4 elements
+    }
+}
+
+function tex1Dgrad
+{
+    signatures
+    {
+        (s is object implements sampler1D, t is scalar implements float, ddx is scalar implements float, ddy is scalar implements float) => r is vector implements float has 4 elements
+    }
+}
+
+function tex1Dlod
+{
+    signatures
+    {
+        (s is object implements sampler1D, t is vector implements float has 4 elements) => r is vector implements float has 4 elements
+    }
+}
+
+function tex1Dproj
+{
+    signatures
+    {
+        (s is object implements sampler1D, t is vector implements float has 4 elements) => r is vector implements float has 4 elements
+    }
+}
+
+function tex2D
+{
+    signatures
+    {
+        (s is object implements sampler2D, t is vector implements float has 2 elements) => r is vector implements float has 4 elements
+        (s is object implements sampler2D, t is vector implements float has 2 elements, ddx is vector implements float has 2 elements, ddy is vector implements float has 2 elements) => r is vector implements float has 4 elements
+    }
+}
+
+function tex2Dbias
+{
+    signatures
+    {
+        (s is object implements sampler2D, t is vector implements float has 4 elements) => r is vector implements float has 4 elements
+    }
+}
+
+function tex2Dgrad
+{
+    signatures
+    {
+        (s is object implements sampler2D, t is vector implements float has 2 elements, ddx is vector implements float has 2 elements, ddy is vector implements float has 2 elements) => r is vector implements float has 4 elements
+    }
+}
+
+function tex2Dlod
+{
+    signatures
+    {
+        (s is object implements sampler2D, t is vector implements float has 4 elements) => r is vector implements float has 4 elements
+    }
+}
+
+function tex2Dproj
+{
+    signatures
+    {
+        (s is object implements sampler2D, t is vector implements float has 4 elements) => r is vector implements float has 4 elements
+    }
+}
+
+function tex3D
+{
+    signatures
+    {
+        (s is object implements sampler3D, t is vector implements float has 3 elements) => r is vector implements float has 4 elements
+        (s is object implements sampler3D, t is vector implements float has 3 elements, ddx is vector implements float has 3 elements, ddy is vector implements float has 3 elements) => r is vector implements float has 4 elements
+    }
+}
+
+function tex3Dbias
+{
+    signatures
+    {
+        (s is object implements sampler3D, t is vector implements float has 4 elements) => r is vector implements float has 4 elements
+    }
+}
+
+function tex3Dgrad
+{
+    signatures
+    {
+        (s is object implements sampler3D, t is vector implements float has 3 elements, ddx is vector implements float has 3 elements, ddy is vector implements float has 3 elements) => r is vector implements float has 4 elements
+    }
+}
+
+function tex3Dlod
+{
+    signatures
+    {
+        (s is object implements sampler3D, t is vector implements float has 4 elements) => r is vector implements float has 4 elements
+    }
+}
+
+function tex3Dproj
+{
+    signatures
+    {
+        (s is object implements sampler3D, t is vector implements float has 4 elements) => r is vector implements float has 4 elements
+    }
+}
+
+function texCUBE
+{
+    signatures
+    {
+        (s is object implements samplerCUBE, t is vector implements float has 3 elements) => r is vector implements float has 4 elements
+        (s is object implements samplerCUBE, t is vector implements float has 3 elements, ddx is vector implements float has 3 elements, ddy is vector implements float has 3 elements) => r is vector implements float has 4 elements
+    }
+}
+
+function texCUBEbias
+{
+    signatures
+    {
+        (s is object implements samplerCUBE, t is vector implements float has 4 elements) => r is vector implements float has 4 elements
+    }
+}
+
+function texCUBEgrad
+{
+    signatures
+    {
+        (s is object implements samplerCUBE, t is vector implements float has 3 elements, ddx is vector implements float has 3 elements, ddy is vector implements float has 3 elements) => r is vector implements float has 4 elements
+    }
+}
+
+function texCUBElod
+{
+    signatures
+    {
+        (s is object implements samplerCUBE, t is vector implements float has 4 elements) => r is vector implements float has 4 elements
+    }
+}
+
+function texCUBEproj
+{
+    signatures
+    {
+        (s is object implements sampler3D, t is vector implements float has 4 elements) => r is vector implements float has 4 elements
+    }
+}
+
+// https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-transpose
+
+function trunc
+{
+    signatures
+    {
+        (x is scalar implements float) => same(x)
+        (x is vector implements float) => same(x)
+        (x is matrix implements float) => same(x)
+    }
+}
