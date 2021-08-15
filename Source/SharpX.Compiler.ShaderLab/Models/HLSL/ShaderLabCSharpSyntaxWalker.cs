@@ -24,6 +24,9 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
         public WellKnownSyntax? CurrentCapturing => CapturingStack.Count > 0 ? CapturingStack.Peek() : null;
 
+        // TODO: Into Stack Scope
+        public Dictionary<string, object> Metadata { get; }
+
         public Stack<WellKnownSyntax> CapturingStack { get; }
 
         public Stack<INestableStatement> StatementStack { get; }
@@ -35,6 +38,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             _context = context;
             CapturingStack = new Stack<WellKnownSyntax>();
             StatementStack = new Stack<INestableStatement>();
+            Metadata = new Dictionary<string, object>();
         }
 
         public override void DefaultVisit(SyntaxNode node)
@@ -233,12 +237,38 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
         public override void VisitInitializerExpression(InitializerExpressionSyntax node)
         {
-            foreach (var expression in node.Expressions)
+            if (node.IsKind(SyntaxKind.ObjectInitializerExpression))
             {
-                var statement = new Statement();
-                using (SyntaxCaptureScope<Statement>.Create(this, WellKnownSyntax.InitializerExpressionSyntax, statement))
-                    Visit(expression);
+                foreach (var expression in node.Expressions)
+                {
+                    var statement = new Statement();
+                    using (SyntaxCaptureScope<Statement>.Create(this, WellKnownSyntax.InitializerExpressionSyntax, statement))
+                        Visit(expression);
 
+                    Statement?.AddSourcePart(statement);
+                }
+            }
+            else if (node.IsKind(SyntaxKind.ArrayInitializerExpression))
+            {
+                var statement = new Expression();
+                statement.AddSourcePart(new Span("{"));
+                using (var scope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.InitializerExpressionSyntax, new Expression()))
+                {
+                    var initializers = 0;
+                    foreach (var (expression, i) in node.Expressions.Select((w, i) => (w, i)))
+                    {
+                        if (i > 0)
+                            scope.Statement.AddSourcePart(new Span(", "));
+
+                        Visit(expression);
+                        initializers++;
+                    }
+
+                    statement.AddSourcePart(scope.Statement);
+                    Metadata.Add("initializer_count", initializers);
+                }
+
+                statement.AddSourcePart(new Span("}"));
                 Statement?.AddSourcePart(statement);
             }
         }
@@ -295,6 +325,13 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 using (var scope = SyntaxCaptureScope<VariableDeclaration>.Create(this, WellKnownSyntax.VariableDeclarationSyntax, new VariableDeclaration(capture.GetActualName(), variable.Identifier.ValueText)))
                 {
                     Visit(variable.Initializer);
+
+                    if (Metadata.ContainsKey("initializer_count"))
+                    {
+                        scope.Statement.AddArrayCount(int.Parse(Metadata["initializer_count"].ToString() ?? "0"));
+                        Metadata.Remove("initializer_count");
+                    }
+
                     statement.AddSourcePart(scope.Statement);
                 }
 

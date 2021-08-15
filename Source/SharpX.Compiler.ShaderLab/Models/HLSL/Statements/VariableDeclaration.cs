@@ -11,12 +11,14 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
         private readonly string _identifier;
         private readonly List<IStatement> _initializer;
         private readonly string _type;
+        private int? _arrayCount;
 
         public VariableDeclaration(string type, string identifier)
         {
             _type = type;
             _identifier = identifier;
             _initializer = new List<IStatement>();
+            _arrayCount = null;
         }
 
         public VariableDeclaration(string type, string identifier, params IStatement[] initializer)
@@ -29,6 +31,9 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
         public void WriteTo(SourceBuilder sb)
         {
             sb.WriteSpan($"{_type} {_identifier}");
+
+            if (_arrayCount.HasValue)
+                sb.WriteSpan($"[{_arrayCount.Value}]");
 
             if (_initializer.Count <= 0)
                 return;
@@ -46,6 +51,11 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
         public void AddSourcePart(IStatement statement)
         {
             _initializer.Add(statement);
+        }
+
+        public void AddArrayCount(int count)
+        {
+            _arrayCount = count;
         }
     }
 }
