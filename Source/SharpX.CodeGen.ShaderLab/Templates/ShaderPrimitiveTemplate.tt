@@ -15,7 +15,7 @@ namespace SharpX.Library.ShaderLab.Primitives
     [External]
     public partial class <#= ClassName #> <#= string.IsNullOrWhiteSpace(Inheritance) ? "" : (": " + Inheritance) #>
     {
-        public <#= ClassName #>(<#= CSharpPrimitive #> _) {}
+        public <#= ClassName #>(<#= CSharpPrimitive #> a) {}
 
 <# if (IsVector()) { #>
 <# if (Template == "1") { #>
@@ -46,6 +46,43 @@ namespace SharpX.Library.ShaderLab.Primitives
             return default;
         }
 <# } #>
+<# if (Template == "2") { #>
+
+        public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= CSharpPrimitive #> b) {}
+
+<# } #>
+<# if (Template == "3") { #>
+
+        public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= CSharpPrimitive #> b) {}
+
+        public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= CSharpPrimitive #> b, <#= CSharpPrimitive #> c) {}
+
+        public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= ClassNameWithoutComponent #>2 b) {}
+
+        public <#= ClassName #>(<#= ClassNameWithoutComponent #>2 a, <#= CSharpPrimitive #> b) {}
+
+<# } #>
+<# if (Template == "4") { #>
+
+        public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= CSharpPrimitive #> b) {}
+
+        public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= CSharpPrimitive #> b, <#= CSharpPrimitive #> c) {}
+
+        public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= CSharpPrimitive #> b, <#= CSharpPrimitive #> c, <#= CSharpPrimitive #> d) {}
+
+        public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= CSharpPrimitive #> b, <#= ClassNameWithoutComponent #>2 c) {}
+
+        public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= ClassNameWithoutComponent #>2 b, <#= CSharpPrimitive #> c) {}
+
+        public <#= ClassName #>(<#= CSharpPrimitive #> a, <#= ClassNameWithoutComponent #>3 b) {}
+
+        public <#= ClassName #>(<#= ClassNameWithoutComponent #>2 a, <#= CSharpPrimitive #> b, <#= CSharpPrimitive #> c) {}
+
+        public <#= ClassName #>(<#= ClassNameWithoutComponent #>2 a, <#= ClassNameWithoutComponent #>2 b) {}
+
+        public <#= ClassName #>(<#= ClassNameWithoutComponent #>3 a, <#= CSharpPrimitive #> b) {}
+
+<# } #>
 
 <# var targets = new string[] { ClassName, "int", "float" }; #>
 <# foreach (var target in targets ) { #>
@@ -73,6 +110,7 @@ namespace SharpX.Library.ShaderLab.Primitives
         {
             return default;
         }
+
 <# } #>
 
 <# } #>

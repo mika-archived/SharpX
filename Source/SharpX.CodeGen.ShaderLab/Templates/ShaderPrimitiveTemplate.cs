@@ -38,7 +38,7 @@ namespace SharpX.CodeGen.ShaderLab.Templates
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
-            this.Write(" _) {}\r\n\r\n");
+            this.Write(" a) {}\r\n\r\n");
  if (IsVector()) { 
  if (Template == "1") { 
             this.Write("        public static implicit operator ");
@@ -62,6 +62,113 @@ namespace SharpX.CodeGen.ShaderLab.Templates
                     "ool operator false(");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n");
+ } 
+ if (Template == "2") { 
+            this.Write("\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" b) {}\r\n\r\n");
+ } 
+ if (Template == "3") { 
+            this.Write("\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" b) {}\r\n\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" b, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" c) {}\r\n\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("2 b) {}\r\n\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("2 a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" b) {}\r\n\r\n");
+ } 
+ if (Template == "4") { 
+            this.Write("\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" b) {}\r\n\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" b, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" c) {}\r\n\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" b, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" c, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" d) {}\r\n\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" b, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("2 c) {}\r\n\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("2 b, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" c) {}\r\n\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("3 b) {}\r\n\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("2 a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" b, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" c) {}\r\n\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("2 a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("2 b) {}\r\n\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write("3 a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
+            this.Write(" b) {}\r\n\r\n");
  } 
             this.Write("\r\n");
  var targets = new string[] { ClassName, "int", "float" }; 
@@ -96,7 +203,7 @@ namespace SharpX.CodeGen.ShaderLab.Templates
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write(" a, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(target));
-            this.Write(" b)\r\n        {\r\n            return default;\r\n        }\r\n");
+            this.Write(" b)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
  } 
             this.Write("\r\n");
  } 
