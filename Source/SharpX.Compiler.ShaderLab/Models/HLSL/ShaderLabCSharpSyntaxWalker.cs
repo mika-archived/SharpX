@@ -122,6 +122,22 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             Statement?.AddSourcePart(assignment);
         }
 
+        public override void VisitConditionalExpression(ConditionalExpressionSyntax node)
+        {
+            var expression = new Expression();
+
+            using (SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.ConditionalExpressionSyntax, expression))
+            {
+                Visit(node.Condition);
+                expression.AddSourcePart(new Span(" ? "));
+                Visit(node.WhenTrue);
+                expression.AddSourcePart(new Span(" : "));
+                Visit(node.WhenFalse);
+            }
+
+            Statement?.AddSourcePart(expression);
+        }
+
         public override void VisitLiteralExpression(LiteralExpressionSyntax node)
         {
             var value = _context.SemanticModel.GetConstantValue(node);
