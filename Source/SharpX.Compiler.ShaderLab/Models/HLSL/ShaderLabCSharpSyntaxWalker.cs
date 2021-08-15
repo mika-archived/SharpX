@@ -131,6 +131,24 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             }
         }
 
+        public override void VisitElementAccessExpression(ElementAccessExpressionSyntax node)
+        {
+            var expression = new Expression();
+
+            using (SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.ElementAccessExpressionSyntax, expression))
+            {
+                Visit(node.Expression);
+                expression.AddSourcePart(new Span("["));
+
+                using (SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.ElementAccessExpressionSyntax, expression))
+                    Visit(node.ArgumentList);
+
+                expression.AddSourcePart(new Span("]"));
+            }
+
+            Statement?.AddSourcePart(expression);
+        }
+
         public override void VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
         {
             var s = _context.SemanticModel.GetSymbolInfo(node);
