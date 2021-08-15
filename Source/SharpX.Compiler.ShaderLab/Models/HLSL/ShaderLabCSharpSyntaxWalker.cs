@@ -89,6 +89,20 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             Statement?.AddSourcePart(expression);
         }
 
+        public override void VisitBinaryExpression(BinaryExpressionSyntax node)
+        {
+            var expression = new Expression();
+
+            using (SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.BinaryExpressionSyntax, expression))
+            {
+                Visit(node.Left);
+                expression.AddSourcePart(new Span($" {node.OperatorToken.ValueText} "));
+                Visit(node.Right);
+            }
+
+            Statement?.AddSourcePart(expression);
+        }
+
         public override void VisitAssignmentExpression(AssignmentExpressionSyntax node)
         {
             Assignment assignment;
@@ -139,10 +153,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             {
                 Visit(node.Expression);
                 expression.AddSourcePart(new Span("["));
-
-                using (SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.ElementAccessExpressionSyntax, expression))
-                    Visit(node.ArgumentList);
-
+                Visit(node.ArgumentList);
                 expression.AddSourcePart(new Span("]"));
             }
 
