@@ -15,15 +15,32 @@ namespace SharpX.Compiler.Models
     {
         private readonly Dictionary<string, ISourceContext> _contexts;
         private readonly SharpXPluginHost _host;
+        private string _variant;
 
         public ISourceContext Default => _contexts["source"];
 
-        private LanguageBackendContext CurrentLanguageBackendContext => (LanguageBackendContext) _host.CurrentLanguageBackendContext!;
+        public LanguageBackendContext CurrentLanguageBackendContext => (LanguageBackendContext) _host.CurrentLanguageBackendContext!;
 
         public AssemblyContext(SharpXPluginHost host)
         {
             _host = host;
-            _contexts = new Dictionary<string, ISourceContext> { { "source", new DefaultSourceContext() } };
+            _contexts = new Dictionary<string, ISourceContext>();
+            _variant = "";
+
+            InitializeContext();
+        }
+
+        public void SwitchVariant(string variant)
+        {
+            _contexts.Clear();
+            _variant = variant;
+
+            InitializeContext();
+        }
+
+        private void InitializeContext()
+        {
+            _contexts.Add("source", new DefaultSourceContext());
         }
 
         public ISourceContext AddContext<T>(string name)
@@ -37,7 +54,8 @@ namespace SharpX.Compiler.Models
 
         private bool HasContext<T>(string name, out string fullName)
         {
-            fullName = name.Replace("{extension}", CurrentLanguageBackendContext.GetExtensionFor<T>());
+            var replaced = CurrentLanguageBackendContext.GetSourceMappingGeneratorFor<T>().Invoke(new SourceContextMappingGeneratorArgs(_variant, name));
+            fullName = replaced.Replace("{extension}", CurrentLanguageBackendContext.GetExtensionFor<T>());
             return _contexts.ContainsKey(fullName);
         }
 

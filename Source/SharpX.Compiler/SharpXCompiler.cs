@@ -70,25 +70,6 @@ namespace SharpX.Compiler
         {
             _errors.Clear();
 
-            var modules = new ConcurrentBag<CompilationModule>();
-
-            Parallel.ForEach(_options.Items, path =>
-            {
-                if (!File.Exists(path))
-                    throw new FileNotFoundException();
-
-                var source = SourceText.From(File.ReadAllText(path, Encoding.UTF8), Encoding.UTF8);
-                var module = new CompilationModule(CSharpSyntaxTree.ParseText(source, CSharpParseOptions.Default, Path.Combine(Environment.CurrentDirectory, path)));
-
-                modules.Add(module);
-            });
-
-            if (modules.Any(w => w.HasErrors))
-            {
-                _errors.AddRange(modules.SelectMany(w => w.Errors));
-                return;
-            }
-
             if (!_host.HasLanguageBackend(_options.Target))
             {
                 _errors.Add($"Failed to load language backend implementation of {_options.Target}.");
@@ -97,31 +78,62 @@ namespace SharpX.Compiler
 
             _host.InitializeLanguageBackend(_options.Target);
 
-            var compilation = CSharpCompilation.Create("SharpX.Assembly", modules.Select(w => w.SyntaxTree), _references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
             var context = new AssemblyContext(_host);
+            var backend = context.CurrentLanguageBackendContext;
 
-            foreach (var module in modules)
+            foreach (var (name, preprocessors) in backend.PreprocessorVariants)
             {
-                var model = compilation.GetSemanticModel(module.SyntaxTree);
-                module.Compile(model, context);
-            }
+                context.SwitchVariant(name);
 
-            if (modules.Any(w => w.HasErrors))
-            {
-                _errors.AddRange(modules.SelectMany(w => w.Errors));
-                return;
-            }
+                var modules = new ConcurrentBag<CompilationModule>();
+                
+                Parallel.ForEach(_options.Items, path =>
+                {
+                    if (!File.Exists(path))
+                        throw new FileNotFoundException();
 
-            if (modules.Any(w => w.HasWarnings))
-                _warnings.AddRange(modules.SelectMany(w => w.Warnings));
+                    var source = SourceText.From(File.ReadAllText(path, Encoding.UTF8), Encoding.UTF8);
+                    var options = CSharpParseOptions.Default.WithPreprocessorSymbols(preprocessors);
+                    var module = new CompilationModule(CSharpSyntaxTree.ParseText(source, options, Path.Combine(Environment.CurrentDirectory, path)));
 
-            if (!Directory.Exists(_options.OutputDir))
-                Directory.CreateDirectory(_options.OutputDir);
+                    modules.Add(module);
+                });
 
-            foreach (var (name, source) in context.FlushAll())
-            {
-                var path = Path.Combine(_options.OutputDir, name);
-                File.WriteAllText(path, source);
+                if (modules.Any(w => w.HasErrors))
+                {
+                    _errors.AddRange(modules.SelectMany(w => w.Errors));
+                    return;
+                }
+
+                var compilation = CSharpCompilation.Create("SharpX.Assembly", modules.Select(w => w.SyntaxTree), _references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+                foreach (var module in modules)
+                {
+                    var model = compilation.GetSemanticModel(module.SyntaxTree);
+                    module.Compile(model, context);
+                }
+
+                if (modules.Any(w => w.HasErrors))
+                {
+                    _errors.AddRange(modules.SelectMany(w => w.Errors));
+                    return;
+                }
+
+                if (modules.Any(w => w.HasWarnings))
+                    _warnings.AddRange(modules.SelectMany(w => w.Warnings));
+
+                if (!Directory.Exists(_options.OutputDir))
+                    Directory.CreateDirectory(_options.OutputDir);
+
+                foreach (var (filename, source) in context.FlushAll())
+                {
+                    var path = Path.Combine(_options.OutputDir, filename);
+                    var basename = Path.GetDirectoryName(path);
+                    if (!string.IsNullOrWhiteSpace(basename) && !Directory.Exists(basename))
+                        Directory.CreateDirectory(basename);
+
+                    File.WriteAllText(path, source);
+                }
             }
         }
 
