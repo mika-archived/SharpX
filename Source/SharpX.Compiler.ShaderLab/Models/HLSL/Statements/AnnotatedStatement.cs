@@ -1,25 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.Composition.Interfaces;
 
 namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
 {
-    internal class Expression : INestableStatement
+    public class AnnotatedStatement : INestableStatement
     {
+        private readonly List<string> _annotations;
         private readonly List<IStatement> _statements;
-        private readonly bool _isIndented;
 
-        public Expression(bool isIndented = false)
+        public AnnotatedStatement()
         {
-            _isIndented = isIndented;
+            _annotations = new List<string>();
             _statements = new List<IStatement>();
         }
 
         public void WriteTo(SourceBuilder sb)
         {
-            if (_isIndented)
-                sb.WriteIndent();
+            foreach (var annotation in _annotations)
+                sb.WriteLineWithIndent($"[{annotation}]");
 
             foreach (var statement in _statements)
                 statement.WriteTo(sb);
@@ -35,13 +36,9 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
             _statements.Add(statement);
         }
 
-        public string ToSourceString()
+        public void AddAnnotation(string annotation)
         {
-            var sb = new SourceBuilder();
-
-            WriteTo(sb);
-
-            return sb.ToSource();
+            _annotations.Add(annotation);
         }
     }
 }

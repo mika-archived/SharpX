@@ -157,12 +157,60 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             {
                 var capture = new MethodSymbolCapture(symbol, _context.SemanticModel);
                 if (capture.HasAttribute<CompilerAnnotatedAttribute>())
-                    return;
+                {
+                    var attr = capture.GetAttribute<CompilerAnnotatedAttribute>()!;
+                    switch (attr.Method)
+                    {
+                        case "AnnotatedStatement":
+                        {
+                            var statement = new AnnotatedStatement();
 
-                var function = new FunctionCall(capture.GetIdentifierName());
-                using (SyntaxCaptureScope<FunctionCall>.Create(this, WellKnownSyntax.InvocationExpressionSyntax, function))
-                    Visit(node.ArgumentList);
-                Statement?.AddSourcePart(function);
+                            using (var scope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.InvocationExpressionSyntax, new Expression()))
+                            {
+                                Visit(node.ArgumentList.Arguments[0]);
+                                statement.AddAnnotation(scope.Statement.ToSourceString());
+
+                                using (var innerScope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.InvocationExpressionSyntax, new Expression()))
+                                {
+                                    var statements = ((node.ArgumentList.Arguments[1].Expression as ParenthesizedLambdaExpressionSyntax)?.Block?.Statements);
+                                    if (statements != null)
+                                        foreach (var innerStatement in statements)
+                                            Visit(innerStatement);
+
+                                    statement.AddSourcePart(innerScope.Statement);
+                                }
+                            }
+
+                            Statement?.AddSourcePart(statement);
+                            break;
+                        }
+
+                        case "Raw":
+                        {
+                            var expression = new Expression(true);
+
+                            using (var scope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.InvocationExpressionSyntax, new Expression()))
+                            {
+                                Visit(node.ArgumentList.Arguments[0]);
+                                expression.AddSourcePart(scope.Statement);
+                            }
+
+                            Statement?.AddSourcePart(expression);
+                            Statement?.AddSourcePart(new EmptyStatement());
+                            break;
+                        }
+
+                        default:
+                            throw new ArgumentOutOfRangeException(attr.Method);
+                    }
+                }
+                else
+                {
+                    var function = new FunctionCall(capture.GetIdentifierName());
+                    using (SyntaxCaptureScope<FunctionCall>.Create(this, WellKnownSyntax.InvocationExpressionSyntax, function))
+                        Visit(node.ArgumentList);
+                    Statement?.AddSourcePart(function);
+                }
             }
         }
 

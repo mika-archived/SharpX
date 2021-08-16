@@ -7,10 +7,10 @@ namespace SharpX.Library.ShaderLab.Statements
     [External]
     public static class Compiler
     {
-        [CompilerAnnotated("Annotated")]
+        [CompilerAnnotated(nameof(AnnotatedStatement))]
         public static extern void AnnotatedStatement(string attribute, Action action);
 
-        [CompilerAnnotated("RawInput")]
+        [CompilerAnnotated(nameof(Raw))]
         public static extern void Raw(string raw);
 
     }
