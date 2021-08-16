@@ -1,6 +1,6 @@
 # SharpX
 
-Extensible Experimental C# to _X_ Transpiler.
+Extensible Experimental C# to _X_ Transpiler.  
 SharpX compiler understands the code and compiles it according to the C# 9 language specification.
 However, how much language specification is supported depends on the compilation target (for example, ShaderLab does not support LINQ and async-await).
 
