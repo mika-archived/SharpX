@@ -20,7 +20,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
 
         public void WriteTo(SourceBuilder sb)
         {
-            if (string.IsNullOrWhiteSpace(_identifier))
+            if (_identifier == null)
                 throw new InvalidOperationException($"missing {nameof(_identifier)}");
 
             sb.WriteSpan(_identifier);

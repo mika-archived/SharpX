@@ -206,9 +206,14 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 }
                 else
                 {
-                    var function = new FunctionCall(capture.GetIdentifierName());
+                    var t = TypeDeclarationCapture.Capture(symbol.ContainingType, _context.SemanticModel);
+                    if (!symbol.IsStatic)
+                        Visit(node.Expression);
+
+                    var function = new FunctionCall(!symbol.IsStatic && t.HasAttribute<ExternalAttribute>() ? "" : capture.GetIdentifierName());
                     using (SyntaxCaptureScope<FunctionCall>.Create(this, WellKnownSyntax.InvocationExpressionSyntax, function))
                         Visit(node.ArgumentList);
+
                     Statement?.AddSourcePart(function);
                 }
             }
@@ -298,10 +303,14 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             {
                 case IMethodSymbol m:
                 {
-                    var capture = new MethodSymbolCapture(m, _context.SemanticModel);
-                    Statement?.OfType<FunctionCall>()?.AddIdentifier(capture.GetIdentifierName());
+                    var memberAccess = new MemberAccess();
+                    using (SyntaxCaptureScope<MemberAccess>.Create(this, WellKnownSyntax.MemberAccessExpressionSyntax, memberAccess))
+                        Visit(node.Expression);
 
-                    Visit(node.Expression);
+                    var capture = new MethodSymbolCapture(m, _context.SemanticModel);
+                    memberAccess.AddSourcePart(new Span(capture.GetIdentifierName()));
+                    Statement?.AddSourcePart(memberAccess);
+
                     break;
                 }
 
@@ -441,6 +450,27 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
                     statement.AddSourcePart(scope.Statement);
                 }
+
+                Statement?.AddSourcePart(statement);
+            }
+        }
+
+        public override void VisitExpressionStatement(ExpressionStatementSyntax node)
+        {
+            var nodes = node.Expression.DescendantNodes(w => w is InvocationExpressionSyntax or ArgumentListSyntax or ArgumentSyntax);
+            if (nodes.Any(w => w is ParenthesizedLambdaExpressionSyntax))
+            {
+                var statement = new Expression();
+                using (SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.ExpressionStatementSyntax, statement))
+                    Visit(node.Expression);
+
+                Statement?.AddSourcePart(statement);
+            }
+            else
+            {
+                var statement = new Statement();
+                using (SyntaxCaptureScope<Statement>.Create(this, WellKnownSyntax.ExpressionStatementSyntax, statement))
+                    Visit(node.Expression);
 
                 Statement?.AddSourcePart(statement);
             }
