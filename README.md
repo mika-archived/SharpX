@@ -1,6 +1,8 @@
 # SharpX
 
 Extensible Experimental C# to _X_ Transpiler.
+SharpX compiler understands the code and compiles it according to the C# 9 language specification.
+However, how much language specification is supported depends on the compilation target (for example, ShaderLab does not support LINQ and async-await).
 
 ## Motivation
 
@@ -29,16 +31,15 @@ This tool works independently of any particular platform.
 
 ### Runtime (User) Requirements
 
-- .NET 6 Preview 6 or greater
+- .NET 6 Preview 7 or greater
 
 This means that SharpX will not work at natively on Unity at this time.
 However, since SharpX itself is provided as a library and executable, it can be run in the UnityEditor by writing simple wrapper editor extension code.
 
 ### Developer Requirements
 
-- .NET 6 Preview 6 or greater
-- Visual Studio 2019 (requires to support Roslyn Source Generators)
-- Visual Studio 2022
+- .NET 6 Preview 7 or greater
+- Visual Studio 2022 Preview 3 or greater
 
 ## Documentation
 
