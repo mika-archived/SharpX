@@ -41,6 +41,19 @@ namespace SharpX.Compiler.Composition.Interfaces
         void RegisterSourceContextGeneratorFor(Type t, Func<ISourceContextGeneratorArgs, ISourceContext> generator);
 
         /// <summary>
+        ///     Registers the generator of naming convention for context.
+        /// </summary>
+        /// <param name="generator"></param>
+        void RegisterSourceContextFileMappingGenerator(Func<ISourceContextMappingArgs, string> generator);
+
+        /// <summary>
+        /// Registers the generator of naming convention for context based on the base class <paramref name="t" />.
+        /// </summary>
+        /// <param name="t"></param>
+        /// <param name="generator"></param>
+        void RegisterSourceContextFileMappingGeneratorFor(Type t, Func<ISourceContextMappingArgs, string> generator);
+
+        /// <summary>
         ///     SharpX has completed the parsing and semantic analysis C# source, it will plug-in the new process based on the
         ///     syntax rules.
         ///     This method is called before the child nodes are visited.
@@ -65,5 +78,10 @@ namespace SharpX.Compiler.Composition.Interfaces
         /// </summary>
         /// <param name="generator"></param>
         void RegisterCSharpSyntaxWalker(Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker> generator);
+
+        /// <summary>
+        ///     Register a preprocessor symbols combinations for multiple time compile
+        /// </summary>
+        void RegisterCompilationVariants(string key, string?[] preprocessors);
     }
 }
