@@ -267,6 +267,29 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             Statement?.AddSourcePart(expression);
         }
 
+        public override void VisitPostfixUnaryExpression(PostfixUnaryExpressionSyntax node)
+        {
+            var expression = new Expression();
+            using (var scope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.PostfixUnaryExpressionSyntax, expression))
+            {
+                Visit(node.Operand);
+
+                switch (node.Kind())
+                {
+                    case SyntaxKind.PostIncrementExpression:
+                        scope.Statement.AddSourcePart(new Span("++"));
+                        break;
+
+                    case SyntaxKind.PostDecrementExpression:
+                        scope.Statement.AddSourcePart(new Span("--"));
+                        break;
+
+                }
+            }
+
+            Statement?.AddSourcePart(expression);
+        }
+
         public override void VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
         {
             var s = _context.SemanticModel.GetSymbolInfo(node);
