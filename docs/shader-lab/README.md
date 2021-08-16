@@ -27,6 +27,7 @@ public class AppData
     public SlFloat4 Vertex { get; }
 }
 
+//
 // struct AppData
 // {
 //     float4 Vertex : SV_POSITION;
@@ -79,4 +80,52 @@ public class FragmentShader
 // {
 //     SHADOW_CASTER_FRAGMENT(i)
 // }
+```
+
+## Special Syntaxes
+
+Some of the features available in HLSL are not supported in C#.
+SharpX.Compiler.ShaderLab provides a workaround.
+
+### Statement Attributes
+
+If you want to add an attribute to the statement itself, such as unroll, use `Compiler.AnnotatedStatement`.
+
+```csharp
+Compiler.AnnotatedStatement("unroll", () => {
+    for (var j = 0; j < 3; j++)
+    {
+        ...
+    }
+});
+
+//
+// [unroll]
+// for (int j = 0; j < 3;  j++)
+// {
+//     ...
+// }
+```
+
+### Macro
+
+If you want to extract macros used in Unity or other libraries, use `Compiler.Raw`.
+This allows you to output HLSL source code in its original form.
+
+```csharp
+Compiler.Raw("SHADOW_CASTER_FRAGMENT(i)");
+
+//
+// SHADOW_CASTER_FRAGMENT(i)
+```
+
+If you want to expand a macro inside a struct, you can do the same by attaching a RawAttribute to the property starting with two underscores.
+
+```csharp
+public struct AppData
+{
+    [Raw("V2F_SHADOW_CASTER")]
+    public int __ShadowCaster { get; }
+}
+
 ```

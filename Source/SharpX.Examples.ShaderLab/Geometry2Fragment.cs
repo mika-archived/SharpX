@@ -11,12 +11,5 @@ namespace SharpX.Examples.ShaderLab
         [Semantic("TEXCOORD3")]
         [Property("bary")]
         public SlFloat3 Bary { get; set; }
-
-        public Geometry2Fragment()
-        {
-#if SHADER_SHADOWCASTER
-            Compiler.Raw("V2F_SHADOW_CASTER");
-#endif
-        }
     }
 }

@@ -654,6 +654,13 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 return;
             }
 
+            if (node.Declaration.Variables.First().Identifier.ValueText.StartsWith("__") && capture.HasAttribute<RawAttribute>())
+            {
+                var attr = capture.GetAttribute<RawAttribute>();
+                context.StructDeclaration.AddMember(attr!.Raw);
+                return;
+            }
+
             if (capture.HasAttribute<SemanticAttribute>())
             {
                 if (node.HasModifiers(SyntaxKind.StaticKeyword))
@@ -739,6 +746,13 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             if (context.StructDeclaration == null)
             {
                 _context.Warnings.Add(new DefaultError(node, "Property declaration found outside of structure definition"));
+                return;
+            }
+
+            if (node.Identifier.ValueText.StartsWith("__") && capture.HasAttribute<RawAttribute>())
+            {
+                var attr = capture.GetAttribute<RawAttribute>();
+                context.StructDeclaration.AddMember(attr!.Raw);
                 return;
             }
 
@@ -954,7 +968,16 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                         {
                             case IPropertySymbol s:
                                 var propertyCapture = new PropertySymbolCapture(s, _context.SemanticModel);
-                                context.StructDeclaration?.AddMember(propertyCapture.GetDeclaredType(), propertyCapture.GetIdentifierName(), propertyCapture.GetSemanticsName());
+                                if (s.Name.StartsWith("__") && propertyCapture.HasAttribute<RawAttribute>())
+                                {
+                                    var attr = propertyCapture.GetAttribute<RawAttribute>();
+                                    context.StructDeclaration?.AddMember(attr!.Raw);
+                                }
+                                else
+                                {
+                                    context.StructDeclaration?.AddMember(propertyCapture.GetDeclaredType(), propertyCapture.GetIdentifierName(), propertyCapture.GetSemanticsName());
+                                }
+
                                 break;
 
                             case IFieldSymbol s:
@@ -962,7 +985,16 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                                     break;
 
                                 var fieldCapture = new FieldSymbolCapture(s, _context.SemanticModel);
-                                context.StructDeclaration?.AddMember(fieldCapture.GetDeclaredType(), fieldCapture.GetIdentifierName(), fieldCapture.GetSemanticsName());
+                                if (s.Name.StartsWith("__") && fieldCapture.HasAttribute<RawAttribute>())
+                                {
+                                    var attr = fieldCapture.GetAttribute<RawAttribute>();
+                                    context.StructDeclaration?.AddMember(attr!.Raw);
+                                }
+                                else
+                                {
+                                    context.StructDeclaration?.AddMember(fieldCapture.GetDeclaredType(), fieldCapture.GetIdentifierName(), fieldCapture.GetSemanticsName());
+                                }
+
                                 break;
                         }
 
