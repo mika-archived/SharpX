@@ -542,6 +542,19 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 Visit(node.Statement);
 
             Statement?.AddSourcePart(statement);
+
+            if (node.Else != null)
+                Visit(node.Else);
+        }
+
+        public override void VisitElseClause(ElseClauseSyntax node)
+        {
+            var statement = new ElseStatement();
+
+            using (SyntaxCaptureScope<ElseStatement>.Create(this, WellKnownSyntax.IfStatementSyntax, statement))
+                Visit(node.Statement);
+
+            Statement?.AddSourcePart(statement);
         }
 
         public override void VisitClassDeclaration(ClassDeclarationSyntax node)

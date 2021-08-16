@@ -22,7 +22,11 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
             if (_condition == null)
                 throw new ArgumentNullException();
 
-            sb.WriteSpanWithIndent("if (");
+            if (sb.IsIndented)
+                sb.WriteSpan("if (");
+            else
+                sb.WriteSpanWithIndent("if (");
+
             _condition.WriteTo(sb);
             sb.WriteLine(")");
 
