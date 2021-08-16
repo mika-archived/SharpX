@@ -717,6 +717,12 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 foreach (var symbol in _context.SemanticModel.LookupSymbols(node.SpanStart).Where(w => w is ILocalSymbol or IParameterSymbol).ToList())
                     if (symbol.DeclaringSyntaxReferences.All(w => !node.InParent(w.GetSyntax())))
                     {
+                        var loc = symbol.Locations.First();
+                        if (loc.IsInMetadata)
+                            continue;
+                        if (loc.SourceSpan.Start > node.Span.Start)
+                            continue;
+
                         var s = symbol switch
                         {
                             ILocalSymbol l => l.Type,
