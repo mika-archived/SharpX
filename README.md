@@ -25,6 +25,10 @@ However, there are some disadvantages as well:
 - Unoptimized - Not specializing in a particular language, mysterious syntax may be required
 - Portability - Portability to different languages is low because each specific language requires different requirements
 
+## Available Backend Languages
+
+- ShaderLab (HLSL)
+
 ## Requirements
 
 This tool works independently of any particular platform.
