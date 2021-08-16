@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -65,7 +66,7 @@ namespace SharpX.CLI.Commands
         private bool ValidateOptions()
         {
             if (string.IsNullOrWhiteSpace(_project))
-                return ValidateRawArguments(_sources, _out, _references, _plugins, _target);
+                return ValidateRawArguments(_sources, _out, _references, _plugins, _target, new Dictionary<string, JsonElement>());
 
             return ValidateProjectArgument();
         }
@@ -82,7 +83,7 @@ namespace SharpX.CLI.Commands
                 if (obj == null)
                     return false;
 
-                return ValidateRawArguments(obj.Sources, obj.Out, obj.References, obj.Plugins, obj.Target);
+                return ValidateRawArguments(obj.Sources, obj.Out, obj.References, obj.Plugins, obj.Target, obj.CustomOptions);
             }
             catch (Exception e)
             {
@@ -92,7 +93,7 @@ namespace SharpX.CLI.Commands
         }
 
         [MemberNotNullWhen(true, nameof(_configuration))]
-        private bool ValidateRawArguments(string[]? sources, string? @out, string[]? references, string[]? plugins, string? target)
+        private bool ValidateRawArguments(string[]? sources, string? @out, string[]? references, string[]? plugins, string? target, Dictionary<string, JsonElement>? customOptions)
         {
             if (sources == null || sources.Length == 0)
                 return false;
@@ -110,6 +111,7 @@ namespace SharpX.CLI.Commands
                 return false;
 
             _configuration = new CompilerConfiguration(sources, references ?? Array.Empty<string>(), plugins ?? Array.Empty<string>(), @out, target);
+            _configuration = _configuration with { CustomOptions = customOptions ?? new Dictionary<string, JsonElement>() };
             return true;
         }
     }

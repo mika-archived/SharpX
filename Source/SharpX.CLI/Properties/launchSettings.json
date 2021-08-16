@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SharpX.CLI": {
+      "commandName": "Project",
+      "commandLineArgs": "build --project ssconfig.json"
+    }
+  }
+}

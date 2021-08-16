@@ -11,6 +11,16 @@ namespace SharpX.Examples.ShaderLab
         [Property("_Time")]
         public static SlFloat4 Time { get; }
 
+        [External]
+        [GlobalMember]
+        [Property("_SinTime")]
+        public static SlFloat4 SinTime { get; }
+
+        [External]
+        [GlobalMember]
+        [Property("_CosTime")]
+        public static SlFloat4 CosTime { get; }
+
         [GlobalMember]
         [Property("_MainTex")]
         public static Sampler2D MainTexture { get; }
