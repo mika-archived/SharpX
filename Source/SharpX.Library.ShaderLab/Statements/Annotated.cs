@@ -5,9 +5,9 @@ using SharpX.Library.ShaderLab.Attributes;
 namespace SharpX.Library.ShaderLab.Statements
 {
     [External]
-    public static class ForStatement
+    public static class Annotated
     {
         [CompilerAnnotated]
-        public static extern void AttributedFor(string attribute, Action action);
+        public static extern void AnnotatedStatement(string attribute, Action action);
     }
 }
