@@ -24,8 +24,9 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
         public WellKnownSyntax? CurrentCapturing => CapturingStack.Count > 0 ? CapturingStack.Peek() : null;
 
-        // TODO: Into Stack Scope
-        public Dictionary<string, object> Metadata { get; }
+        public Stack<Dictionary<string, object>> MetadataStack { get; }
+
+        public Dictionary<string, object>? Metadata => MetadataStack.Count > 0 ? MetadataStack.Peek() : null;
 
         public Stack<WellKnownSyntax> CapturingStack { get; }
 
@@ -38,7 +39,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             _context = context;
             CapturingStack = new Stack<WellKnownSyntax>();
             StatementStack = new Stack<INestableStatement>();
-            Metadata = new Dictionary<string, object>();
+            MetadataStack = new Stack<Dictionary<string, object>>();
         }
 
         public override void DefaultVisit(SyntaxNode node)
@@ -252,7 +253,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             {
                 var statement = new Expression();
                 statement.AddSourcePart(new Span("{"));
-                using (var scope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.InitializerExpressionSyntax, new Expression()))
+                using (var scope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.InitializerExpressionSyntax, new Expression(), true))
                 {
                     var initializers = 0;
                     foreach (var (expression, i) in node.Expressions.Select((w, i) => (w, i)))
@@ -265,7 +266,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                     }
 
                     statement.AddSourcePart(scope.Statement);
-                    Metadata.Add("initializer_count", initializers);
+                    scope.Metadata.Add("initializer_count", initializers);
                 }
 
                 statement.AddSourcePart(new Span("}"));
@@ -326,11 +327,8 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 {
                     Visit(variable.Initializer);
 
-                    if (Metadata.ContainsKey("initializer_count"))
-                    {
-                        scope.Statement.AddArrayCount(int.Parse(Metadata["initializer_count"].ToString() ?? "0"));
-                        Metadata.Remove("initializer_count");
-                    }
+                    if (scope.Metadata.ContainsKey("initializer_count"))
+                        scope.Statement.AddArrayCount(int.Parse(scope.Metadata["initializer_count"].ToString() ?? "0"));
 
                     statement.AddSourcePart(scope.Statement);
                 }
