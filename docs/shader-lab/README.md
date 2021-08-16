@@ -128,4 +128,9 @@ public struct AppData
     public int __ShadowCaster { get; }
 }
 
+//
+// struct AppData
+// {
+//     V2F_SHADOW_CASTER
+// }
 ```
