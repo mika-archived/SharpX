@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
     <AssemblyName>sxc</AssemblyName>
     <Authors>Natsuneko</Authors>
     <Product>SharpX Compiler CLI</Product>
