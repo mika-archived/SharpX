@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 using Microsoft.CodeAnalysis;
@@ -396,6 +397,43 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             {
                 Visit(node.Expression);
                 statement.AddSourcePart(scope.Statement);
+            }
+
+            Statement?.AddSourcePart(statement);
+        }
+
+        public override void VisitForStatement(ForStatementSyntax node)
+        {
+            ForStatement statement;
+
+            using (var declarator = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.ForStatementSyntax, new Expression()))
+            {
+                Visit(node.Declaration);
+
+                using (var initializer = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.ForStatementSyntax, new Expression()))
+                {
+                    // Should I Processing It?
+                    foreach (var i in node.Initializers)
+                        Visit(i);
+
+                    using (var condition = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.ForStatementSyntax, new Expression()))
+                    {
+                        Visit(node.Condition);
+
+                        using (var incrementor = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.ForStatementSyntax, new Expression()))
+                        {
+                            foreach (var i in node.Incrementors)
+                                Visit(i);
+
+                            statement = new ForStatement(declarator.Statement, condition.Statement, incrementor.Statement);
+
+                            using (SyntaxCaptureScope<ForStatement>.Create(this, WellKnownSyntax.ForStatementSyntax, statement))
+                            {
+                                Visit(node.Statement);
+                            }
+                        }
+                    }
+                }
             }
 
             Statement?.AddSourcePart(statement);

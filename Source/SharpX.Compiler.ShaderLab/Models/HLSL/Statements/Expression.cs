@@ -43,5 +43,10 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
 
             return sb.ToSource();
         }
+
+        public IReadOnlyList<IStatement> CastUp()
+        {
+            return _statements;
+        }
     }
 }

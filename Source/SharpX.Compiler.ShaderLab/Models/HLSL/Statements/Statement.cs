@@ -41,5 +41,15 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
         {
             _statements.Add(statement);
         }
+
+
+        public Expression IntoExpression()
+        {
+            var expression = new Expression();
+            foreach (var statement in _statements) 
+                expression.AddSourcePart(statement);
+
+            return expression;
+        }
     }
 }

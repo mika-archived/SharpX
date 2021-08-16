@@ -67,7 +67,7 @@ namespace SharpX.Examples.ShaderLab
             {
                 Compiler.AnnotatedStatement("unroll", () =>
                 {
-                    for (var j = 0; j < 3; j++)
+                    for (SlInt j = 0; j < 3; j++)
                     {
                         var vertex = i[j].WorldPos.XYZ;
                         var uv = i[j].TexCoord;
