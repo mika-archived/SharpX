@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 using Microsoft.CodeAnalysis;
@@ -173,7 +172,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
                                 using (var innerScope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.InvocationExpressionSyntax, new Expression()))
                                 {
-                                    var statements = ((node.ArgumentList.Arguments[1].Expression as ParenthesizedLambdaExpressionSyntax)?.Block?.Statements);
+                                    var statements = (node.ArgumentList.Arguments[1].Expression as ParenthesizedLambdaExpressionSyntax)?.Block?.Statements;
                                     if (statements != null)
                                         foreach (var innerStatement in statements)
                                             Visit(innerStatement);
@@ -225,6 +224,44 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 expression.AddSourcePart(new Span("["));
                 Visit(node.ArgumentList);
                 expression.AddSourcePart(new Span("]"));
+            }
+
+            Statement?.AddSourcePart(expression);
+        }
+
+        public override void VisitPrefixUnaryExpression(PrefixUnaryExpressionSyntax node)
+        {
+            var expression = new Expression();
+            using (var scope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.PrefixUnaryExpressionSyntax, expression))
+            {
+                switch (node.Kind())
+                {
+                    case SyntaxKind.UnaryPlusExpression:
+                        scope.Statement.AddSourcePart(new Span("+"));
+                        break;
+
+                    case SyntaxKind.UnaryMinusExpression:
+                        scope.Statement.AddSourcePart(new Span("-"));
+                        break;
+
+                    case SyntaxKind.BitwiseNotExpression:
+                        scope.Statement.AddSourcePart(new Span("~"));
+                        break;
+
+                    case SyntaxKind.PreIncrementExpression:
+                        scope.Statement.AddSourcePart(new Span("++"));
+                        break;
+
+                    case SyntaxKind.PreDecrementExpression:
+                        scope.Statement.AddSourcePart(new Span("--"));
+                        break;
+
+                    case SyntaxKind.LogicalNotExpression:
+                        scope.Statement.AddSourcePart(new Span("!"));
+                        break;
+                }
+
+                Visit(node.Operand);
             }
 
             Statement?.AddSourcePart(expression);
@@ -428,9 +465,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                             statement = new ForStatement(declarator.Statement, condition.Statement, incrementor.Statement);
 
                             using (SyntaxCaptureScope<ForStatement>.Create(this, WellKnownSyntax.ForStatementSyntax, statement))
-                            {
                                 Visit(node.Statement);
-                            }
                         }
                     }
                 }
