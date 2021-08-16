@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
 
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -19,14 +20,17 @@ namespace SharpX.Compiler.Models.Plugin
 
         public IReadOnlyCollection<Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker>> Walkers => _walkers.AsReadOnly();
 
-        public LanguageBackendContext()
+        public LanguageBackendContext(JsonElement extraOptions)
         {
             _afterActions = new Dictionary<WellKnownSyntax, List<(Action<ILanguageSyntaxActionContext> Action, Func<ILanguageSyntaxActionContext, bool> Predicator)>>();
             _beforeActions = new Dictionary<WellKnownSyntax, List<(Action<ILanguageSyntaxActionContext> Action, Func<ILanguageSyntaxActionContext, bool> Predicator)>>();
             _extensionsMappings = new Dictionary<string, string>();
             _generatorMappings = new Dictionary<string, Func<ISourceContextGeneratorArgs, ISourceContext>>();
             _walkers = new List<Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker>>();
+            ExtraOptions = extraOptions;
         }
+
+        public JsonElement ExtraOptions { get; }
 
         public void RegisterExtension(string extension)
         {

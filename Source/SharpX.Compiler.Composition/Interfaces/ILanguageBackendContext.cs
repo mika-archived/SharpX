@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json;
 
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -8,6 +9,11 @@ namespace SharpX.Compiler.Composition.Interfaces
 {
     public interface ILanguageBackendContext
     {
+        /// <summary>
+        ///     Get extra compiler options
+        /// </summary>
+        JsonElement ExtraOptions { get; }
+
         /// <summary>
         ///     Registers the extension of the generated source.
         /// </summary>

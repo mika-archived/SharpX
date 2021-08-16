@@ -33,7 +33,7 @@ namespace SharpX.Compiler
             _errors = new List<string>();
             _warnings = new List<string>();
             _references = new List<MetadataReference>();
-            _host = new SharpXPluginHost();
+            _host = new SharpXPluginHost(_options.CustomOptions);
         }
 
         public void LockReferences()

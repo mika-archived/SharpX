@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
+using System.Text.Json;
 
 using SharpX.Compiler.Composition.Attributes;
 using SharpX.Compiler.Composition.Interfaces;
@@ -12,6 +14,7 @@ namespace SharpX.Compiler.Models.Plugin
 {
     internal class SharpXPluginHost
     {
+        private readonly ImmutableDictionary<string, JsonElement> _extraOptions;
         private readonly Dictionary<string, (ILanguageBackend, ILanguageBackendContext)> _implementations;
         private string? _identifier;
 
@@ -39,8 +42,9 @@ namespace SharpX.Compiler.Models.Plugin
             }
         }
 
-        public SharpXPluginHost()
+        public SharpXPluginHost(ImmutableDictionary<string, JsonElement> extraOptions)
         {
+            _extraOptions = extraOptions;
             _implementations = new Dictionary<string, (ILanguageBackend, ILanguageBackendContext)>();
             _identifier = null;
         }
@@ -75,7 +79,8 @@ namespace SharpX.Compiler.Models.Plugin
             if (Activator.CreateInstance(t) is not ILanguageBackend backend)
                 return; // ???
 
-            _implementations.Add(backend.Identifier, (backend, new LanguageBackendContext()));
+            var options = _extraOptions.ContainsKey(backend.Identifier) ? _extraOptions[backend.Identifier] : new JsonElement();
+            _implementations.Add(backend.Identifier, (backend, new LanguageBackendContext(options)));
         }
 
         public bool HasLanguageBackend(string identifier)
