@@ -86,7 +86,7 @@ namespace SharpX.CLI.Commands
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Failed to load pr parse project configuration.");
+                _logger.LogError(e, "Failed to load or parse project configuration.");
                 return false;
             }
         }
