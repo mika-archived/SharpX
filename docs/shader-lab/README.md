@@ -11,7 +11,7 @@ C# (Version 9.0) features other than those listed below are roughly supported.
 - Nullable Types
 - Conditional Access : `??`, `?.`, `!.`
 - Throwing Exceptions
-- `async` / `await` / `stackalloc` expression
+- `async` / `await` / `stackalloc` / `when` / `with` expression
 - `as` / `is` / `typeof` / `sizeof` / `nameof` operator
 - `checked` / `unsafe` / `fixed` / `lock` / `using` / `goto` / `try` - `catch` ( - `finally`) statement
 

@@ -288,7 +288,6 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                     case SyntaxKind.PostDecrementExpression:
                         scope.Statement.AddSourcePart(new Span("--"));
                         break;
-
                 }
             }
 
@@ -553,6 +552,53 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
             using (SyntaxCaptureScope<ElseStatement>.Create(this, WellKnownSyntax.IfStatementSyntax, statement))
                 Visit(node.Statement);
+
+            Statement?.AddSourcePart(statement);
+        }
+
+        public override void VisitSwitchStatement(SwitchStatementSyntax node)
+        {
+            SwitchStatement statement;
+
+            using (var scope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.SwitchExpressionSyntax, new Expression()))
+            {
+                Visit(node.Expression);
+
+                statement = new SwitchStatement(scope.Statement);
+
+                using (var innerScope = SyntaxCaptureScope<Block>.Create(this, WellKnownSyntax.SwitchExpressionSyntax, new Block()))
+                {
+                    foreach (var section in node.Sections)
+                        Visit(section);
+
+                    statement.AddSourcePart(innerScope.Statement);
+                }
+            }
+
+            Statement?.AddSourcePart(statement);
+        }
+
+        public override void VisitSwitchSection(SwitchSectionSyntax node)
+        {
+            SwitchSectionStatement statement = new();
+
+            foreach (var label in node.Labels)
+                using (var scope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.SwitchSectionSyntax, new Expression()))
+                {
+                    if (label.Kind() == SyntaxKind.DefaultSwitchLabel)
+                        continue;
+
+                    Visit(label);
+                    statement.AddCondition(scope.Statement);
+                }
+
+            using (var innerScope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.SwitchSectionSyntax, new Expression()))
+            {
+                foreach (var s in node.Statements)
+                    Visit(s);
+
+                statement.AddSourcePart(innerScope.Statement);
+            }
 
             Statement?.AddSourcePart(statement);
         }
