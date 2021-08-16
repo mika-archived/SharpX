@@ -5,9 +5,13 @@ using SharpX.Library.ShaderLab.Attributes;
 namespace SharpX.Library.ShaderLab.Statements
 {
     [External]
-    public static class Annotated
+    public static class Compiler
     {
-        [CompilerAnnotated]
+        [CompilerAnnotated("Annotated")]
         public static extern void AnnotatedStatement(string attribute, Action action);
+
+        [CompilerAnnotated("RawInput")]
+        public static extern void Raw(string raw);
+
     }
 }

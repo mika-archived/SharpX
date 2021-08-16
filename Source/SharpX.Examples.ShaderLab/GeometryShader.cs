@@ -65,7 +65,7 @@ namespace SharpX.Examples.ShaderLab
         {
             if (!Globals.EnableVoxelization)
             {
-                Annotated.AnnotatedStatement("unroll", () =>
+                Compiler.AnnotatedStatement("unroll", () =>
                 {
                     for (var j = 0; j < 3; j++)
                     {
