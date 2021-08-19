@@ -6,8 +6,6 @@ using SharpX.Compiler.Composition.Attributes;
 using SharpX.Compiler.Composition.Interfaces;
 using SharpX.Compiler.ShaderLab.Models;
 using SharpX.Compiler.ShaderLab.Models.HLSL;
-using SharpX.Compiler.ShaderLab.Models.Shader;
-using SharpX.Library.ShaderLab.Interfaces;
 
 namespace SharpX.Compiler.ShaderLab
 {
@@ -22,7 +20,6 @@ namespace SharpX.Compiler.ShaderLab
         {
             ParseCompilerOptions(context.ExtraOptions);
             RegisterComponentsForShaderLabHLSL(context);
-            RegisterComponentsForShader(context);
         }
 
         private void ParseCompilerOptions(JsonElement element)
@@ -40,13 +37,6 @@ namespace SharpX.Compiler.ShaderLab
 
             foreach (var variant in _options!.ShaderVariants)
                 context.RegisterCompilationVariants(variant.Name, variant.Directives.ToArray());
-        }
-
-        private void RegisterComponentsForShader(ILanguageBackendContext context)
-        {
-            context.RegisterExtensionFor(typeof(IShader), "shader");
-            context.RegisterSourceContextFileMappingGeneratorFor(typeof(IShader), w => w.OriginalName); // DO NOT GENERATE VARIANT FILE
-            context.RegisterSourceContextGeneratorFor(typeof(IShader), _ => new ShaderLabSourceContext());
         }
     }
 }

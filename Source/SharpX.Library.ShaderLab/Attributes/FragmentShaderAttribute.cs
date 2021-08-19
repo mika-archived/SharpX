@@ -3,5 +3,5 @@
 namespace SharpX.Library.ShaderLab.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class FragmentMainAttribute : Attribute { }
+    public class FragmentShaderAttribute : Attribute { }
 }
