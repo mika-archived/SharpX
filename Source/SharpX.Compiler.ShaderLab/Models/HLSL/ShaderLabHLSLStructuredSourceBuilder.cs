@@ -17,8 +17,6 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
         // 5XXXX - footer includes
         // 60000 - footer comments
 
-        public void AddHeaderComments() { }
-
         public void AddHeaderInclude(Include include)
         {
             if (Components.Any(w => w.Name == include.Name))

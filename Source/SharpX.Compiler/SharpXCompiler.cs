@@ -82,16 +82,16 @@ namespace SharpX.Compiler
             var context = new AssemblyContext(_host);
             var backend = context.CurrentLanguageBackendContext;
 
-            foreach (var (name, preprocessors) in backend.PreprocessorVariants)
+            foreach (var variant in backend.PreprocessorVariants)
             {
-                context.SwitchVariant(name);
+                context.SwitchVariant(variant.Key);
 
                 var modules = new ConcurrentBag<CompilationModule>();
                 var projectId = ProjectId.CreateNewId("SharpX.Assembly");
                 var workspace = new AdhocWorkspace();
                 var solution = workspace.CurrentSolution.AddProject(projectId, "SharpX.Assembly", "SharpX.Assembly", LanguageNames.CSharp)
                                         .WithProjectMetadataReferences(projectId, _references)
-                                        .WithProjectParseOptions(projectId, CSharpParseOptions.Default.WithPreprocessorSymbols(preprocessors))
+                                        .WithProjectParseOptions(projectId, CSharpParseOptions.Default.WithPreprocessorSymbols(variant.Value))
                                         .WithProjectCompilationOptions(projectId, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
                 foreach (var path in _options.Items)
@@ -141,7 +141,7 @@ namespace SharpX.Compiler
                     if (model == null)
                         continue;
 
-                    module.Compile(model, context);
+                    module.Compile(model, context, variant);
                 }
 
                 if (modules.Any(w => w.HasErrors))
@@ -179,6 +179,8 @@ namespace SharpX.Compiler
             yield return Path.Combine(runtime, "System.Core.dll");
             yield return Path.Combine(runtime, "System.Runtime.dll");
             yield return Path.Combine(runtime, "System.Private.CoreLib.dll");
+            yield return Path.Combine(runtime, "System.Collections.dll");
+            yield return Path.Combine(runtime, "System.Collections.Immutable.dll");
         }
     }
 }

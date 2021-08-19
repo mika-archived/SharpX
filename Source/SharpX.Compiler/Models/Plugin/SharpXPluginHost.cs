@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 
+using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.Composition.Attributes;
 using SharpX.Compiler.Composition.Interfaces;
 using SharpX.Compiler.Extensions;
@@ -77,7 +78,7 @@ namespace SharpX.Compiler.Models.Plugin
                     switch (type)
                     {
                         case { } when type.GetCustomAttribute<LanguageBackendAttribute>() != null && typeof(ILanguageBackend).IsAssignableFrom(type):
-                            LoadLanguageBackendImplementation(type);
+                            LoadLanguageBackendImplementation(type, path);
                             break;
 
                         case { } when type.GetCustomAttribute<SourceRewriterAttribute>() != null && typeof(ISourceRewriter).IsAssignableFrom(type):
@@ -96,13 +97,14 @@ namespace SharpX.Compiler.Models.Plugin
             }
         }
 
-        private void LoadLanguageBackendImplementation(Type t)
+        private void LoadLanguageBackendImplementation(Type t, string path)
         {
             if (Activator.CreateInstance(t) is not ILanguageBackend backend)
                 return; // ???
 
             var options = _extraOptions.ContainsKey(backend.Identifier) ? _extraOptions[backend.Identifier] : new JsonElement();
-            _implementations.Add(backend.Identifier, (backend, new LanguageBackendContext(options)));
+            var context = new IsolatedAssemblyLoadContext(path);
+            _implementations.Add(backend.Identifier, (backend, new LanguageBackendContext(options, context)));
         }
 
         private void LoadSourceRewriterImplementation(Type t)

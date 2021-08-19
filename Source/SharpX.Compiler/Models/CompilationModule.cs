@@ -48,7 +48,7 @@ namespace SharpX.Compiler.Models
             SyntaxTree = rewriter.Visit(SyntaxTree.GetRoot()).SyntaxTree;
         }
 
-        public void Compile(SemanticModel model, AssemblyContext context)
+        public void Compile(SemanticModel model, AssemblyContext context, KeyValuePair<string, string[]> variant)
         {
             if (SyntaxTree.GetDiagnostics().Any(w => w.Severity == DiagnosticSeverity.Error))
             {
@@ -57,7 +57,7 @@ namespace SharpX.Compiler.Models
             }
 
             CompileByIntegratedWalker(model, context);
-            CompileByProvidedWalker(model, context);
+            CompileByProvidedWalker(model, context, variant);
         }
 
         private void CompileByIntegratedWalker(SemanticModel model, AssemblyContext context)
@@ -80,19 +80,22 @@ namespace SharpX.Compiler.Models
             }
         }
 
-        private void CompileByProvidedWalker(SemanticModel model, AssemblyContext assembly)
+        private void CompileByProvidedWalker(SemanticModel model, AssemblyContext assembly, KeyValuePair<string, string[]> variant)
         {
             if (SyntaxTree.GetRoot() is not CSharpSyntaxNode node)
                 return;
 
-            foreach (var generator in assembly.GetProvidedWalkers())
+            foreach (var (generator, predicator) in assembly.GetProvidedWalkers())
             {
-                var context = new LanguageSyntaxWalkerContext(model, assembly.Default, new AddOnlyCollection<IError>(), new AddOnlyCollection<IError>(), assembly);
+                var context = new LanguageSyntaxWalkerContext( model, assembly.Default, new AddOnlyCollection<IError>(), new AddOnlyCollection<IError>(), assembly);
 
                 try
                 {
-                    var walker = generator.Invoke(context);
-                    walker.Visit(node);
+                    if (predicator == null || predicator.Invoke((variant.Key, variant.Value)))
+                    {
+                        var walker = generator.Invoke(context);
+                        walker.Visit(node);
+                    }
                 }
                 catch (Exception e)
                 {

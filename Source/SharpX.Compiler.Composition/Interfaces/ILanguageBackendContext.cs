@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Loader;
 using System.Text.Json;
 
 using Microsoft.CodeAnalysis.CSharp;
@@ -13,6 +14,11 @@ namespace SharpX.Compiler.Composition.Interfaces
         ///     Get extra compiler options
         /// </summary>
         JsonElement ExtraOptions { get; }
+
+        /// <summary>
+        /// Assembly Load Context for Plugins
+        /// </summary>
+        AssemblyLoadContext LoadContext {  get; }
 
         /// <summary>
         ///     Registers the extension of the generated source.
@@ -77,11 +83,18 @@ namespace SharpX.Compiler.Composition.Interfaces
         ///     Register your own CSharpSyntaxWalker and use it.
         /// </summary>
         /// <param name="generator"></param>
-        void RegisterCSharpSyntaxWalker(Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker> generator);
+        /// <param name="doBuild"></param>
+        void RegisterCSharpSyntaxWalker(Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker> generator, Func<(string, string?[]), bool>? doBuild = null);
 
         /// <summary>
         ///     Register a preprocessor symbols combinations for multiple time compile
         /// </summary>
         void RegisterCompilationVariants(string key, string?[] preprocessors);
+
+        /// <summary>
+        /// Should build (compile / transpile) source for this variant.
+        /// </summary>
+        /// <param name="predicate"></param>
+        void ShouldBuildForThisVariant(Func<(string, string?[]), bool> predicate);
     }
 }

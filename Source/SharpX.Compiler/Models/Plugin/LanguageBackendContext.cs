@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Loader;
 using System.Text.Json;
 
 using Microsoft.CodeAnalysis.CSharp;
@@ -16,29 +17,34 @@ namespace SharpX.Compiler.Models.Plugin
         private static readonly Dictionary<string, string[]> DefaultVariant = new() { { "", Array.Empty<string>() } };
         private readonly Dictionary<WellKnownSyntax, List<(Action<ILanguageSyntaxActionContext> Action, Func<ILanguageSyntaxActionContext, bool> Predicator)>> _afterActions;
         private readonly Dictionary<WellKnownSyntax, List<(Action<ILanguageSyntaxActionContext> Action, Func<ILanguageSyntaxActionContext, bool> Predicator)>> _beforeActions;
+        private readonly Dictionary<string, Func<(string, string?[]), bool>> _buildPredicatorMappings;
         private readonly Dictionary<string, string> _extensionsMappings;
         private readonly Dictionary<string, Func<ISourceContextMappingArgs, string>> _fileGeneratorMappings;
         private readonly Dictionary<string, Func<ISourceContextGeneratorArgs, ISourceContext>> _generatorMappings;
         private readonly Dictionary<string, string[]> _preprocessorVariants;
-        private readonly List<Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker>> _walkers;
+        private readonly List<WalkerPair> _walkers;
 
-        public IReadOnlyCollection<Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker>> Walkers => _walkers.AsReadOnly();
+        public IReadOnlyCollection<WalkerPair> Walkers => _walkers.AsReadOnly();
 
         public IReadOnlyDictionary<string, string[]> PreprocessorVariants => _preprocessorVariants.Count == 0 ? DefaultVariant : _preprocessorVariants;
 
-        public LanguageBackendContext(JsonElement extraOptions)
+        public LanguageBackendContext(JsonElement extraOptions, IsolatedAssemblyLoadContext context)
         {
             _afterActions = new Dictionary<WellKnownSyntax, List<(Action<ILanguageSyntaxActionContext> Action, Func<ILanguageSyntaxActionContext, bool> Predicator)>>();
             _beforeActions = new Dictionary<WellKnownSyntax, List<(Action<ILanguageSyntaxActionContext> Action, Func<ILanguageSyntaxActionContext, bool> Predicator)>>();
+            _buildPredicatorMappings = new Dictionary<string, Func<(string, string?[]), bool>>();
             _extensionsMappings = new Dictionary<string, string>();
             _fileGeneratorMappings = new Dictionary<string, Func<ISourceContextMappingArgs, string>>();
             _generatorMappings = new Dictionary<string, Func<ISourceContextGeneratorArgs, ISourceContext>>();
             _preprocessorVariants = new Dictionary<string, string[]>();
-            _walkers = new List<Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker>>();
+            _walkers = new List<WalkerPair>();
             ExtraOptions = extraOptions;
+            LoadContext = context;
         }
 
         public JsonElement ExtraOptions { get; }
+
+        public AssemblyLoadContext LoadContext { get; }
 
         public void RegisterExtension(string extension)
         {
@@ -86,9 +92,9 @@ namespace SharpX.Compiler.Models.Plugin
                 _afterActions.Add(syntax, new List<(Action<ILanguageSyntaxActionContext> Action, Func<ILanguageSyntaxActionContext, bool> Predicator)> { (action, predicate ?? DefaultPredicator) });
         }
 
-        public void RegisterCSharpSyntaxWalker(Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker> generator)
+        public void RegisterCSharpSyntaxWalker(Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker> generator, Func<(string, string?[]), bool>? doBuild = null)
         {
-            _walkers.Add(generator);
+            _walkers.Add(new WalkerPair(generator, doBuild));
         }
 
         public void RegisterCompilationVariants(string key, string?[] preprocessors)
@@ -97,6 +103,11 @@ namespace SharpX.Compiler.Models.Plugin
                 return;
 
             _preprocessorVariants.Add(key, preprocessors.Where(w => w != null).Cast<string>().ToArray());
+        }
+
+        public void ShouldBuildForThisVariant(Func<(string, string?[]), bool> predicate)
+        {
+            _buildPredicatorMappings.Add("*", predicate);
         }
 
         public string GetExtensionFor<T>()
@@ -148,5 +159,7 @@ namespace SharpX.Compiler.Models.Plugin
                 return _afterActions[syntax];
             return new List<(Action<ILanguageSyntaxActionContext> Action, Func<ILanguageSyntaxActionContext, bool> Predicator)>();
         }
+
+        internal record WalkerPair(Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker> Walker, Func<(string, string?[]), bool>? Predicator){}
     }
 }

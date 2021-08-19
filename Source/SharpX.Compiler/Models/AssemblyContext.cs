@@ -71,7 +71,7 @@ namespace SharpX.Compiler.Models
             throw new ArgumentException($"{fullName} is not found in context");
         }
 
-        public IReadOnlyCollection<Func<ILanguageSyntaxWalkerContext, CSharpSyntaxWalker>> GetProvidedWalkers()
+        public IReadOnlyCollection<LanguageBackendContext.WalkerPair> GetProvidedWalkers()
         {
             return CurrentLanguageBackendContext.Walkers;
         }
