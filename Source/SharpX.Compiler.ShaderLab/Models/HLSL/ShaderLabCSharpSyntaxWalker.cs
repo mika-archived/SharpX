@@ -696,7 +696,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
             if (declarator.HasAttribute<MaxVertexCountAttribute>())
             {
-                var attr = declarator.GetAttribute<MaxVertexCountAttribute>();
+                var attr = declarator.GetAttribute<MaxVertexCountAttribute>()!;
                 context.FunctionDeclaration.AddAttribute($"maxvertexcount({attr.VertexCount})");
             }
 
