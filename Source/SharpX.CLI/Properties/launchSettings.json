@@ -2,7 +2,7 @@
   "profiles": {
     "SharpX.CLI": {
       "commandName": "Project",
-      "commandLineArgs": "build --project ssconfig.json"
+      "commandLineArgs": "build --project sxc.config.json"
     }
   }
 }
