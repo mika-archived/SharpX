@@ -26,13 +26,26 @@ namespace SharpX.Compiler.Models
 
         public IReadOnlyCollection<string> Warnings => _warnings.AsReadOnly();
 
-        public SyntaxTree SyntaxTree { get; }
+        public SyntaxTree SyntaxTree { get; private set; }
 
-        public CompilationModule(SyntaxTree tree)
+        public DocumentId Id { get; }
+
+        public CompilationModule(DocumentId id, SyntaxTree tree)
         {
+            Id = id;
             SyntaxTree = tree;
             _errors = new List<string>();
             _warnings = new List<string>();
+        }
+
+        public void UpdateSyntaxTree(SyntaxTree tree)
+        {
+            SyntaxTree = tree;
+        }
+
+        public void Rewrite(CSharpSyntaxRewriter rewriter)
+        {
+            SyntaxTree = rewriter.Visit(SyntaxTree.GetRoot()).SyntaxTree;
         }
 
         public void Compile(SemanticModel model, AssemblyContext context)

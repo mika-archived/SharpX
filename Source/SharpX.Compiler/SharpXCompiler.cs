@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.Text;
 
 using SharpX.Compiler.Models;
@@ -66,7 +67,7 @@ namespace SharpX.Compiler
             }
         }
 
-        public void Compile()
+        public async Task CompileAsync()
         {
             _errors.Clear();
 
@@ -76,7 +77,7 @@ namespace SharpX.Compiler
                 return;
             }
 
-            _host.InitializeLanguageBackend(_options.Target);
+            _host.InitializeHostByIdentifier(_options.Target);
 
             var context = new AssemblyContext(_host);
             var backend = context.CurrentLanguageBackendContext;
@@ -86,18 +87,29 @@ namespace SharpX.Compiler
                 context.SwitchVariant(name);
 
                 var modules = new ConcurrentBag<CompilationModule>();
-                
-                Parallel.ForEach(_options.Items, path =>
+                var projectId = ProjectId.CreateNewId("SharpX.Assembly");
+                var workspace = new AdhocWorkspace();
+                var solution = workspace.CurrentSolution.AddProject(projectId, "SharpX.Assembly", "SharpX.Assembly", LanguageNames.CSharp)
+                                        .WithProjectMetadataReferences(projectId, _references)
+                                        .WithProjectParseOptions(projectId, CSharpParseOptions.Default.WithPreprocessorSymbols(preprocessors))
+                                        .WithProjectCompilationOptions(projectId, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+                foreach (var path in _options.Items)
                 {
                     if (!File.Exists(path))
-                        throw new FileNotFoundException();
+                        throw new FileNotFoundException(path);
 
-                    var source = SourceText.From(File.ReadAllText(path, Encoding.UTF8), Encoding.UTF8);
-                    var options = CSharpParseOptions.Default.WithPreprocessorSymbols(preprocessors);
-                    var module = new CompilationModule(CSharpSyntaxTree.ParseText(source, options, Path.Combine(Environment.CurrentDirectory, path)));
+                    var source = SourceText.From(await File.ReadAllTextAsync(path, Encoding.UTF8).ConfigureAwait(false), Encoding.UTF8);
+                    var absolute = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, path));
+                    var documentId = DocumentId.CreateNewId(projectId, path);
+
+                    solution = solution.AddDocument(documentId, Path.GetFileName(absolute), source);
+
+                    var syntax = await solution.GetDocument(documentId)!.GetSyntaxTreeAsync().ConfigureAwait(false);
+                    var module = new CompilationModule(documentId, syntax!);
 
                     modules.Add(module);
-                });
+                }
 
                 if (modules.Any(w => w.HasErrors))
                 {
@@ -105,11 +117,30 @@ namespace SharpX.Compiler
                     return;
                 }
 
-                var compilation = CSharpCompilation.Create("SharpX.Assembly", modules.Select(w => w.SyntaxTree), _references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+                foreach (var rc in _host.AvailableRewriters)
+                foreach (var generator in rc.GetGenerators())
+                foreach (var module in modules)
+                {
+                    var project = solution.Projects.First(w => w.Id == projectId);
+                    var model = await project.GetDocument(module.Id)!.GetSemanticModelAsync().ConfigureAwait(false);
+                    if (model == null)
+                        continue;
+                    
+                    var rewriter = generator.Invoke(new LanguageSyntaxRewriterContext(solution, model));
+                    module.Rewrite(rewriter);
+
+                    solution = solution.WithDocumentSyntaxRoot(module.Id, await module.SyntaxTree.GetRootAsync().ConfigureAwait(false));
+                    module.UpdateSyntaxTree(await solution.Projects.First(w => w.Id == projectId)!.GetDocument(module.Id)!.GetSyntaxTreeAsync().ConfigureAwait(false));
+                }
 
                 foreach (var module in modules)
                 {
-                    var model = compilation.GetSemanticModel(module.SyntaxTree);
+                    var project = solution.Projects.First(w => w.Id == projectId);
+                    var model = await project.GetDocument(module.Id)!.GetSemanticModelAsync().ConfigureAwait(false);
+                    if (model == null)
+                        continue;
+
                     module.Compile(model, context);
                 }
 
@@ -132,7 +163,7 @@ namespace SharpX.Compiler
                     if (!string.IsNullOrWhiteSpace(basename) && !Directory.Exists(basename))
                         Directory.CreateDirectory(basename);
 
-                    File.WriteAllText(path, source);
+                    await File.WriteAllTextAsync(path, source).ConfigureAwait(false);
                 }
             }
         }

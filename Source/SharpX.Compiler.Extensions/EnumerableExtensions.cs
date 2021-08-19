@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SharpX.Compiler.Extensions
 {
@@ -9,6 +10,11 @@ namespace SharpX.Compiler.Extensions
         {
             foreach (var item in obj)
                 action.Invoke(item);
+        }
+
+        public static bool None<T>(this IEnumerable<T> obj, Func<T, bool> predicate)
+        {
+            return !obj.Any(predicate);
         }
     }
 }
