@@ -7,9 +7,12 @@ namespace SharpX.Library.ShaderLab.Attributes
     {
         public string Raw { get; }
 
-        public CustomInspectorAttributeAttribute(string raw)
+        public object[] Parameters { get; }
+
+        public CustomInspectorAttributeAttribute(string raw, params object[] parameters)
         {
             Raw = raw;
+            Parameters = parameters;
         }
     }
 }
