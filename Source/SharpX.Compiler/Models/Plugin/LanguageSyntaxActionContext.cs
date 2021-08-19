@@ -19,12 +19,11 @@ namespace SharpX.Compiler.Models.Plugin
 
         public bool ShouldUseDefaultVisit { get; private set; }
 
-        public LanguageSyntaxActionContext(CSharpSyntaxNode node, Compilation compilation,  SemanticModel model, ISourceContext context, Action<CSharpSyntaxNode> visitor, AddOnlyCollection<IError> errors, AddOnlyCollection<IError> warnings, AssemblyContext assembly)
+        public LanguageSyntaxActionContext(CSharpSyntaxNode node, SemanticModel model, ISourceContext context, Action<CSharpSyntaxNode> visitor, AddOnlyCollection<IError> errors, AddOnlyCollection<IError> warnings, AssemblyContext assembly)
         {
             _visitor = visitor;
             _assembly = assembly;
             Node = node;
-            Compilation = compilation;
             SemanticModel = model;
             Errors = errors;
             Warnings = warnings;
@@ -34,8 +33,6 @@ namespace SharpX.Compiler.Models.Plugin
             ShouldUseDefaultVisit = true;
             ContextStore = new Dictionary<string, object>();
         }
-
-        public Compilation Compilation { get; }
 
         public SemanticModel SemanticModel { get; }
 

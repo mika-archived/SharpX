@@ -38,11 +38,8 @@ namespace SharpX.Compiler.Models
             _warnings = new List<string>();
         }
 
-        public void UpdateSyntaxTree(SyntaxTree? tree)
+        public void UpdateSyntaxTree(SyntaxTree tree)
         {
-            if (tree == null)
-                return;
-
             SyntaxTree = tree;
         }
 
@@ -51,7 +48,7 @@ namespace SharpX.Compiler.Models
             SyntaxTree = rewriter.Visit(SyntaxTree.GetRoot()).SyntaxTree;
         }
 
-        public void Compile(Compilation compilation, SemanticModel model, AssemblyContext context)
+        public void Compile(SemanticModel model, AssemblyContext context)
         {
             if (SyntaxTree.GetDiagnostics().Any(w => w.Severity == DiagnosticSeverity.Error))
             {
@@ -59,13 +56,13 @@ namespace SharpX.Compiler.Models
                 return;
             }
 
-            CompileByIntegratedWalker(compilation, model, context);
-            CompileByProvidedWalker(compilation, model, context);
+            CompileByIntegratedWalker(model, context);
+            CompileByProvidedWalker(model, context);
         }
 
-        private void CompileByIntegratedWalker(Compilation compilation, SemanticModel model, AssemblyContext context)
+        private void CompileByIntegratedWalker(SemanticModel model, AssemblyContext context)
         {
-            var walker = new SharpXSyntaxWalker(compilation, model, context);
+            var walker = new SharpXSyntaxWalker(model, context);
 
             try
             {
@@ -83,14 +80,14 @@ namespace SharpX.Compiler.Models
             }
         }
 
-        private void CompileByProvidedWalker(Compilation compilation, SemanticModel model, AssemblyContext assembly)
+        private void CompileByProvidedWalker(SemanticModel model, AssemblyContext assembly)
         {
             if (SyntaxTree.GetRoot() is not CSharpSyntaxNode node)
                 return;
 
             foreach (var generator in assembly.GetProvidedWalkers())
             {
-                var context = new LanguageSyntaxWalkerContext(compilation, model, assembly.Default, new AddOnlyCollection<IError>(), new AddOnlyCollection<IError>(), assembly);
+                var context = new LanguageSyntaxWalkerContext(model, assembly.Default, new AddOnlyCollection<IError>(), new AddOnlyCollection<IError>(), assembly);
 
                 try
                 {

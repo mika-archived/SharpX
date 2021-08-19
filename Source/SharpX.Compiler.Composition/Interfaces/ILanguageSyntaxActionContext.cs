@@ -9,8 +9,6 @@ namespace SharpX.Compiler.Composition.Interfaces
 {
     public interface ILanguageSyntaxActionContext
     {
-        Compilation Compilation { get; }
-
         SemanticModel SemanticModel { get; }
 
         CSharpSyntaxNode Node { get; }

@@ -6,8 +6,6 @@ namespace SharpX.Compiler.Composition.Interfaces
 {
     public interface ILanguageSyntaxWalkerContext
     {
-        Compilation Compilation { get; }
-
         SemanticModel SemanticModel { get; }
 
         ISourceContext SourceContext { get; }

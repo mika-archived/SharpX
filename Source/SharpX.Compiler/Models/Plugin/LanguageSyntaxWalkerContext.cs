@@ -9,17 +9,14 @@ namespace SharpX.Compiler.Models.Plugin
     {
         private readonly AssemblyContext _assembly;
 
-        public LanguageSyntaxWalkerContext(Compilation compilation, SemanticModel model, ISourceContext context, AddOnlyCollection<IError> errors, AddOnlyCollection<IError> warnings, AssemblyContext assembly)
+        public LanguageSyntaxWalkerContext(SemanticModel model, ISourceContext context, AddOnlyCollection<IError> errors, AddOnlyCollection<IError> warnings, AssemblyContext assembly)
         {
             _assembly = assembly;
-            Compilation = compilation;
             SemanticModel = model;
             Errors = errors;
             Warnings = warnings;
             SourceContext = context;
         }
-
-        public Compilation Compilation { get; }
 
         public SemanticModel SemanticModel { get; }
 
