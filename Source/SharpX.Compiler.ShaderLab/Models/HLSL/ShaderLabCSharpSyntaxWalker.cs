@@ -15,6 +15,7 @@ using SharpX.Compiler.ShaderLab.Models.HLSL.Captures;
 using SharpX.Compiler.ShaderLab.Models.HLSL.Declarators;
 using SharpX.Compiler.ShaderLab.Models.HLSL.Statements;
 using SharpX.Library.ShaderLab.Attributes;
+using SharpX.Library.ShaderLab.Interfaces;
 
 namespace SharpX.Compiler.ShaderLab.Models.HLSL
 {
@@ -931,6 +932,9 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support nested type declarations"));
                 return;
             }
+
+            if (declarator.IsInherited<IShader>())
+                return; // skipped to transpile to HLSL
 
             if (declarator.HasAttribute<ExternalAttribute>())
                 return; // skipped to transpile
