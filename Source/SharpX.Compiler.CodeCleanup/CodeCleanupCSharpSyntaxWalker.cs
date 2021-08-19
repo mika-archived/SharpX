@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 
 using Microsoft.CodeAnalysis;
@@ -17,9 +16,9 @@ namespace SharpX.Compiler.CodeCleanup;
 internal class CodeCleanupCSharpSyntaxWalker : CSharpSyntaxWalker
 {
     private readonly AllowList _allows;
+    private readonly List<string> _attributes;
     private readonly ILanguageSyntaxRewriterContext _context;
     private readonly Dictionary<string, bool> _signatureDictionary;
-    private readonly List<string> _attributes;
 
     public CodeCleanupCSharpSyntaxWalker(ILanguageSyntaxRewriterContext context, AllowList allows) : base(SyntaxWalkerDepth.Token)
     {
@@ -43,10 +42,8 @@ internal class CodeCleanupCSharpSyntaxWalker : CSharpSyntaxWalker
     private bool HasAttributes(ISymbol? symbol)
     {
         foreach (var attribute in _attributes)
-        {
             if (symbol.HasAttribute(attribute, _context.SemanticModel))
                 return true;
-        }
 
         return false;
     }
@@ -150,28 +147,5 @@ internal class CodeCleanupCSharpSyntaxWalker : CSharpSyntaxWalker
         }
 
         base.VisitPropertyDeclaration(node);
-    }
-
-
-    public override void VisitParameter(ParameterSyntax node)
-    {
-        var symbol = _context.SemanticModel.GetDeclaredSymbol(node);
-        if (symbol.HasAttribute<MarkAttribute>(_context.SemanticModel))
-            return;
-
-        if (symbol != null && !HasAttributes(symbol))
-        {
-            var references = SymbolFinder.FindReferencesAsync(symbol, _context.Solution).Result;
-            var s = references.SelectMany(w => w.Locations).Count();
-            if (s == 0)
-                _signatureDictionary.Add(symbol.ToUniqueSignature(), true);
-        }
-
-        base.VisitParameter(node);
-    }
-
-    public override void VisitLocalFunctionStatement(LocalFunctionStatementSyntax node)
-    {
-        base.VisitLocalFunctionStatement(node);
     }
 }

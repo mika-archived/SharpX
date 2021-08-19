@@ -25,6 +25,34 @@ internal class CodeCleanupCSharpSyntaxRewriter : CSharpSyntaxRewriter
         return base.VisitCompilationUnit(node);
     }
 
+    public override SyntaxNode? VisitVariableDeclaration(VariableDeclarationSyntax node)
+    {
+        var oldNode = node;
+
+        foreach (var variable in node.Variables)
+        {
+            var symbol = _context.SemanticModel.GetDeclaredSymbol(variable);
+            if (_walker.CanEliminate(symbol))
+                oldNode = node.RemoveNode(node, SyntaxRemoveOptions.KeepNoTrivia);
+        }
+
+        return oldNode;
+    }
+
+    public override SyntaxNode? VisitFieldDeclaration(FieldDeclarationSyntax node)
+    {
+        var oldNode = node;
+
+        foreach (var variable in node.Declaration.Variables)
+        {
+            var symbol = _context.SemanticModel.GetDeclaredSymbol(variable);
+            if (_walker.CanEliminate(symbol))
+                oldNode = node.RemoveNode(node, SyntaxRemoveOptions.KeepNoTrivia);
+        }
+
+        return oldNode;
+    }
+
     public override SyntaxNode? VisitMethodDeclaration(MethodDeclarationSyntax node)
     {
         var symbol = _context.SemanticModel.GetDeclaredSymbol(node);
@@ -34,8 +62,12 @@ internal class CodeCleanupCSharpSyntaxRewriter : CSharpSyntaxRewriter
         return base.VisitMethodDeclaration(node);
     }
 
-    public override SyntaxNode? VisitLocalFunctionStatement(LocalFunctionStatementSyntax node)
+    public override SyntaxNode? VisitPropertyDeclaration(PropertyDeclarationSyntax node)
     {
-        return base.VisitLocalFunctionStatement(node);
+        var symbol = _context.SemanticModel.GetDeclaredSymbol(node);
+        if (_walker.CanEliminate(symbol))
+            return node.RemoveNode(node, SyntaxRemoveOptions.KeepNoTrivia);
+
+        return base.VisitPropertyDeclaration(node);
     }
 }
