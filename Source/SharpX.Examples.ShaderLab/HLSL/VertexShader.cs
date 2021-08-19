@@ -4,7 +4,7 @@ using SharpX.Library.ShaderLab.Functions;
 using SharpX.Library.ShaderLab.Predefined;
 using SharpX.Library.ShaderLab.Primitives;
 
-namespace SharpX.Examples.ShaderLab
+namespace SharpX.Examples.ShaderLab.HLSL
 {
     [Export("vert.{extension}")]
     public class VertexShader

@@ -5,7 +5,7 @@ using SharpX.Library.ShaderLab.Functions;
 using SharpX.Library.ShaderLab.Primitives;
 using SharpX.Library.ShaderLab.Statements;
 
-namespace SharpX.Examples.ShaderLab
+namespace SharpX.Examples.ShaderLab.HLSL
 {
     [Export("frag.{extension}")]
     public class FragmentShader

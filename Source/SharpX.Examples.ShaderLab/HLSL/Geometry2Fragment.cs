@@ -1,8 +1,7 @@
 ﻿using SharpX.Library.ShaderLab.Attributes;
 using SharpX.Library.ShaderLab.Primitives;
-using SharpX.Library.ShaderLab.Statements;
 
-namespace SharpX.Examples.ShaderLab
+namespace SharpX.Examples.ShaderLab.HLSL
 {
     [Component("g2f")]
     [Export("core.{extension}")]

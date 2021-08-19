@@ -5,7 +5,7 @@ using SharpX.Library.ShaderLab.Interfaces;
 using SharpX.Library.ShaderLab.Primitives;
 using SharpX.Library.ShaderLab.Statements;
 
-namespace SharpX.Examples.ShaderLab
+namespace SharpX.Examples.ShaderLab.HLSL
 {
     [Export("geom.{extension}")]
     public class GeometryShader

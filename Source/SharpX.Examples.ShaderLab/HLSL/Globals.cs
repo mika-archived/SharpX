@@ -1,7 +1,7 @@
 ﻿using SharpX.Library.ShaderLab.Attributes;
 using SharpX.Library.ShaderLab.Primitives;
 
-namespace SharpX.Examples.ShaderLab
+namespace SharpX.Examples.ShaderLab.HLSL
 {
     [Export("core.{extension}")]
     public static class Globals
