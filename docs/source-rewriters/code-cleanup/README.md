@@ -69,3 +69,28 @@ If you do not want to delete a method or property with a specific name, you can 
   }
 }
 ```
+
+## Attention
+
+Basically, this plugin does not take into account the specifics of each language backend.
+Therefore, you need to specify the entry points in Attributes and Methods.
+For example, in the case of ShaderLab, the settings are as follows:
+
+```json
+{
+  "CodeCleanup": {
+    "AllowList": {
+      "Attributes": [
+        "SharpX.Library.ShaderLab.Attributes.VertexShaderAttribute",
+        "SharpX.Library.ShaderLab.Attributes.GeometryShaderAttribute",
+        "SharpX.Library.ShaderLab.Attributes.FragmentShaderAttribute",
+        "SharpX.Library.ShaderLab.Attributes.GlobalMemberAttribute"
+      ],
+      "Methods": [],
+      "Properties": [],
+      "Fields": [],
+      "Variables": []
+    }
+  }
+}
+```
