@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 
@@ -40,12 +41,24 @@ namespace SharpX.Compiler.Extensions
 
         public static bool HasInherit(this BaseTypeDeclarationSyntax obj, Type s, SemanticModel model)
         {
-            var inherits = (obj.BaseList?.Types.Select(w => w.Type).Select(w => model.GetDeclaredSymbol(w)).Where(w => w != null) ?? Array.Empty<ISymbol?>()).ToArray();
-            if (inherits.Length == 0)
-                return false;
-
             var t = model.Compilation.GetTypeByMetadataName(s.FullName ?? throw new InvalidOperationException());
-            return inherits.Any(w => w?.Equals(t, SymbolEqualityComparer.Default) == true);
+
+            var symbol = model.GetDeclaredSymbol(obj);
+
+            var inherit = symbol;
+            while (true)
+            {
+                if (inherit?.Equals(t, SymbolEqualityComparer.Default) == true)
+                    return true;
+
+                if (inherit?.BaseType == null)
+                    break;
+
+                inherit = inherit.BaseType;
+            }
+
+            var i = symbol?.AllInterfaces ?? ImmutableArray<INamedTypeSymbol>.Empty;
+            return i.Any(w => w.Equals(t, SymbolEqualityComparer.Default));
         }
 
         public static bool HasModifiers(this MemberDeclarationSyntax obj, SyntaxKind token)
