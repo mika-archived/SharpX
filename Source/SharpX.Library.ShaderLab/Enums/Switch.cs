@@ -2,8 +2,8 @@
 {
     public enum Switch
     {
-        On,
+        Off,
 
-        Off
+        On,
     }
 }
