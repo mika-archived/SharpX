@@ -158,11 +158,11 @@ namespace SharpX.Examples.ShaderLab
         }
 
         [Function("gs")]
-        [GeometryMain]
+        [GeometryShader]
         [MaxVertexCount(24)]
         public void GeometryMain([InputPrimitive(InputPrimitiveAttribute.InputPrimitives.Triangle)] Vertex2Geometry[] i, [Semantic("SV_PRIMITIVEID")] SlUint id, [InOut] ITriangleStream<Geometry2Fragment> stream)
         {
-#if SHADER_WIREFRAME || SHADER_SHADOWCASTER
+#if SHADER_VOXELIZATION || SHADER_SHADOWCASTER
             if (!Globals.EnableVoxelization)
             {
                 Compiler.AnnotatedStatement("unroll", () =>
@@ -370,6 +370,22 @@ namespace SharpX.Examples.ShaderLab
             stream.Append(GetStreamDataForWireframe(vert2.WorldPos.XYZ, vert2.Normal, new SlFloat3(0, 1, 0)));
             stream.Append(GetStreamDataForWireframe(vert3.WorldPos.XYZ, vert3.Normal, new SlFloat3(0, 0, 1)));
             stream.RestartStrip();
+#else
+            Compiler.AnnotatedStatement("unroll", () =>
+            {
+                for (SlInt j = 0; j < 3; j++)
+                {
+                    var vertex = i[j].WorldPos.XYZ;
+                    var uv = i[j].TexCoord;
+                    var normal = i[j].Normal;
+                    var localPos = i[j].LocalPos;
+
+                    stream.Append(GetStreamDataForNonGeometry(vertex, normal, uv, localPos));
+                }
+
+                stream.RestartStrip();
+            });
+
 #endif
 
         }

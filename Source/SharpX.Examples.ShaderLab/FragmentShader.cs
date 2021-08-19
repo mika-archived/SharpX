@@ -10,7 +10,7 @@ namespace SharpX.Examples.ShaderLab
     [Export("frag.{extension}")]
     public class FragmentShader
     {
-        [FragmentMain]
+        [FragmentShader]
         [Function("fs")]
         [return: Semantic("SV_TARGET")]
         public SlFloat4 Fragment(Geometry2Fragment i)

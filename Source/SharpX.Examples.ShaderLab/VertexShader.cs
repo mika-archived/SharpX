@@ -10,7 +10,7 @@ namespace SharpX.Examples.ShaderLab
     public class VertexShader
     {
         [Function("vs")]
-        [VertexMain]
+        [VertexShader]
         public Vertex2Geometry VertexMain(AppDataFull v)
         {
             return new()

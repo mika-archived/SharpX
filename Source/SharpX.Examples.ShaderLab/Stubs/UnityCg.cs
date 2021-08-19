@@ -1,40 +1,42 @@
-﻿using SharpX.Library.ShaderLab.Attributes;
+﻿using SharpX.Library.CodeCleanup.Attributes;
+using SharpX.Library.ShaderLab.Attributes;
 using SharpX.Library.ShaderLab.Primitives;
 
 namespace SharpX.Examples.ShaderLab.Stubs
 {
     [Include("UnityCG.cginc")]
     [External]
+    [Stub]
     public static class UnityCg
     {
         [Property("unity_ObjectToWorld")]
         public static object UnityObjectToWorld { get; }
 
         [Property("unity_WorldToObject")]
-        public static object UnityWorldToObject {  get;}
+        public static object UnityWorldToObject { get; }
 
         [Property("unity_LightShadowBias")]
         public static SlFloat4 UnityLightShadowBias { get; }
 
         [External]
-        public static extern SlFloat4 UnityObjectToClipPos(SlFloat4 a);
+        public static extern SlFloat4 UnityObjectToClipPos([Mark] SlFloat4 a);
 
         [External]
-        public static extern SlFloat4 UnityWorldToClipPos(SlFloat3 a);
+        public static extern SlFloat4 UnityWorldToClipPos([Mark] SlFloat3 a);
 
         [External]
-        public static extern SlFloat4 UnityWorldToClipPos(SlFloat4 a);
+        public static extern SlFloat4 UnityWorldToClipPos([Mark] SlFloat4 a);
 
         [External]
-        public static extern SlFloat3 UnityObjectToWorldNormal(SlFloat3 a);
+        public static extern SlFloat3 UnityObjectToWorldNormal([Mark] SlFloat3 a);
 
         [External]
-        public static extern SlFloat3 UnityWorldSpaceLightDir(SlFloat3 a);
+        public static extern SlFloat3 UnityWorldSpaceLightDir([Mark] SlFloat3 a);
 
         [External]
-        public static extern SlFloat4 UnityApplyLinearShadowBias(SlFloat4 a);
+        public static extern SlFloat4 UnityApplyLinearShadowBias([Mark] SlFloat4 a);
 
         [Function("TRANSFORM_TEX")]
-        public static extern SlFloat2 TransformTexture(SlFloat4 a, Sampler2D b);
+        public static extern SlFloat2 TransformTexture([Mark] SlFloat4 a, [Mark] Sampler2D b);
     }
 }

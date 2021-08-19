@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SharpX.Library.CodeCleanup\SharpX.Library.CodeCleanup.csproj" />
     <ProjectReference Include="..\SharpX.Library.ShaderLab\SharpX.Library.ShaderLab.csproj" />
   </ItemGroup>
 </Project>
