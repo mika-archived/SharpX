@@ -18,6 +18,7 @@ namespace SharpX.Compiler.Models
     internal class SharpXSyntaxWalker : CSharpSyntaxWalker
     {
         private readonly AssemblyContext _assembly;
+        private readonly Compilation _compilation;
         private readonly List<string> _errors;
         private readonly SemanticModel _semanticModel;
         private readonly List<string> _warnings;
@@ -27,8 +28,9 @@ namespace SharpX.Compiler.Models
 
         public IReadOnlyCollection<string> Warnings => _warnings.AsReadOnly();
 
-        public SharpXSyntaxWalker(SemanticModel semanticModel, AssemblyContext context) : base(SyntaxWalkerDepth.Token)
+        public SharpXSyntaxWalker(Compilation compilation, SemanticModel semanticModel, AssemblyContext context) : base(SyntaxWalkerDepth.Token)
         {
+            _compilation = compilation;
             _semanticModel = semanticModel;
             _assembly = context;
             _errors = new List<string>();
@@ -1199,7 +1201,7 @@ namespace SharpX.Compiler.Models
 
         private void InvokePreAction(WellKnownSyntax syntax, CSharpSyntaxNode node, Action defaultVisit)
         {
-            var args = new LanguageSyntaxActionContext(node, _semanticModel, _context, Visit, new AddOnlyCollection<IError>(), new AddOnlyCollection<IError>(), _assembly);
+            var args = new LanguageSyntaxActionContext(node, _compilation, _semanticModel, _context, Visit, new AddOnlyCollection<IError>(), new AddOnlyCollection<IError>(), _assembly);
             var actions = _assembly.GetPreSyntaxActions(syntax);
 
             try
@@ -1233,7 +1235,7 @@ namespace SharpX.Compiler.Models
 
         private void InvokePostAction(WellKnownSyntax syntax, CSharpSyntaxNode node)
         {
-            var args = new LanguageSyntaxActionContext(node, _semanticModel, _context, Visit, new AddOnlyCollection<IError>(), new AddOnlyCollection<IError>(), _assembly);
+            var args = new LanguageSyntaxActionContext(node, _compilation, _semanticModel, _context, Visit, new AddOnlyCollection<IError>(), new AddOnlyCollection<IError>(), _assembly);
             var actions = _assembly.GetPostSyntaxActions(syntax);
 
             try

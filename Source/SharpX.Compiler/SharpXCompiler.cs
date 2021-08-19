@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.Text;
 
 using SharpX.Compiler.Models;
@@ -126,12 +125,12 @@ namespace SharpX.Compiler
                     var model = await project.GetDocument(module.Id)!.GetSemanticModelAsync().ConfigureAwait(false);
                     if (model == null)
                         continue;
-                    
+
                     var rewriter = generator.Invoke(new LanguageSyntaxRewriterContext(solution, model));
                     module.Rewrite(rewriter);
 
                     solution = solution.WithDocumentSyntaxRoot(module.Id, await module.SyntaxTree.GetRootAsync().ConfigureAwait(false));
-                    module.UpdateSyntaxTree(await solution.Projects.First(w => w.Id == projectId)!.GetDocument(module.Id)!.GetSyntaxTreeAsync().ConfigureAwait(false));
+                    module.UpdateSyntaxTree(await solution.Projects.First(w => w.Id == projectId).GetDocument(module.Id)!.GetSyntaxTreeAsync()!.ConfigureAwait(false));
                 }
 
                 foreach (var module in modules)
@@ -141,7 +140,11 @@ namespace SharpX.Compiler
                     if (model == null)
                         continue;
 
-                    module.Compile(model, context);
+                    var compilation = await project.GetCompilationAsync().ConfigureAwait(false);
+                    if (compilation == null)
+                        continue;
+
+                    module.Compile(compilation, model, context);
                 }
 
                 if (modules.Any(w => w.HasErrors))

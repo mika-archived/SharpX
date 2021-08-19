@@ -17,7 +17,10 @@ namespace SharpX.Compiler.Composition.Abstractions
             Components = new List<IStructuredComponent>();
         }
 
-        public abstract void CalcDependencyTree();
+        protected virtual void CalcDependencyTree()
+        {
+            // NOTHING TO DO
+        }
 
         public string ToSource()
         {
