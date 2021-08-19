@@ -45,7 +45,7 @@ namespace SharpX.CLI.Commands
             var compiler = new SharpXCompiler(_configuration.ToCompilerOptions());
             compiler.LockReferences();
             compiler.LoadPluginModules();
-            compiler.Compile();
+            compiler.CompileAsync().Wait();
 
             if (compiler.Errors.Count == 0)
             {
