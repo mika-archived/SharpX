@@ -32,7 +32,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements.Structured
         public void WriteTo(SourceBuilder sb)
         {
             foreach (var attribute in _attributes)
-                sb.WriteLine(attribute);
+                sb.WriteLine($"[{attribute}]");
 
             sb.WriteSpan($"{_returns} {_name}(");
             sb.WriteSpan(string.Join(", ", _arguments.Select(w => $"{w.Key} {w.Value}")));
