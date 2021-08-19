@@ -27,11 +27,11 @@ namespace SharpX.CLI.Commands
                 var options = new JsonSerializerOptions { WriteIndented = true };
                 var json = JsonSerializer.Serialize(defaultConfig, options);
 
-                File.WriteAllText(Path.Combine(_path, "ssconfig.json"), json);
+                File.WriteAllText(Path.Combine(_path, "sxc.config.json"), json);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Failed to generate ssconfig.json");
+                _logger.LogError(e, "Failed to generate sxc.config.json");
                 return 1;
             }
 
