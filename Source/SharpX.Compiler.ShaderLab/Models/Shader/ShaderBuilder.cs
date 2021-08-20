@@ -103,7 +103,6 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
             var inspectorAttributes = symbol.GetAttributes().Select(ConvertToInspectorAttribute).Where(w => w != null).Select(w => w.ToSourceString()).ToArray();
 
             _context.Properties.Add(new ShaderProperty(type, name, displayName, @default, inspectorAttributes));
-
         }
 
         private static string? GetDefaultForType(object parameter)
@@ -125,18 +124,8 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
             if (!AllowedAttributes.Contains(fullyQualifiedName))
                 return null;
 
-            try
-            {
-                var obj = data.AsAttributeInstance(typeof(InspectorAttribute).Assembly.GetType(fullyQualifiedName)!);
-                return obj as InspectorAttribute;
-            }
-            catch (Exception e)
-            {
-                if (Debugger.IsAttached)
-                    Debug.WriteLine(e.Message);
-            }
-
-            return null;
+            var obj = data.AsAttributeInstance(typeof(InspectorAttribute).Assembly.GetType(fullyQualifiedName)!);
+            return obj as InspectorAttribute;
         }
     }
 }

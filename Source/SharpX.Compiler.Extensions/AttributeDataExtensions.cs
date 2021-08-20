@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -91,21 +92,30 @@ namespace SharpX.Compiler.Extensions
             if (constructor == null)
                 return default;
 
-            var instance = constructor.Invoke(argumentValues);
-
-            if (obj.NamedArguments.Length == 0)
-                return instance;
-
-            foreach (var (name, constant) in obj.NamedArguments)
+            try
             {
-                var property = t.GetProperty(name, BindingFlags.Public);
-                if (property == null)
-                    continue;
+                var instance = constructor.Invoke(argumentValues);
 
-                property.SetValue(instance, constant.Value);
+                if (obj.NamedArguments.Length == 0)
+                    return instance;
+
+                foreach (var (name, constant) in obj.NamedArguments)
+                {
+                    var property = t.GetProperty(name, BindingFlags.Public);
+                    if (property == null)
+                        continue;
+
+                    property.SetValue(instance, constant.Value);
+                }
+
+                return instance;
+            }
+            catch (Exception e) when (Debugger.IsAttached)
+            {
+                Debug.WriteLine(e.Message);
             }
 
-            return instance;
+            return default;
         }
     }
 }
