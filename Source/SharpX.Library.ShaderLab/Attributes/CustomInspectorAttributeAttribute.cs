@@ -1,18 +1,22 @@
 ﻿using System;
 
+using SharpX.Library.ShaderLab.Attributes.Internal;
+
 namespace SharpX.Library.ShaderLab.Attributes
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = true)]
-    public class CustomInspectorAttributeAttribute : Attribute
+    public class CustomInspectorAttributeAttribute : InspectorAttribute
     {
         public string Raw { get; }
 
-        public object[] Parameters { get; }
-
-        public CustomInspectorAttributeAttribute(string raw, params object[] parameters)
+        public CustomInspectorAttributeAttribute(string raw)
         {
             Raw = raw;
-            Parameters = parameters;
+        }
+
+        public override string ToSourceString()
+        {
+            return $"{Raw}";
         }
     }
 }

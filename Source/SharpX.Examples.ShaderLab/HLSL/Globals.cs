@@ -13,7 +13,8 @@ namespace SharpX.Examples.ShaderLab.HLSL
         [Property("_BlendMode")]
         [DisplayName("Blend Mode")]
         [Enum(typeof(BlendMode))]
-        public static BlendMode BlendMode { get; } = BlendMode.Opaque;
+        [DefaultValue(BlendMode.Opaque)]
+        public static BlendMode BlendMode { get; }
 
         #endregion
 
@@ -42,19 +43,22 @@ namespace SharpX.Examples.ShaderLab.HLSL
         [Property("_MainTex")]
         [MainTexture]
         [DisplayName("Texture")]
-        public static Sampler2D MainTexture { get; } = "white";
+        [DefaultValue(@"""white"" { }")]
+        public static Sampler2D MainTexture { get; }
 
         [GlobalMember]
         [Property("_Color")]
         [DisplayName("Main Color")]
         [Color]
-        public static SlFloat4 Color { get; } = new(0, 0, 0, 1);
+        [DefaultValue("(0, 0, 0, 1)")]
+        public static SlFloat4 Color { get; }
 
         [GlobalMember]
         [Property("_Alpha")]
         [DisplayName("Alpha Transparent")]
         [Range(0.0f, 1.0f)]
-        public static SlFloat Alpha { get; } = 0;
+        [DefaultValue(0)]
+        public static SlFloat Alpha { get; }
 
         #endregion
 
@@ -64,25 +68,29 @@ namespace SharpX.Examples.ShaderLab.HLSL
         [Property("_EnableMeshClipping")]
         [DisplayName("Enable Mesh Clipping")]
         [CustomInspectorAttribute("SSToggleWithoutKeyword")]
-        public static SlBool EnableMeshClipping { get; } = true;
+        [DefaultValue(true)]
+        public static SlBool EnableMeshClipping { get; }
 
         [GlobalMember]
         [Property("_MeshClippingMode")]
         [DisplayName("Mesh Clipping Mode")]
         [Enum(typeof(ClippingMode))]
-        public static ClippingMode MeshClippingMode { get; } = ClippingMode.Left;
+        [DefaultValue(ClippingMode.Left)]
+        public static ClippingMode MeshClippingMode { get; }
 
         [GlobalMember]
         [Property("_MeshClippingWidth")]
         [DisplayName("Mesh Clipping Width")]
         [Range(0.0f, 1.0f)]
-        public static SlFloat MeshClippingWidth { get; } = 1;
+        [DefaultValue(1.0f)]
+        public static SlFloat MeshClippingWidth { get; }
 
         [GlobalMember]
         [Property("_MeshClippingOffset")]
         [DisplayName("Mesh Clipping Offset")]
         [Range(0.0f, 1.0f)]
-        public static SlFloat MeshClippingOffset { get; } = 0;
+        [DefaultValue(0)]
+        public static SlFloat MeshClippingOffset { get; }
 
         #endregion
 
@@ -91,18 +99,21 @@ namespace SharpX.Examples.ShaderLab.HLSL
         [GlobalMember]
         [Property("_EnableTriangleHolograph")]
         [CustomInspectorAttribute("SSToggleWithoutKeyword")]
-        public static SlBool EnableTriangleHolograph { get; } = false;
+        [DefaultValue(false)]
+        public static SlBool EnableTriangleHolograph { get; }
 
         [GlobalMember]
         [Property("_TriangleHolographHeight")]
         [DisplayName("Tris Holograph Height")]
-        public static SlFloat TriangleHolographHeight { get; } = 0;
+        [DefaultValue(0)]
+        public static SlFloat TriangleHolographHeight { get; }
 
         [GlobalMember]
         [Property("_TriangleHolographAlpha")]
         [DisplayName("Tris Holograph Alpha")]
         [Range(0.0f, 1.0f)]
-        public static SlFloat TriangleHolographAlpha { get; } = 1;
+        [DefaultValue(1)]
+        public static SlFloat TriangleHolographAlpha { get; }
 
         #endregion
 
@@ -112,53 +123,63 @@ namespace SharpX.Examples.ShaderLab.HLSL
         [Property("_EnableVoxelization")]
         [DisplayName("Enable Voxelization")]
         [CustomInspectorAttribute("SSToggleWithoutKeyword")]
-        public static SlBool EnableVoxelization { get; } = true;
+        [DefaultValue(true)]
+        public static SlBool EnableVoxelization { get; } 
 
         [GlobalMember]
         [Property("_VoxelSource")]
         [DisplayName("Voxel Source")]
         [Enum(typeof(VoxelSource))]
-        public static VoxelSource VoxelSource { get; } = VoxelSource.ShaderProperty;
+        [DefaultValue(VoxelSource.ShaderProperty)]
+        public static VoxelSource VoxelSource { get; }
 
         [GlobalMember]
         [Property("_VoxelMinSize")]
         [DisplayName("Voxel Minimal Size")]
-        public static SlFloat VoxelMinSize { get; } = 0;
+        [DefaultValue(0)]
+        public static SlFloat VoxelMinSize { get; }
 
         [GlobalMember]
         [Property("_VoxelSize")]
         [DisplayName("Voxel Size")]
-        public static SlFloat VoxelSize { get; } = 0.0125f;
+        [DefaultValue(0.0125f)]
+        public static SlFloat VoxelSize { get; }
 
         [GlobalMember]
         [Property("_VoxelOffsetN")]
         [DisplayName("Voxel Offset Normal")]
-        public static SlFloat VoxelOffsetN { get; } = 0;
+        [DefaultValue(0)]
+        public static SlFloat VoxelOffsetN { get; }
 
         [GlobalMember]
         [Property("_VoxelOffsetX")]
         [DisplayName("Voxel Offset X")]
-        public static SlFloat VoxelOffsetX { get; } = 0;
+        [DefaultValue(0)]
+        public static SlFloat VoxelOffsetX { get; }
 
         [GlobalMember]
         [Property("_VoxelOffsetY")]
         [DisplayName("Voxel Offset Y")]
-        public static SlFloat VoxelOffsetY { get; } = 0;
+        [DefaultValue(0)]
+        public static SlFloat VoxelOffsetY { get; }
 
         [GlobalMember]
         [Property("_VoxelOffsetZ")]
         [DisplayName("Voxel Offset Z")]
-        public static SlFloat VoxelOffsetZ { get; } = 0;
+        [DefaultValue(0)]
+        public static SlFloat VoxelOffsetZ { get; }
 
         [GlobalMember]
         [Property("_VoxelAnimation")]
         [DisplayName("Enable Voxel Animation")]
-        public static SlBool EnableVoxelAnimation { get; } = true;
+        [DefaultValue(true)]
+        public static SlBool EnableVoxelAnimation { get; }
 
         [GlobalMember]
         [Property("_VoxelUVSamplingSource")]
         [Enum(typeof(UvSamplingSource))]
-        public static UvSamplingSource VoxelUvSamplingSource { get; } = UvSamplingSource.Center;
+        [DefaultValue(UvSamplingSource.Center)]
+        public static UvSamplingSource VoxelUvSamplingSource { get; }
 
         #endregion
 
@@ -168,45 +189,53 @@ namespace SharpX.Examples.ShaderLab.HLSL
         [Property("_EnableThinOut")]
         [DisplayName("Enable ThinOut")]
         [CustomInspectorAttribute("SSToggleWithoutKeyword")]
-        public static SlBool EnableThinOut { get; } = false;
+        [DefaultValue(false)]
+        public static SlBool EnableThinOut { get; }
 
         [GlobalMember]
         [Property("_ThinOutSource")]
         [DisplayName("ThinOut Source")]
         [Enum(typeof(ThinOutSource))]
-        public static ThinOutSource ThinOutSource { get; } = ThinOutSource.MaskTexture;
+        [DefaultValue(ThinOutSource.MaskTexture)]
+        public static ThinOutSource ThinOutSource { get; }
 
         [GlobalMember]
         [Property("_ThinOutMaskTex")]
         [DisplayName("ThinOut Mask Texture")]
         [NoScaleOffset]
-        public static Sampler2D ThinOutMaskTexture { get; } = "white";
+        [DefaultValue(@"""white"" { }")]
+        public static Sampler2D ThinOutMaskTexture { get; }
 
         [GlobalMember]
         [Property("_ThinOutNoiseTex")]
         [DisplayName("ThinOut Noise Texture")]
         [NoScaleOffset]
-        public static Sampler2D ThinOutNoiseTexture { get; } = "white";
+        [DefaultValue(@"""white"" { }")]
+        public static Sampler2D ThinOutNoiseTexture { get; }
 
         [GlobalMember]
         [Property("_ThinOutNoiseThresholdR")]
         [DisplayName("ThinOut Noise Threshold R")]
-        public static SlFloat ThinOutNoiseThresholdR { get; } = 1;
+        [DefaultValue(1)]
+        public static SlFloat ThinOutNoiseThresholdR { get; }
 
         [GlobalMember]
         [Property("_ThinOutNoiseThresholdG")]
         [DisplayName("ThinOut Noise Threshold G")]
-        public static SlFloat ThinOutNoiseThresholdG { get; } = 1;
+        [DefaultValue(1)]
+        public static SlFloat ThinOutNoiseThresholdG { get; }
 
         [GlobalMember]
         [Property("_ThinOutNoiseThresholdB")]
         [DisplayName("ThinOut Noise Threshold B")]
-        public static SlFloat ThinOutNoiseThresholdB { get; } = 1;
+        [DefaultValue(1)]
+        public static SlFloat ThinOutNoiseThresholdB { get; }
 
         [GlobalMember]
         [Property("_ThinOutMinSize")]
         [DisplayName("ThinOut Minimal Size")]
-        public static SlFloat ThinOutMinSize { get; } = 1;
+        [DefaultValue(1)]
+        public static SlFloat ThinOutMinSize { get; }
 
         #endregion
 
@@ -216,19 +245,22 @@ namespace SharpX.Examples.ShaderLab.HLSL
         [Property("_EnableWireframe")]
         [DisplayName("Enable Wireframe")]
         [CustomInspectorAttribute("SSToggleWithoutKeyword")]
-        public static SlBool EnableWireframe { get; } = false;
+        [DefaultValue(false)]
+        public static SlBool EnableWireframe { get; }
 
         [GlobalMember]
         [Property("_WireframeColor")]
         [DisplayName("Wireframe Color")]
         [Color]
-        public static SlFloat4 WireframeColor { get; } = new(0, 0, 0, 1);
+        [DefaultValue("(0, 0, 0, 1)")]
+        public static SlFloat4 WireframeColor { get; }
 
         [GlobalMember]
         [Property("_WireframeThickness")]
         [DisplayName("Wireframe Thickness")]
         [Range(0, 1)]
-        public static SlFloat WireframeThickness { get; } = 0.125f;
+        [DefaultValue(0.125f)]
+        public static SlFloat WireframeThickness { get; }
 
         #endregion
 
@@ -237,19 +269,22 @@ namespace SharpX.Examples.ShaderLab.HLSL
         [GlobalMember]
         [Property("_StencilRef")]
         [DisplayName("Stencil Ref")]
-        public static SlInt StencilRef { get; } = 1;
+        [DefaultValue(1)]
+        public static SlInt StencilRef { get; }
 
         [GlobalMember]
         [Property("_StencilCompare")]
         [DisplayName("Stencil Compare")]
         [Enum("UnityEngine.Rendering.CompareFunction")]
-        public static CompareFunction StencilCompare { get; } = CompareFunction.Always;
+        [DefaultValue(CompareFunction.Always)]
+        public static CompareFunction StencilCompare { get; }
 
         [GlobalMember]
         [Property("_StencilKeep")]
         [DisplayName("Stencil Keep")]
         [Enum("UnityEngine.Rendering.StencilOp")]
-        public static StencilOp StencilPass { get; } = StencilOp.Keep;
+        [DefaultValue(StencilOp.Keep)]
+        public static StencilOp StencilPass { get; }
 
         #endregion
 
@@ -260,26 +295,30 @@ namespace SharpX.Examples.ShaderLab.HLSL
         [DisplayName("Blend Src Factor")]
         [HideInInspector]
         [Enum("UnityEngine.Rendering.BlendMode")]
-        public static SlInt BlendSrcFactor { get; } = 5;
+        [DefaultValue(5)]
+        public static SlInt BlendSrcFactor { get; }
 
         [GlobalMember]
         [Property("_BlendDestFactor")]
         [DisplayName("Blend Dest Factor")]
         [HideInInspector]
         [Enum("UnityEngine.Rendering.BlendMode")]
-        public static SlInt BlendDestFactor { get; } = 10;
+        [DefaultValue(10)]
+        public static SlInt BlendDestFactor { get; }
 
         [GlobalMember]
         [Property("_Culling")]
         [DisplayName("Culling")]
         [Enum("UnityEngine.Rendering.CullMode")]
-        public static Culling Culling { get; } = Culling.Off;
+        [DefaultValue(Culling.Off)]
+        public static Culling Culling { get; }
 
         [GlobalMember]
         [Property("_ZWrite")]
         [DisplayName("ZWrite")]
         [Enum("Off", 0, "On", 1)]
-        public static Switch ZWrite { get; } = Switch.On;
+        [DefaultValue(1)]
+        public static Switch ZWrite { get; }
 
         #endregion
     }

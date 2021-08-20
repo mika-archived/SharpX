@@ -3,7 +3,6 @@
 using SharpX.Examples.ShaderLab.HLSL;
 using SharpX.Library.ShaderLab.Abstractions;
 using SharpX.Library.ShaderLab.Attributes;
-using SharpX.Library.ShaderLab.Interfaces;
 
 #nullable enable
 
