@@ -2,10 +2,13 @@
 using System.Linq;
 using System.Text.Json;
 
+using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.Composition.Attributes;
 using SharpX.Compiler.Composition.Interfaces;
 using SharpX.Compiler.ShaderLab.Models;
 using SharpX.Compiler.ShaderLab.Models.HLSL;
+using SharpX.Compiler.ShaderLab.Models.Shader;
+using SharpX.Library.ShaderLab.Interfaces;
 
 namespace SharpX.Compiler.ShaderLab
 {
@@ -20,6 +23,7 @@ namespace SharpX.Compiler.ShaderLab
         {
             ParseCompilerOptions(context.ExtraOptions);
             RegisterComponentsForShaderLabHLSL(context);
+            RegisterComponentsForShader(context);
         }
 
         private void ParseCompilerOptions(JsonElement element)
@@ -31,12 +35,20 @@ namespace SharpX.Compiler.ShaderLab
         private void RegisterComponentsForShaderLabHLSL(ILanguageBackendContext context)
         {
             context.RegisterExtension("cginc");
-            context.RegisterSourceContextFileMappingGenerator(w => Path.Combine(w.Variant, w.OriginalName));
+            context.RegisterSourceContextFileMappingGenerator(w => Path.Combine("includes", w.Variant, w.OriginalName));
             context.RegisterSourceContextGenerator(_ => new ShaderLabHLSLSourceContext());
             context.RegisterCSharpSyntaxWalker(w => new ShaderLabCSharpSyntaxWalker(w));
 
             foreach (var variant in _options!.ShaderVariants)
                 context.RegisterCompilationVariants(variant.Name, variant.Directives.ToArray());
+        }
+
+        private void RegisterComponentsForShader(ILanguageBackendContext context)
+        {
+            context.RegisterExtensionFor(typeof(IShader), "shader");
+            context.RegisterSourceContextFileMappingGeneratorFor(typeof(IShader), w => w.OriginalName); // OVERWRITE
+            context.RegisterSourceContextGeneratorFor(typeof(IShader), _ => new ShaderSourceContext());
+            context.RegisterCSharpSyntaxWalker(w => new ShaderCSharpSyntaxWalker(w, context.LoadContext), w => w.Item2.Length == 0);
         }
     }
 }
