@@ -1,5 +1,5 @@
 ﻿using System;
-using System.ComponentModel;
+using System.Linq;
 
 using SharpX.Library.ShaderLab.Attributes.Internal;
 
@@ -11,8 +11,6 @@ namespace SharpX.Library.ShaderLab.Attributes
         public string FullyQualifiedName { get; }
 
         public Type T { get; }
-
-        public dynamic Symbol { get; }
 
         public object[] Values { get; }
 
@@ -31,19 +29,13 @@ namespace SharpX.Library.ShaderLab.Attributes
             T = t;
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public EnumAttribute(object t)
-        {
-            Symbol = t; // THIS IS A WORKAROUND FOR TypeConstantKind.Type.
-        }
-
         public override string ToSourceString()
         {
             if (!string.IsNullOrWhiteSpace(FullyQualifiedName))
                 return $"Enum({FullyQualifiedName})";
             if (T != null)
                 return $"Enum({T.FullName})";
-            return $"Enum({string.Join(", ", Values)})";
+            return $"Enum({string.Join(", ", Values.Select(w => w.ToString()))})";
         }
     }
 }
