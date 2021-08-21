@@ -35,13 +35,15 @@ namespace SharpX.Compiler.Extensions
             var fullyQualifiedName = fullyQualifiedNameIncludeGlobal.Replace("global::", "");
             if (TypeMappings.ContainsKey(fullyQualifiedName))
                 return TypeMappings[fullyQualifiedName];
+            if (fullyQualifiedName.EndsWith("[]"))
+                return $"{TypeMappings[fullyQualifiedName.Substring(0, fullyQualifiedName.Length - 2)]}[]";
             return fullyQualifiedName;
         }
 
         private static object ConvertType(TypedConstant c)
         {
             if (c.Kind == TypedConstantKind.Array)
-                return c.Values.Select(w => w.Value);
+                return c.Values.Select(w => w.Value).ToArray();
             if (c.Kind == TypedConstantKind.Type)
                 return ((INamedTypeSymbol)c.Value!).ToDisplayString();
 
