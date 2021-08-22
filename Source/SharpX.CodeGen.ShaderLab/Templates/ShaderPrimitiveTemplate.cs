@@ -267,12 +267,40 @@ namespace SharpX.CodeGen.ShaderLab.Templates
  } 
             this.Write("\r\n");
  } else if (IsMatrix()) { 
- var args = string.Join(", ", Enumerable.Range(0, MatrixConstructorCount()).Select(w => $"{CSharpPrimitive} _{w}").ToList()); 
+ var plainArgs = string.Join(", ", Enumerable.Range(0, MatrixConstructorCount()).Select(w => $"{CSharpPrimitive} _{w}").ToList()); 
+ var componentArgs = string.Join(", ", Enumerable.Range(0, BaseClassDuplication).Select(w => $"{BaseClassName} _{w}").ToList()); 
             this.Write("\r\n        [Constructor]\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("(");
-            this.Write(this.ToStringHelper.ToStringWithCulture(args));
+            this.Write(this.ToStringHelper.ToStringWithCulture(plainArgs));
+            this.Write(") {}\r\n\r\n        [Constructor]\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write("(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(componentArgs));
             this.Write(") {}\r\n\r\n");
+ if (!Template.EndsWith("x2")) { 
+            this.Write("        public static explicit operator ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(BaseClassName));
+            this.Write("x2(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n");
+ } 
+            this.Write("\r\n");
+ if (!Template.EndsWith("x3")) { 
+            this.Write("        public static explicit operator ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(BaseClassName));
+            this.Write("x3(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n");
+ } 
+            this.Write("\r\n");
+ if (!Template.EndsWith("x4")) { 
+            this.Write("        public static explicit operator ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(BaseClassName));
+            this.Write("x4(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
+ } 
  } 
             this.Write("    }\r\n}");
             return this.GenerationEnvironment.ToString();

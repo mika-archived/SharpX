@@ -202,11 +202,36 @@ namespace SharpX.Library.ShaderLab.Primitives
 <# } #>
 
 <# } else if (IsMatrix()) { #>
-<# var args = string.Join(", ", Enumerable.Range(0, MatrixConstructorCount()).Select(w => $"{CSharpPrimitive} _{w}").ToList()); #>
+<# var plainArgs = string.Join(", ", Enumerable.Range(0, MatrixConstructorCount()).Select(w => $"{CSharpPrimitive} _{w}").ToList()); #>
+<# var componentArgs = string.Join(", ", Enumerable.Range(0, BaseClassDuplication).Select(w => $"{BaseClassName} _{w}").ToList()); #>
 
         [Constructor]
-        public <#= ClassName #>(<#= args #>) {}
+        public <#= ClassName #>(<#= plainArgs #>) {}
 
+        [Constructor]
+        public <#= ClassName #>(<#= componentArgs #>) {}
+
+<# if (!Template.EndsWith("x2")) { #>
+        public static explicit operator <#= BaseClassName #>x2(<#= ClassName #> _)
+        {
+            return default;
+        }
+<# } #>
+
+<# if (!Template.EndsWith("x3")) { #>
+        public static explicit operator <#= BaseClassName #>x3(<#= ClassName #> _)
+        {
+            return default;
+        }
+<# } #>
+
+<# if (!Template.EndsWith("x4")) { #>
+        public static explicit operator <#= BaseClassName #>x4(<#= ClassName #> _)
+        {
+            return default;
+        }
+
+<# } #>
 <# } #>
     }
 }

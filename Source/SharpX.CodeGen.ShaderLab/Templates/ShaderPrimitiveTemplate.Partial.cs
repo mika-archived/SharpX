@@ -11,7 +11,37 @@ namespace SharpX.CodeGen.ShaderLab.Templates
 
         internal string ClassName { get; }
 
-        internal string ClassNameWithoutComponent => VectorRegex.IsMatch(ClassName) ? ClassName.Substring(0, ClassName.Length - 1) : ClassName;
+        internal string ClassNameWithoutComponent
+        {
+            get
+            {
+                if (IsVector())
+                    return ClassName.Substring(0, ClassName.Length - 1);
+                if (IsMatrix())
+                    return ClassName.Substring(0, ClassName.Length - 3);
+                return ClassName;
+            }
+        }
+
+        internal string BaseClassName
+        {
+            get
+            {
+                if (IsMatrix())
+                    return ClassName.Substring(0, ClassName.Length - 2);
+                return ClassName;
+            }
+        }
+
+        internal int BaseClassDuplication
+        {
+            get
+            {
+                if (IsMatrix())
+                    return int.Parse(ClassName.Last().ToString());
+                return 1;
+            }
+        }
 
         internal string CSharpPrimitive { get; }
 
