@@ -27,7 +27,7 @@ namespace SharpX.Examples.ShaderLab.HLSL
                     return c;
 
                 default:
-                    return new SlFloat2(0);
+                    return new SlFloat2(0, 0);
             }
         }
 
@@ -81,7 +81,7 @@ namespace SharpX.Examples.ShaderLab.HLSL
                                );
         }
 
-        private Geometry2Fragment GetStreamDataForVoxelization(SlFloat3 vertex, SlFloat3 normal, SlFloat2 uv, SlFloat2 oNormal)
+        private Geometry2Fragment GetStreamDataForVoxelization(SlFloat3 vertex, SlFloat3 normal, SlFloat2 uv, SlFloat3 oNormal)
         {
 #if SHADER_SHADOWCASTER
             var pos1 = GetMovedVertexForVoxelization(vertex, (SlFloat3) oNormal);
@@ -124,7 +124,7 @@ namespace SharpX.Examples.ShaderLab.HLSL
         private Geometry2Fragment GetStreamDataForNonGeometry(SlFloat3 vertex, SlFloat3 normal, SlFloat2 uv, SlFloat3 localPos)
         {
 #if SHADER_SHADOWCASTER
-            var pos1 = GetMovedVertexForVoxelization(vertex, (SlFloat3) oNormal);
+            var pos1 = GetMovedVertexForVoxelization(vertex, normal);
             var cos = Builtin.Dot(normal, Builtin.Normalize(UnityCg.UnityWorldSpaceLightDir(pos1)));
             var pos2 = pos1 - normal * UnityCg.UnityLightShadowBias.Z * Builtin.Sqrt(1 - cos * cos);
 
@@ -202,9 +202,9 @@ namespace SharpX.Examples.ShaderLab.HLSL
                 }
             }
 
-            var p1 = i[0].Vertex;
-            var p2 = i[1].Vertex;
-            var p3 = i[2].Vertex;
+            var p1 = i[0].WorldPos.XYZ;
+            var p2 = i[1].WorldPos.XYZ;
+            var p3 = i[2].WorldPos.XYZ;
 
             var center = ((p1 + p2 + p3) / 3).XYZ;
 
@@ -253,10 +253,10 @@ namespace SharpX.Examples.ShaderLab.HLSL
 
                 var n = CalcNormal(a, b, c);
 
-                stream.Append(GetStreamDataForVoxelization(a + f, n, uv, (SlFloat2) o));
-                stream.Append(GetStreamDataForVoxelization(b + f, n, uv, (SlFloat2)o));
-                stream.Append(GetStreamDataForVoxelization(c + f, n, uv, (SlFloat2)o));
-                stream.Append(GetStreamDataForVoxelization(d + f, n, uv, (SlFloat2)o));
+                stream.Append(GetStreamDataForVoxelization(a + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(b + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(c + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(d + f, n, uv, o));
                 stream.RestartStrip();
             }
 
@@ -269,10 +269,10 @@ namespace SharpX.Examples.ShaderLab.HLSL
 
                 var n = CalcNormal(a, b, c);
 
-                stream.Append(GetStreamDataForVoxelization(a + f, n, uv, (SlFloat2)o));
-                stream.Append(GetStreamDataForVoxelization(b + f, n, uv, (SlFloat2)o));
-                stream.Append(GetStreamDataForVoxelization(c + f, n, uv, (SlFloat2)o));
-                stream.Append(GetStreamDataForVoxelization(d + f, n, uv, (SlFloat2)o));
+                stream.Append(GetStreamDataForVoxelization(a + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(b + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(c + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(d + f, n, uv, o));
                 stream.RestartStrip();
             }
 
@@ -285,10 +285,10 @@ namespace SharpX.Examples.ShaderLab.HLSL
 
                 var n = CalcNormal(a, b, c);
 
-                stream.Append(GetStreamDataForVoxelization(a + f, n, uv, (SlFloat2)o));
-                stream.Append(GetStreamDataForVoxelization(b + f, n, uv, (SlFloat2)o));
-                stream.Append(GetStreamDataForVoxelization(c + f, n, uv, (SlFloat2)o));
-                stream.Append(GetStreamDataForVoxelization(d + f, n, uv, (SlFloat2)o));
+                stream.Append(GetStreamDataForVoxelization(a + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(b + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(c + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(d + f, n, uv, o));
                 stream.RestartStrip();
             }
 
@@ -301,10 +301,10 @@ namespace SharpX.Examples.ShaderLab.HLSL
 
                 var n = CalcNormal(a, b, c);
 
-                stream.Append(GetStreamDataForVoxelization(a + f, n, uv, (SlFloat2)o));
-                stream.Append(GetStreamDataForVoxelization(b + f, n, uv, (SlFloat2)o));
-                stream.Append(GetStreamDataForVoxelization(c + f, n, uv, (SlFloat2)o));
-                stream.Append(GetStreamDataForVoxelization(d + f, n, uv, (SlFloat2)o));
+                stream.Append(GetStreamDataForVoxelization(a + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(b + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(c + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(d + f, n, uv, o));
                 stream.RestartStrip();
             }
 
@@ -317,10 +317,10 @@ namespace SharpX.Examples.ShaderLab.HLSL
 
                 var n = CalcNormal(a, b, c);
 
-                stream.Append(GetStreamDataForVoxelization(a + f, n, uv, (SlFloat2)o));
-                stream.Append(GetStreamDataForVoxelization(b + f, n, uv, (SlFloat2)o));
-                stream.Append(GetStreamDataForVoxelization(c + f, n, uv, (SlFloat2)o));
-                stream.Append(GetStreamDataForVoxelization(d + f, n, uv, (SlFloat2)o));
+                stream.Append(GetStreamDataForVoxelization(a + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(b + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(c + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(d + f, n, uv, o));
                 stream.RestartStrip();
             }
 
@@ -333,10 +333,10 @@ namespace SharpX.Examples.ShaderLab.HLSL
 
                 var n = CalcNormal(a, b, c);
 
-                stream.Append(GetStreamDataForVoxelization(a + f, n, uv, (SlFloat2)o));
-                stream.Append(GetStreamDataForVoxelization(b + f, n, uv, (SlFloat2)o));
-                stream.Append(GetStreamDataForVoxelization(c + f, n, uv, (SlFloat2)o));
-                stream.Append(GetStreamDataForVoxelization(d + f, n, uv, (SlFloat2)o));
+                stream.Append(GetStreamDataForVoxelization(a + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(b + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(c + f, n, uv, o));
+                stream.Append(GetStreamDataForVoxelization(d + f, n, uv, o));
                 stream.RestartStrip();
             }
 #elif SHADER_TRIANGLE_HOLOGRAPH
@@ -350,7 +350,7 @@ namespace SharpX.Examples.ShaderLab.HLSL
             {
                 for (SlInt j = 0; j < 3; j++)
                 {
-                    var vertex = i[j].Vertex.XYZ;
+                    var vertex = i[j].WorldPos.XYZ;
                     var uv = i[j].TexCoord;
 
                     stream.Append(GetStreamDataForHolograph(vertex, normal, uv, localPos));

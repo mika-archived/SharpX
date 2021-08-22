@@ -47,6 +47,11 @@ namespace SharpX.Examples.ShaderLab.HLSL
         public static Sampler2D MainTexture { get; }
 
         [GlobalMember]
+        [NotExportToInspector]
+        [Property("_MainTex_ST")]
+        public static SlFloat4 MainTextureST { get; }
+
+        [GlobalMember]
         [Property("_Color")]
         [DisplayName("Main Color")]
         [Color]
@@ -280,8 +285,8 @@ namespace SharpX.Examples.ShaderLab.HLSL
         public static CompareFunction StencilCompare { get; }
 
         [GlobalMember]
-        [Property("_StencilKeep")]
-        [DisplayName("Stencil Keep")]
+        [Property("_StencilPass")]
+        [DisplayName("Stencil Pass")]
         [Enum("UnityEngine.Rendering.StencilOp")]
         [DefaultValue(StencilOp.Keep)]
         public static StencilOp StencilPass { get; }
