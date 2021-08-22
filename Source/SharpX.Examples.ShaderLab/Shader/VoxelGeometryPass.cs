@@ -20,13 +20,13 @@ namespace SharpX.Examples.ShaderLab.Shader
             { "fragment", "fs" }
         }.ToImmutableDictionary();
 
-        private static readonly ImmutableArray<Type> Shaders = ImmutableArray.Create(typeof(VertexShader), typeof(GeometryShader), typeof(FragmentShader));
+        private static readonly ImmutableArray<Type> Shaders = ImmutableArray.Create(typeof(Vertex2Geometry), typeof(Geometry2Fragment), typeof(VertexShader), typeof(GeometryShader), typeof(FragmentShader));
 
 
         public VoxelGeometryPass() : base(ShaderPragmas, Shaders)
         {
             Name = "Avatars Voxel Geometry";
-            ShaderVariant = "SHADER_VOXELIZATION";
+            ShaderVariant = "voxelization";
             Blend = "[_BlendSrcFactor] [_BlendDestFactor]";
             Cull = "[_Culling]";
             Stencil = new Stencil();

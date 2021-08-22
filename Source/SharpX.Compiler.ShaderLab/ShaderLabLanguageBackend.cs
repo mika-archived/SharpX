@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Text.Json;
 
-using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.Composition.Attributes;
 using SharpX.Compiler.Composition.Interfaces;
 using SharpX.Compiler.ShaderLab.Models;

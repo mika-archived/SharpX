@@ -21,12 +21,12 @@ namespace SharpX.Examples.ShaderLab.Shader
             { "fragment", "fs" }
         }.ToImmutableDictionary();
 
-        private static readonly ImmutableArray<Type> Shaders = ImmutableArray.Create(typeof(VertexShader), typeof(GeometryShader), typeof(FragmentShader));
+        private static readonly ImmutableArray<Type> Shaders = ImmutableArray.Create(typeof(Vertex2Geometry), typeof(Geometry2Fragment), typeof(VertexShader), typeof(GeometryShader), typeof(FragmentShader));
 
         public TriangleHolographPass() : base(ShaderPragmas, Shaders)
         {
             Name = "Avatars Triangle Holograph";
-            ShaderVariant = "SHADER_TRIANGLE_HOLOGRAPH";
+            ShaderVariant = "triangle-holograph";
             Blend = "SrcAlpha OneMinusSrcAlpha";
             Cull = Culling.Off.ToString();
             Stencil = new Stencil();

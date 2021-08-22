@@ -21,12 +21,12 @@ namespace SharpX.Examples.ShaderLab.Shader
             { "fragment", "fs" }
         }.ToImmutableDictionary();
 
-        private static readonly ImmutableArray<Type> Shaders = ImmutableArray.Create(typeof(VertexShader), typeof(GeometryShader), typeof(FragmentShader));
+        private static readonly ImmutableArray<Type> Shaders = ImmutableArray.Create(typeof(Vertex2Geometry), typeof(Geometry2Fragment), typeof(VertexShader), typeof(GeometryShader), typeof(FragmentShader));
 
         public WireframePass() : base(ShaderPragmas, Shaders)
         {
             Name = "Avatars Wireframe";
-            ShaderVariant = "SHADER_WIREFRAME";
+            ShaderVariant = "wireframe";
             Blend = "SrcAlpha OneMinusSrcAlpha";
             Cull = Culling.Off.ToString();
             Stencil = new Stencil();

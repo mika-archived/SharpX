@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 using Microsoft.CodeAnalysis;
@@ -98,6 +99,8 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
             foreach (var tag in pass.Tags)
                 s.Tags.Add(tag.Key, tag.Value);
 
+            s.ShaderIncludes.AddRange(BuildIncludeShaders(pass.ShaderReferences, pass.ShaderVariant));
+
             return s;
         }
 
@@ -113,6 +116,23 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
                 Fail = stencil.Fail,
                 ZFail = stencil.ZFail
             };
+        }
+
+        private List<string> BuildIncludeShaders(dynamic shaders, string variant)
+        {
+            var references = new List<string>();
+
+            foreach (var shader in shaders)
+            {
+                var t = _model.Compilation.GetTypeByMetadataName((shader as Type)!.FullName!);
+                if (!t.HasAttribute<ExportAttribute>(_model))
+                    continue;
+
+                var attr = t.GetAttribute<ExportAttribute>(_model)!;
+                references.Add(Path.Combine("includes", variant, attr.Source.Replace(".{extension}", ".cginc")));
+            }
+
+            return references.Distinct().ToList();
         }
 
         #endregion

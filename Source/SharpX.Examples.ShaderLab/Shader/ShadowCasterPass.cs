@@ -22,11 +22,11 @@ namespace SharpX.Examples.ShaderLab.Shader
             { "multi_compile_fog", "" }
         }.ToImmutableDictionary();
 
-        private static readonly ImmutableArray<Type> Shaders = ImmutableArray.Create(typeof(VertexShader), typeof(GeometryShader), typeof(FragmentShader));
+        private static readonly ImmutableArray<Type> Shaders = ImmutableArray.Create(typeof(Vertex2Geometry), typeof(Geometry2Fragment), typeof(VertexShader), typeof(GeometryShader), typeof(FragmentShader));
 
         public ShadowCasterPass() : base(ShaderPragmas, Shaders)
         {
-            ShaderVariant = "SHADER_SHADOWCASTER";
+            ShaderVariant = "shadow-caster";
             Tags = new Dictionary<string, string>
             {
                 { "LightMode", "ShadowCaster" }
