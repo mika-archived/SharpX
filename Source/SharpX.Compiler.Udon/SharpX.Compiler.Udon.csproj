@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SharpX.Compiler.Composition\SharpX.Compiler.Composition.csproj" />
+    <ProjectReference Include="..\SharpX.Compiler.Extensions\SharpX.Compiler.Extensions.csproj" />
+  </ItemGroup>
+
+</Project>
