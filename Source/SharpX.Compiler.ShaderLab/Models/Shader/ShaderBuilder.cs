@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 using Microsoft.CodeAnalysis;
@@ -44,9 +43,64 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
         public void Build()
         {
             _context.Name = _instance.Name;
+            _context.CustomEditor = _instance.CustomEditor?.FullName;
+            _context.Fallback = _instance.Fallback;
 
             BuildProperties();
+            BuildSubShaders();
         }
+
+        #region SubShaders
+
+        private void BuildSubShaders()
+        {
+            var shaders = _instance.SubShaders;
+
+            foreach (var shader in shaders)
+            {
+                var statement = new SubShaderStructure
+                {
+                    Lod = shader.Lod,
+                    GrabPass = shader.GrabPass
+                };
+
+                foreach (var tag in shader.Tags)
+                    statement.Tags.Add(tag.Key, tag.Value);
+
+                foreach (var pass in shader.Pass)
+                    statement.Pass.Add(BuildShaderPass(pass));
+
+                _context.SubShaders.Add(statement);
+            }
+        }
+
+        private ShaderPassStructure BuildShaderPass(dynamic pass)
+        {
+            var s = new ShaderPassStructure
+            {
+                AlphaToMask = pass.AlphaToMask,
+                Blend = pass.Blend,
+                BlendOp = pass.BlendOp,
+                ColorMask = pass.ColorMask,
+                Culling = pass.Cull,
+                Name = pass.Name,
+                Offset = pass.Offset,
+                ZTest = pass.ZTest,
+                ZWrite = pass.ZWrite
+            };
+
+            foreach (var pragma in pass.Pragmas)
+                s.Pragmas.Add(pragma.Key, pragma.Value);
+
+            foreach (var tag in pass.Tags) 
+                s.Tags.Add(tag.Key, tag.Value);
+
+            return s;
+        }
+
+        #endregion
+
+        #region Properties
 
         private void BuildProperties()
         {
@@ -127,5 +181,7 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
             var obj = data.AsAttributeInstance(typeof(InspectorAttribute).Assembly.GetType(fullyQualifiedName)!);
             return obj as InspectorAttribute;
         }
+
+        #endregion
     }
 }

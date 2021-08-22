@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Loader;
@@ -81,6 +82,10 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
             catch (RuntimeBinderException e)
             {
                 _context.Errors.Add(new DefaultError(node, e.Message));
+            }
+            catch (Exception e) when (Debugger.IsAttached)
+            {
+                Debug.WriteLine(e.Message);
             }
 
             _context.CloseContext();

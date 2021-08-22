@@ -7,9 +7,15 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
 {
     internal class ShaderSourceContext : ISourceContext
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = "SharpX.Placeholder";
 
         public List<ShaderProperty> Properties { get; } = new();
+
+        public List<SubShaderStructure> SubShaders { get;  } = new();
+
+        public string? CustomEditor { get; set; }
+
+        public string? Fallback { get; set; }
 
         public string ToSourceString()
         {
@@ -32,6 +38,22 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
                 sb.DecrementIndent();
                 sb.WriteLineWithIndent("}");
             }
+
+            foreach (var shader in SubShaders)
+            {
+                sb.WriteLineWithIndent("SubShader {");
+                sb.IncrementIndent();
+
+                shader.WriteTo(sb);
+
+                sb.DecrementIndent();
+                sb.WriteLineWithIndent("}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(CustomEditor))
+                sb.WriteLineWithIndent($"CustomEditor \"{CustomEditor}\"");
+            if (!string.IsNullOrWhiteSpace(Fallback))
+                sb.WriteLineWithIndent($"Fallback \"{Fallback}\"");
 
             sb.DecrementIndent();
             sb.WriteLineWithIndent("}");
