@@ -3,6 +3,6 @@
 namespace SharpX.Library.ShaderLab.Primitives
 {
     // ReSharper disable once InconsistentNaming
-    [Primitive("bool2x2", typeof(bool), "2x2")]
-    public partial class SlBool2x2 { }
+    [Primitive("float2x3", typeof(float), "2x3")]
+    public partial class SlFloat2x3 { }
 }

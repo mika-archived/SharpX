@@ -15,11 +15,11 @@ namespace SharpX.Library.ShaderLab.Primitives
     [External]
     public partial class <#= ClassName #> <#= string.IsNullOrWhiteSpace(Inheritance) ? "" : (": " + Inheritance) #>
     {
+<# if (IsVector()) { #>
+<# if (Template == "1") { #>
         [Constructor]
         public <#= ClassName #>(<#= CSharpPrimitive #> a) {}
 
-<# if (IsVector()) { #>
-<# if (Template == "1") { #>
         public static implicit operator <#= CSharpPrimitive #>(<#= ClassName #> _)
         {
             return default;
@@ -200,6 +200,12 @@ namespace SharpX.Library.ShaderLab.Primitives
         }
 
 <# } #>
+
+<# } else if (IsMatrix()) { #>
+<# var args = string.Join(", ", Enumerable.Range(0, MatrixConstructorCount()).Select(w => $"{CSharpPrimitive} _{w}").ToList()); #>
+
+        [Constructor]
+        public <#= ClassName #>(<#= args #>) {}
 
 <# } #>
     }

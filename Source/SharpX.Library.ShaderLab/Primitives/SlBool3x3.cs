@@ -1,9 +1,8 @@
-﻿using SharpX.Library.ShaderLab.Attributes;
+﻿using SharpX.CodeGen.ShaderLab.Attributes;
 
 namespace SharpX.Library.ShaderLab.Primitives
 {
     // ReSharper disable once InconsistentNaming
-    [Component("bool3x3")]
-    [External]
-    public class SlBool3x3 { }
+    [Primitive("bool3x3", typeof(bool), "3x3")]
+    public partial class SlBool3x3 { }
 }

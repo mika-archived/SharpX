@@ -1,10 +1,11 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace SharpX.CodeGen.ShaderLab.Templates
 {
     public partial class ShaderPrimitiveTemplate
     {
-        private static readonly Regex MatrixRegex = new("^\\dx\\d$", RegexOptions.Compiled);
+        private static readonly Regex MatrixRegex = new("^(?<a>\\d)x(?<b>\\d)$", RegexOptions.Compiled);
         private static readonly Regex VectorRegex = new("^.*\\d$", RegexOptions.Compiled);
 
         internal string ComponentName { get; }
@@ -35,6 +36,17 @@ namespace SharpX.CodeGen.ShaderLab.Templates
         internal bool IsMatrix()
         {
             return MatrixRegex.IsMatch(Template);
+        }
+
+        internal int MatrixConstructorCount()
+        {
+            if (IsMatrix())
+            {
+                var m = MatrixRegex.Match(Template);
+                return int.Parse(m.Groups["a"].Value) * int.Parse(m.Groups["b"].Value);
+            }
+
+            return 0;
         }
     }
 }
