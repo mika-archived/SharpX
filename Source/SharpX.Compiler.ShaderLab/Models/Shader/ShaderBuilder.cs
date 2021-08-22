@@ -166,6 +166,8 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
                 return;
             if (!symbol.HasAttribute<GlobalMemberAttribute>(_model))
                 return;
+            if (symbol.HasAttribute<NotExportToInspectorAttribute>(_model))
+                return;
 
             var type = symbol.Type.Name;
             if (symbol.HasAttribute<RangeAttribute>(_model))
@@ -183,6 +185,8 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
             if (symbol.HasAttribute<ExternalAttribute>(_model))
                 return;
             if (!symbol.HasAttribute<GlobalMemberAttribute>(_model))
+                return;
+            if (symbol.HasAttribute<NotExportToInspectorAttribute>(_model))
                 return;
 
             var type = symbol.Type.Name;
