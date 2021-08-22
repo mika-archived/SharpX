@@ -89,13 +89,30 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
                 ZWrite = pass.ZWrite
             };
 
+            if (pass.Stencil != null)
+                s.Stencil = BuildStencil(pass.Stencil);
+
             foreach (var pragma in pass.Pragmas)
                 s.Pragmas.Add(pragma.Key, pragma.Value);
 
-            foreach (var tag in pass.Tags) 
+            foreach (var tag in pass.Tags)
                 s.Tags.Add(tag.Key, tag.Value);
 
             return s;
+        }
+
+        private StencilStructure BuildStencil(dynamic stencil)
+        {
+            return new StencilStructure
+            {
+                Ref = stencil.Ref,
+                ReadMask = stencil.ReadMask,
+                WriteMask = stencil.WriteMask,
+                Compare = stencil.Compare,
+                Pass = stencil.Pass,
+                Fail = stencil.Fail,
+                ZFail = stencil.ZFail
+            };
         }
 
         #endregion
