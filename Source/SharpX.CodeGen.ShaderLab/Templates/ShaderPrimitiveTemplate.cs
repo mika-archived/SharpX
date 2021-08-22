@@ -301,6 +301,90 @@ namespace SharpX.CodeGen.ShaderLab.Templates
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
  } 
+            this.Write("\r\n");
+ var targets = new string[] { ClassName, "int", "float", "SlFloat", "SlInt" }; 
+ foreach (var target in targets ) { 
+            this.Write("\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" operator +(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(target));
+            this.Write(" b)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
+ if (target != ClassName) { 
+            this.Write("        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" operator +(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(target));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" b)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
+ } 
+            this.Write("\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" operator -(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(target));
+            this.Write(" b)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
+ if (target != ClassName) { 
+            this.Write("\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" operator -(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(target));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" b)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
+ } 
+            this.Write("\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" operator *(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(target));
+            this.Write(" b)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
+ if (target != ClassName) { 
+            this.Write("\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" operator *(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(target));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" b)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
+ } 
+            this.Write("\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" operator /(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(target));
+            this.Write(" b)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
+ if (target != ClassName) { 
+            this.Write("\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" operator /(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(target));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" b)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
+ } 
+            this.Write("\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" operator %(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(target));
+            this.Write(" b)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
+ if (target != ClassName) { 
+            this.Write("\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" operator %(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(target));
+            this.Write(" a, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
+            this.Write(" b)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
+ } 
+ } 
  } 
             this.Write("    }\r\n}");
             return this.GenerationEnvironment.ToString();

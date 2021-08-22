@@ -232,6 +232,79 @@ namespace SharpX.Library.ShaderLab.Primitives
         }
 
 <# } #>
+
+<# var targets = new string[] { ClassName, "int", "float", "SlFloat", "SlInt" }; #>
+<# foreach (var target in targets ) { #>
+
+        public static <#= ClassName #> operator +(<#= ClassName #> a, <#= target #> b)
+        {
+            return default;
+        }
+
+<# if (target != ClassName) { #>
+        public static <#= ClassName #> operator +(<#= target #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+<# } #>
+
+        public static <#= ClassName #> operator -(<#= ClassName #> a, <#= target #> b)
+        {
+            return default;
+        }
+
+<# if (target != ClassName) { #>
+
+        public static <#= ClassName #> operator -(<#= target #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+<# } #>
+
+        public static <#= ClassName #> operator *(<#= ClassName #> a, <#= target #> b)
+        {
+            return default;
+        }
+
+<# if (target != ClassName) { #>
+
+        public static <#= ClassName #> operator *(<#= target #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+<# } #>
+
+        public static <#= ClassName #> operator /(<#= ClassName #> a, <#= target #> b)
+        {
+            return default;
+        }
+
+<# if (target != ClassName) { #>
+
+        public static <#= ClassName #> operator /(<#= target #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+<# } #>
+
+        public static <#= ClassName #> operator %(<#= ClassName #> a, <#= target #> b)
+        {
+            return default;
+        }
+
+<# if (target != ClassName) { #>
+
+        public static <#= ClassName #> operator %(<#= target #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+<# } #>
+<# } #>
 <# } #>
     }
 }
