@@ -31,19 +31,19 @@ namespace SharpX.Library.ShaderLab.Primitives
         }
 
         [ImplicitCastInCompiler]
-        public static explicit operator <#= ClassNameWithoutComponent #>2(<#= ClassName #> _)
+        public static explicit operator <#= ClassName #>2(<#= ClassName #> _)
         {
             return default;
         }
 
         [ImplicitCastInCompiler]
-        public static explicit operator <#= ClassNameWithoutComponent #>3(<#= ClassName #> _)
+        public static explicit operator <#= ClassName #>3(<#= ClassName #> _)
         {
             return default;
         }
 
         [ImplicitCastInCompiler]
-        public static explicit operator <#= ClassNameWithoutComponent #>4(<#= ClassName #> _)
+        public static explicit operator <#= ClassName #>4(<#= ClassName #> _)
         {
             return default;
         }

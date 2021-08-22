@@ -6,8 +6,7 @@ namespace SharpX.CodeGen.ShaderLab.Templates
     public partial class ShaderPrimitiveTemplate
     {
         private static readonly Regex MatrixRegex = new("^(?<a>\\d)x(?<b>\\d)$", RegexOptions.Compiled);
-        private static readonly Regex VectorRegex = new("^.*\\d$", RegexOptions.Compiled);
-
+        private static readonly Regex VectorRegex = new("^\\d$", RegexOptions.Compiled);
         internal string ComponentName { get; }
 
         internal string ClassName { get; }
@@ -30,7 +29,7 @@ namespace SharpX.CodeGen.ShaderLab.Templates
 
         private bool IsVector()
         {
-            return int.TryParse(Template, out _);
+            return VectorRegex.IsMatch(Template);
         }
 
         internal bool IsMatrix()

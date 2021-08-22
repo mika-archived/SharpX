@@ -52,17 +52,17 @@ namespace SharpX.CodeGen.ShaderLab.Templates
             this.Write(this.ToStringHelper.ToStringWithCulture(CSharpPrimitive));
             this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        [ImplicitCastIn" +
                     "Compiler]\r\n        public static explicit operator ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("2(");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        [ImplicitCastIn" +
                     "Compiler]\r\n        public static explicit operator ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("3(");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n        [ImplicitCastIn" +
                     "Compiler]\r\n        public static explicit operator ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(ClassNameWithoutComponent));
+            this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write("4(");
             this.Write(this.ToStringHelper.ToStringWithCulture(ClassName));
             this.Write(" _)\r\n        {\r\n            return default;\r\n        }\r\n\r\n");
