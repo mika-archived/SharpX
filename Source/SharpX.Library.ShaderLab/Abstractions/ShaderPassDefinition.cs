@@ -9,8 +9,6 @@ namespace SharpX.Library.ShaderLab.Abstractions
 {
     public class ShaderPassDefinition : IShader
     {
-        public string? UsePass { get; protected set; }
-
         public string? AlphaToMask { get; protected set; }
 
         public string? Blend { get; protected set; }
