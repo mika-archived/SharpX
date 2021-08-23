@@ -13,7 +13,7 @@ using SharpX.Compiler.Models;
 
 namespace SharpX.CLI.Models
 {
-    public record CompilerConfiguration(string BaseDir, string[] Sources, string[] References, string[] Plugins, string Out, string Target)
+    public record CompilerConfiguration(string BaseDir, string[] Includes, string[] Excludes, string[] References, string[] Plugins, string Out, string Target)
     {
         [JsonExtensionData]
         public Dictionary<string, JsonElement> CustomOptions { get; init; } = new();
@@ -21,7 +21,8 @@ namespace SharpX.CLI.Models
         public SharpXCompilerOptions ToCompilerOptions()
         {
             var matcher = new Matcher();
-            matcher.AddIncludePatterns(Sources);
+            matcher.AddIncludePatterns(Includes);
+            matcher.AddExcludePatterns(Excludes);
 
             var items = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(BaseDir)));
 

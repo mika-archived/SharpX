@@ -15,21 +15,23 @@ namespace SharpX.CLI.Commands
     public class BuildCommand
     {
         private readonly string? _baseDir;
+        private readonly string[]? _excludes;
+        private readonly string[]? _includes;
         private readonly ILogger<CompilerInterface> _logger;
         private readonly string? _out;
         private readonly string[]? _plugins;
         private readonly string? _project;
         private readonly string[]? _references;
-        private readonly string[]? _sources;
         private readonly string? _target;
         private CompilerConfiguration? _configuration;
 
-        public BuildCommand(ILogger<CompilerInterface> logger, string? project, string? baseDir, string[]? sources, string? @out, string[]? references, string[]? plugins, string? target)
+        public BuildCommand(ILogger<CompilerInterface> logger, string? project, string? baseDir, string[]? includes, string[]? excludes, string? @out, string[]? references, string[]? plugins, string? target)
         {
             _logger = logger;
             _project = project;
             _baseDir = baseDir;
-            _sources = sources;
+            _includes = includes;
+            _excludes = excludes;
             _out = @out;
             _references = references;
             _plugins = plugins;
@@ -68,7 +70,7 @@ namespace SharpX.CLI.Commands
         private bool ValidateOptions()
         {
             if (string.IsNullOrWhiteSpace(_project))
-                return ValidateRawArguments(_baseDir, _sources, _out, _references, _plugins, _target, new Dictionary<string, JsonElement>());
+                return ValidateRawArguments(_baseDir, _includes, _excludes, _out, _references, _plugins, _target, new Dictionary<string, JsonElement>());
 
             return ValidateProjectArgument();
         }
@@ -85,7 +87,7 @@ namespace SharpX.CLI.Commands
                 if (obj == null)
                     return false;
 
-                return ValidateRawArguments(obj.BaseDir, obj.Sources, obj.Out, obj.References, obj.Plugins, obj.Target, obj.CustomOptions);
+                return ValidateRawArguments(obj.BaseDir, obj.Includes, obj.Excludes, obj.Out, obj.References, obj.Plugins, obj.Target, obj.CustomOptions);
             }
             catch (Exception e)
             {
@@ -95,12 +97,12 @@ namespace SharpX.CLI.Commands
         }
 
         [MemberNotNullWhen(true, nameof(_configuration))]
-        private bool ValidateRawArguments(string? baseDir, string[]? sources, string? @out, string[]? references, string[]? plugins, string? target, Dictionary<string, JsonElement>? customOptions)
+        private bool ValidateRawArguments(string? baseDir, string[]? includes, string[]? excludes, string? @out, string[]? references, string[]? plugins, string? target, Dictionary<string, JsonElement>? customOptions)
         {
             if (string.IsNullOrWhiteSpace(baseDir) || !Directory.Exists(baseDir))
                 return false;
 
-            if (sources == null || sources.Length == 0)
+            if (includes == null || includes.Length == 0)
                 return false;
 
             if (string.IsNullOrWhiteSpace(@out))
@@ -115,7 +117,7 @@ namespace SharpX.CLI.Commands
             if (string.IsNullOrWhiteSpace(target))
                 return false;
 
-            _configuration = new CompilerConfiguration(Path.GetFullPath(baseDir), sources, references ?? Array.Empty<string>(), plugins ?? Array.Empty<string>(), @out, target);
+            _configuration = new CompilerConfiguration(Path.GetFullPath(baseDir), includes, excludes ?? Array.Empty<string>(), references ?? Array.Empty<string>(), plugins ?? Array.Empty<string>(), @out, target);
             _configuration = _configuration with { CustomOptions = customOptions ?? new Dictionary<string, JsonElement>() };
             return true;
         }
