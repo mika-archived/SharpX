@@ -354,6 +354,17 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             }
         }
 
+        public override void VisitCastExpression(CastExpressionSyntax node)
+        {
+            var capture = TypeDeclarationCapture.Capture(node.Type, _context.SemanticModel);
+
+            var statement = new CastStatement(capture.GetActualName());
+            using (SyntaxCaptureScope<CastStatement>.Create(this, WellKnownSyntax.CastExpressionSyntax, statement))
+                Visit(node.Expression);
+
+            Statement?.AddSourcePart(statement);
+        }
+
         public override void VisitInitializerExpression(InitializerExpressionSyntax node)
         {
             if (node.IsKind(SyntaxKind.ObjectInitializerExpression))
