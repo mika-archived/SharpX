@@ -52,7 +52,7 @@ namespace SharpX.Compiler.Models
         {
             if (SyntaxTree.GetDiagnostics().Any(w => w.Severity == DiagnosticSeverity.Error))
             {
-                _errors.AddRange(SyntaxTree.GetDiagnostics().Where(w => w.Severity == DiagnosticSeverity.Error).Select(w => w.ToErrorMessage()));
+                _errors.AddRange(SyntaxTree.GetDiagnostics().Where(w => w.Severity == DiagnosticSeverity.Error).Select(w => new VisualStudioCatchError(w)).Select(w => w.GetMessage()));
                 return;
             }
 

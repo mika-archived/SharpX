@@ -338,7 +338,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                             break;
                         }
 
-                        _context.Errors.Add(new DefaultError(node, "Invalid constant value, SharpX.ShaderLab could not transpile to constant value"));
+                        _context.Errors.Add(new VisualStudioCatchError(node, "Invalid constant value, SharpX.ShaderLab could not transpile to constant value"));
                         break;
                     }
 
@@ -438,7 +438,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             foreach (var variable in node.Variables)
             {
                 if (variable.ArgumentList != null)
-                    _context.Errors.Add(new DefaultError(variable.ArgumentList, "SharpX.ShaderLab does not currently supports bracket argument list yet"));
+                    _context.Errors.Add(new VisualStudioCatchError(variable.ArgumentList, "SharpX.ShaderLab does not currently supports bracket argument list yet"));
 
                 var statement = new Statement();
                 using (var scope = SyntaxCaptureScope<VariableDeclaration>.Create(this, WellKnownSyntax.VariableDeclarationSyntax, new VariableDeclaration(capture.GetActualName(), variable.Identifier.ValueText)))
@@ -631,9 +631,9 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 return;
 
             if (node.Declaration.Variables.Count > 1)
-                _context.Errors.Add(new DefaultError(node.Declaration, "SharpX.ShaderLab Compiler does not support multiple declarations on single field declaration"));
+                _context.Errors.Add(new VisualStudioCatchError(node.Declaration, "SharpX.ShaderLab Compiler does not support multiple declarations on single field declaration"));
             if (node.Declaration.Variables.Any(w => w.Initializer != default))
-                _context.Warnings.Add(new DefaultError(node.Declaration, "SharpX.ShaderLab Compiler does not support field initializers"));
+                _context.Warnings.Add(new VisualStudioCatchError(node.Declaration, "SharpX.ShaderLab Compiler does not support field initializers"));
 
             if (node.HasAttribute<ExternalAttribute>(_context.SemanticModel))
                 return; // skipped to transpile
@@ -643,7 +643,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             if (capture.HasAttribute<GlobalMemberAttribute>())
             {
                 if (!node.HasModifiers(SyntaxKind.StaticKeyword))
-                    _context.Warnings.Add(new DefaultError(node, "SharpX.ShaderLab Compiler recommended to declare global member as static properties or fields"));
+                    _context.Warnings.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler recommended to declare global member as static properties or fields"));
 
                 context.AddGlobalMember(capture.GetDeclaredType(), capture.GetIdentifierName());
                 return;
@@ -651,7 +651,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
             if (context.StructDeclaration == null)
             {
-                _context.Warnings.Add(new DefaultError(node, "Field declaration found outside of structure definition"));
+                _context.Warnings.Add(new VisualStudioCatchError(node, "Field declaration found outside of structure definition"));
                 return;
             }
 
@@ -665,7 +665,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             if (capture.HasAttribute<SemanticAttribute>())
             {
                 if (node.HasModifiers(SyntaxKind.StaticKeyword))
-                    _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not process semantic members to be declared as static modifier"));
+                    _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not process semantic members to be declared as static modifier"));
 
                 var attr = capture.GetAttribute<SemanticAttribute>()!;
                 if (attr.IsValidSemantics())
@@ -675,7 +675,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 }
             }
 
-            _context.Warnings.Add(new DefaultError(node, "The SharpX.ShaderLab compiler will transpile without SEMANTIC specification, but this may cause the ShaderLab compiler to throw an error "));
+            _context.Warnings.Add(new VisualStudioCatchError(node, "The SharpX.ShaderLab compiler will transpile without SEMANTIC specification, but this may cause the ShaderLab compiler to throw an error "));
             context.StructDeclaration.AddMember(capture.GetDeclaredType(), capture.GetIdentifierName(), null);
         }
 
@@ -728,14 +728,14 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 return;
 
             if (node.Initializer != null)
-                _context.Warnings.Add(new DefaultError(node.Initializer, "SharpX.ShaderLab Compiler does not support property initializers"));
+                _context.Warnings.Add(new VisualStudioCatchError(node.Initializer, "SharpX.ShaderLab Compiler does not support property initializers"));
 
             if (node.AccessorList != null)
                 foreach (var accessor in node.AccessorList.Accessors.Where(w => w.Body != null || w.ExpressionBody != null))
-                    _context.Warnings.Add(new DefaultError(accessor, "SharpX.ShaderLab Compiler does not support property bodies / expression bodies in set/get accessors"));
+                    _context.Warnings.Add(new VisualStudioCatchError(accessor, "SharpX.ShaderLab Compiler does not support property bodies / expression bodies in set/get accessors"));
 
             if (node.ExpressionBody != null)
-                _context.Warnings.Add(new DefaultError(node.ExpressionBody, "SharpX.ShaderLab Compiler does not support property expression bodies in get accessor"));
+                _context.Warnings.Add(new VisualStudioCatchError(node.ExpressionBody, "SharpX.ShaderLab Compiler does not support property expression bodies in get accessor"));
 
             if (node.HasAttribute<ExternalAttribute>(_context.SemanticModel))
                 return; // skipped to transpile
@@ -745,7 +745,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             if (capture.HasAttribute<GlobalMemberAttribute>())
             {
                 if (!node.HasModifiers(SyntaxKind.StaticKeyword))
-                    _context.Warnings.Add(new DefaultError(node, "SharpX.ShaderLab Compiler recommended to declare global member as static properties or fields"));
+                    _context.Warnings.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler recommended to declare global member as static properties or fields"));
 
                 context.AddGlobalMember(capture.GetDeclaredType(), capture.GetIdentifierName());
                 return;
@@ -753,7 +753,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
             if (context.StructDeclaration == null)
             {
-                _context.Warnings.Add(new DefaultError(node, "Property declaration found outside of structure definition"));
+                _context.Warnings.Add(new VisualStudioCatchError(node, "Property declaration found outside of structure definition"));
                 return;
             }
 
@@ -767,7 +767,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             if (capture.HasAttribute<SemanticAttribute>())
             {
                 if (node.HasModifiers(SyntaxKind.StaticKeyword))
-                    _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not process semantic members to be declared as static modifier"));
+                    _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not process semantic members to be declared as static modifier"));
 
                 var attr = capture.GetAttribute<SemanticAttribute>()!;
                 if (attr.IsValidSemantics())
@@ -777,7 +777,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 }
             }
 
-            _context.Warnings.Add(new DefaultError(node, "The SharpX.ShaderLab compiler will transpile without SEMANTIC specification, but this may cause the ShaderLab compiler to throw an error "));
+            _context.Warnings.Add(new VisualStudioCatchError(node, "The SharpX.ShaderLab compiler will transpile without SEMANTIC specification, but this may cause the ShaderLab compiler to throw an error "));
             context.StructDeclaration.AddMember(capture.GetDeclaredType(), capture.GetIdentifierName(), null);
         }
 
@@ -785,7 +785,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
         {
             if (node.Type == null)
             {
-                _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler requires the type to be specified for parameters"));
+                _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler requires the type to be specified for parameters"));
                 return;
             }
 
@@ -800,7 +800,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 var hasOut = node.Modifiers.Any(SyntaxKind.OutKeyword);
 
                 if (hasInOut && hasOut)
-                    _context.Errors.Add(new DefaultError(node, "The out modifier and the InOut attribute cannot be attached at the same time"));
+                    _context.Errors.Add(new VisualStudioCatchError(node, "The out modifier and the InOut attribute cannot be attached at the same time"));
 
                 var attribute = "";
                 if (hasInOut)
@@ -828,7 +828,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 {
                     var attr = node.GetAttribute<SemanticAttribute>(_context.SemanticModel);
                     if (!attr!.IsValidSemantics())
-                        _context.Warnings.Add(new DefaultError(node, "The format of the string specified for Semantics is not correct"));
+                        _context.Warnings.Add(new VisualStudioCatchError(node, "The format of the string specified for Semantics is not correct"));
 
                     context?.FunctionDeclaration?.AddAttributedArgumentWithSemantics(attribute, capture.GetActualName(), node.Identifier.ValueText, attr.Semantic);
                 }
@@ -865,16 +865,16 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 }
                 else
                 {
-                    _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab only allows externally defined constructors. Use Initializer instead of constructor to initialize self-defined structures"));
+                    _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab only allows externally defined constructors. Use Initializer instead of constructor to initialize self-defined structures"));
                 }
             }
             else
             {
                 if (node.ArgumentList?.Arguments.Count > 0)
-                    _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab does not allow you to use Initializer and constructor at the same time"));
+                    _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab does not allow you to use Initializer and constructor at the same time"));
 
                 if (CapturingStack.Contains(WellKnownSyntax.ObjectCreationExpressionSyntax))
-                    _context.Errors.Add(new DefaultError(node, "Initializer cannot be nested in SharpX.ShaderLab at this time"));
+                    _context.Errors.Add(new VisualStudioCatchError(node, "Initializer cannot be nested in SharpX.ShaderLab at this time"));
 
                 var context = _context.SourceContext.OfType<ShaderLabHLSLSourceContext>();
 
@@ -929,7 +929,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             var declarator = TypeDeclarationDeclarator.Create(node, _context.SemanticModel);
             if (declarator.IsNestedDeclaration())
             {
-                _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support nested type declarations"));
+                _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support nested type declarations"));
                 return;
             }
 
@@ -948,7 +948,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 }
                 else
                 {
-                    _context.Errors.Add(new DefaultError(node, "The value specified for ComponentAttribute must be a valid file name"));
+                    _context.Errors.Add(new VisualStudioCatchError(node, "The value specified for ComponentAttribute must be a valid file name"));
                     return;
                 }
             }
@@ -1035,232 +1035,232 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
         public override void VisitArrayType(ArrayTypeSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support array types"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support array types"));
         }
 
         public override void VisitPointerType(PointerTypeSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support pointer types"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support pointer types"));
         }
 
         public override void VisitFunctionPointerType(FunctionPointerTypeSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support function pointer features"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support function pointer features"));
         }
 
         public override void VisitFunctionPointerParameterList(FunctionPointerParameterListSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support function pointer features"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support function pointer features"));
         }
 
         public override void VisitFunctionPointerCallingConvention(FunctionPointerCallingConventionSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support function pointer features"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support function pointer features"));
         }
 
         public override void VisitFunctionPointerUnmanagedCallingConventionList(FunctionPointerUnmanagedCallingConventionListSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support function pointer features"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support function pointer features"));
         }
 
         public override void VisitFunctionPointerUnmanagedCallingConvention(FunctionPointerUnmanagedCallingConventionSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support function pointer features"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support function pointer features"));
         }
 
         public override void VisitNullableType(NullableTypeSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support nullable types"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support nullable types"));
         }
 
         public override void VisitRefType(RefTypeSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support ref types. This feature is handled by the backend, not by the on SharpX"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support ref types. This feature is handled by the backend, not by the on SharpX"));
         }
 
         public override void VisitAwaitExpression(AwaitExpressionSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support async-await expressions"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support async-await expressions"));
         }
 
         public override void VisitConditionalAccessExpression(ConditionalAccessExpressionSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support conditional access expressions"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support conditional access expressions"));
         }
 
         public override void VisitMakeRefExpression(MakeRefExpressionSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support ref types. This feature is handled by the backend, not by the on SharpX"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support ref types. This feature is handled by the backend, not by the on SharpX"));
         }
 
         public override void VisitRefTypeExpression(RefTypeExpressionSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support ref types. This feature is handled by the backend, not by the on SharpX"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support ref types. This feature is handled by the backend, not by the on SharpX"));
         }
 
         public override void VisitRefValueExpression(RefValueExpressionSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support ref types. This feature is handled by the backend, not by the on SharpX"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support ref types. This feature is handled by the backend, not by the on SharpX"));
         }
 
         public override void VisitCheckedExpression(CheckedExpressionSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support checked expressions"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support checked expressions"));
         }
 
         public override void VisitTypeOfExpression(TypeOfExpressionSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support typeof expressions"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support typeof expressions"));
         }
 
         public override void VisitSizeOfExpression(SizeOfExpressionSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support sizeof expressions"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support sizeof expressions"));
         }
 
         public override void VisitRefExpression(RefExpressionSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support ref types. This feature is handled by the backend, not by the on SharpX"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support ref types. This feature is handled by the backend, not by the on SharpX"));
         }
 
         public override void VisitStackAllocArrayCreationExpression(StackAllocArrayCreationExpressionSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support stackalloc"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support stackalloc"));
         }
 
         public override void VisitImplicitStackAllocArrayCreationExpression(ImplicitStackAllocArrayCreationExpressionSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support stackalloc"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support stackalloc"));
         }
 
         public override void VisitQueryExpression(QueryExpressionSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
         }
 
         public override void VisitQueryBody(QueryBodySyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
         }
 
         public override void VisitFromClause(FromClauseSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
         }
 
         public override void VisitLetClause(LetClauseSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
         }
 
         public override void VisitJoinClause(JoinClauseSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
         }
 
         public override void VisitJoinIntoClause(JoinIntoClauseSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
         }
 
         public override void VisitWhereClause(WhereClauseSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
         }
 
         public override void VisitOrderByClause(OrderByClauseSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
         }
 
         public override void VisitOrdering(OrderingSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
         }
 
         public override void VisitSelectClause(SelectClauseSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
         }
 
         public override void VisitGroupClause(GroupClauseSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
         }
 
         public override void VisitQueryContinuation(QueryContinuationSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support LINQ features"));
         }
 
         public override void VisitThrowExpression(ThrowExpressionSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support throwing exceptions"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support throwing exceptions"));
         }
 
         public override void VisitGotoStatement(GotoStatementSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support goto: https://www.wikiwand.com/en/Spaghetti_code"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support goto: https://www.wikiwand.com/en/Spaghetti_code"));
         }
 
         public override void VisitThrowStatement(ThrowStatementSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support throwing exceptions"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support throwing exceptions"));
         }
 
         public override void VisitYieldStatement(YieldStatementSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support throwing exceptions"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support throwing exceptions"));
         }
 
         public override void VisitUsingStatement(UsingStatementSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support using statement"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support using statement"));
         }
 
         public override void VisitFixedStatement(FixedStatementSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support fixed statement"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support fixed statement"));
         }
 
         public override void VisitCheckedStatement(CheckedStatementSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support checked statement"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support checked statement"));
         }
 
         public override void VisitUnsafeStatement(UnsafeStatementSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support unsafe statement"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support unsafe statement"));
         }
 
         public override void VisitLockStatement(LockStatementSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support lock statement"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support lock statement"));
         }
 
         public override void VisitTryStatement(TryStatementSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support try-catch(-finally) statements"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support try-catch(-finally) statements"));
         }
 
         public override void VisitCatchClause(CatchClauseSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support try-catch(-finally) statements"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support try-catch(-finally) statements"));
         }
 
         public override void VisitCatchDeclaration(CatchDeclarationSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support try-catch(-finally) statements"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support try-catch(-finally) statements"));
         }
 
         public override void VisitCatchFilterClause(CatchFilterClauseSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support try-catch(-finally) statements"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support try-catch(-finally) statements"));
         }
 
         public override void VisitFinallyClause(FinallyClauseSyntax node)
         {
-            _context.Errors.Add(new DefaultError(node, "SharpX.ShaderLab Compiler does not support try-catch(-finally) statements"));
+            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not support try-catch(-finally) statements"));
         }
 
         #endregion

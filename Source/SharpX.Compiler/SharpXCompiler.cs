@@ -96,14 +96,13 @@ namespace SharpX.Compiler
 
                 foreach (var path in _options.Items)
                 {
-                    if (!File.Exists(path))
+                    var absolute = string.IsNullOrWhiteSpace(_options.ProjectRoot) ? path : Path.Combine(_options.ProjectRoot, path);
+                    if (!File.Exists(absolute))
                         throw new FileNotFoundException(path);
 
-                    var source = SourceText.From(await File.ReadAllTextAsync(path, Encoding.UTF8).ConfigureAwait(false), Encoding.UTF8);
-                    var absolute = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, path));
+                    var source = SourceText.From(await File.ReadAllTextAsync(absolute, Encoding.UTF8).ConfigureAwait(false), Encoding.UTF8);
                     var documentId = DocumentId.CreateNewId(projectId, path);
-
-                    solution = solution.AddDocument(documentId, Path.GetFileName(absolute), source);
+                    solution = solution.AddDocument(documentId, path, source);
 
                     var syntax = await solution.GetDocument(documentId)!.GetSyntaxTreeAsync().ConfigureAwait(false);
                     var module = new CompilationModule(documentId, syntax!);
