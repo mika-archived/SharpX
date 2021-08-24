@@ -1,6 +1,6 @@
 ﻿namespace SharpX.Library.ShaderLab.Enums
 {
-    public enum Tags
+    public enum ShaderTags
     {
         Queue,
 
