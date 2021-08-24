@@ -5,18 +5,18 @@ using SharpX.Library.ShaderLab.Attributes.Internal;
 namespace SharpX.Library.ShaderLab.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class MaxVertexCountAttribute : SourcePartAttribute
+    public class MaxTessFactorAttribute : SourcePartAttribute
     {
-        public int VertexCount { get; }
+        public int Factor { get; }
 
-        public MaxVertexCountAttribute(int vertexCount)
+        public MaxTessFactorAttribute(int factor)
         {
-            VertexCount = vertexCount;
+            Factor = factor;
         }
 
         public override string ToSourcePart()
         {
-            return $"maxvertexcount({VertexCount})";
+            return $"maxtessfactor({Factor})";
         }
     }
 }

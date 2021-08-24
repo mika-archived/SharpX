@@ -14,7 +14,13 @@ namespace SharpX.Library.ShaderLab.Abstractions
 
             GeometryShader,
 
-            FragmentShader
+            FragmentShader,
+
+            HullShader,
+
+            HullConstantShader,
+
+            DomainShader,
         }
 
         public static string GetShaderEntryPoint(Type t, EntryPoint e)
@@ -25,6 +31,9 @@ namespace SharpX.Library.ShaderLab.Abstractions
                 EntryPoint.VertexShader => GetActualNameForMethod(methods.FirstOrDefault(w => w.GetCustomAttribute<VertexShaderAttribute>() != null)),
                 EntryPoint.GeometryShader => GetActualNameForMethod(methods.FirstOrDefault(w => w.GetCustomAttribute<GeometryShaderAttribute>() != null)),
                 EntryPoint.FragmentShader => GetActualNameForMethod(methods.FirstOrDefault(w => w.GetCustomAttribute<FragmentShaderAttribute>() != null)),
+                EntryPoint.HullShader => GetActualNameForMethod(methods.FirstOrDefault(w => w.GetCustomAttribute<HullShaderAttribute>() != null)),
+                EntryPoint.HullConstantShader => GetActualNameForMethod(methods.FirstOrDefault(w=> w.GetCustomAttribute<HullConstantShaderAttribute>() != null)),
+                EntryPoint.DomainShader => GetActualNameForMethod(methods.FirstOrDefault(w => w.GetCustomAttribute<DomainShaderAttribute>() != null)),
                 _ => throw new ArgumentOutOfRangeException(nameof(e), e, null)
             };
         }

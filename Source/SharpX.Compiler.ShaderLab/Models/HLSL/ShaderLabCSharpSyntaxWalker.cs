@@ -15,6 +15,7 @@ using SharpX.Compiler.ShaderLab.Models.HLSL.Captures;
 using SharpX.Compiler.ShaderLab.Models.HLSL.Declarators;
 using SharpX.Compiler.ShaderLab.Models.HLSL.Statements;
 using SharpX.Library.ShaderLab.Attributes;
+using SharpX.Library.ShaderLab.Attributes.Internal;
 using SharpX.Library.ShaderLab.Interfaces;
 
 namespace SharpX.Compiler.ShaderLab.Models.HLSL
@@ -706,11 +707,21 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             else
                 context.OpenFunction(declarator.GetIdentifierName(), declarator.GetDeclaredReturnType());
 
-            if (declarator.HasAttribute<MaxVertexCountAttribute>())
+            var attributes = new List<SourcePartAttribute?>
             {
-                var attr = declarator.GetAttribute<MaxVertexCountAttribute>()!;
-                context.FunctionDeclaration.AddAttribute($"maxvertexcount({attr.VertexCount})");
-            }
+                declarator.GetAttribute<DomainAttribute>(),
+                declarator.GetAttribute<EarlyDepthStencilAttribute>(),
+                declarator.GetAttribute<InstanceAttribute>(),
+                declarator.GetAttribute<MaxTessFactorAttribute>(),
+                declarator.GetAttribute<MaxVertexCountAttribute>(),
+                declarator.GetAttribute<OutputControlPointsAttribute>(),
+                declarator.GetAttribute<OutputTopologyAttribute>(),
+                declarator.GetAttribute<PartitioningAttribute>(),
+                declarator.GetAttribute<PatchConstantFuncAttribute>()
+            };
+
+            foreach (var attribute in attributes.Where(w => w != null)) 
+                context.FunctionDeclaration.AddAttribute(attribute!.ToSourcePart());
 
 
             using (SyntaxCaptureScope.Create(this, WellKnownSyntax.MethodDeclarationSyntax))

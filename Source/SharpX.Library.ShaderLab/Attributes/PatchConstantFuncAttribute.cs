@@ -5,18 +5,18 @@ using SharpX.Library.ShaderLab.Attributes.Internal;
 namespace SharpX.Library.ShaderLab.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class MaxVertexCountAttribute : SourcePartAttribute
+    public class PatchConstantFuncAttribute : SourcePartAttribute
     {
-        public int VertexCount { get; }
+        public string Function { get; }
 
-        public MaxVertexCountAttribute(int vertexCount)
+        public PatchConstantFuncAttribute(string function)
         {
-            VertexCount = vertexCount;
+            Function = function;
         }
 
         public override string ToSourcePart()
         {
-            return $"maxvertexcount({VertexCount})";
+            return $"patchconstantfunc(\"{Function}\")";
         }
     }
 }
