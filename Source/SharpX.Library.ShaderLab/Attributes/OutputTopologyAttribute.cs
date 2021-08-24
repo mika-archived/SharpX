@@ -26,7 +26,7 @@ namespace SharpX.Library.ShaderLab.Attributes
                 _ => throw new ArgumentOutOfRangeException()
             };
 
-            return $"outputtopology({topology})";
+            return $"outputtopology(\"{topology}\")";
         }
     }
 }

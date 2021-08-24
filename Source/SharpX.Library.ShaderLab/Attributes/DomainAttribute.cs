@@ -25,7 +25,7 @@ namespace SharpX.Library.ShaderLab.Attributes
                 _ => throw new ArgumentOutOfRangeException()
             }
                 ;
-            return $"domain({domain})";
+            return $"domain(\"{domain}\")";
         }
     }
 }
