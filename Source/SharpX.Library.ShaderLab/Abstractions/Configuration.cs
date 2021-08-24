@@ -20,25 +20,22 @@ namespace SharpX.Library.ShaderLab.Abstractions
         public static string GetShaderEntryPoint(Type t, EntryPoint e)
         {
             var methods = t.GetMethods();
-            switch (e)
+            return e switch
             {
-                case EntryPoint.VertexShader:
-                    return GetActualNameForMethod(methods.FirstOrDefault(w => w.GetCustomAttribute<VertexShaderAttribute>() != null));
-                case EntryPoint.GeometryShader:
-                    return GetActualNameForMethod(methods.FirstOrDefault(w => w.GetCustomAttribute<GeometryShaderAttribute>() != null));
-                case EntryPoint.FragmentShader:
-                    return GetActualNameForMethod(methods.FirstOrDefault(w => w.GetCustomAttribute<FragmentShaderAttribute>() != null));
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(e), e, null);
-            }
+                EntryPoint.VertexShader => GetActualNameForMethod(methods.FirstOrDefault(w => w.GetCustomAttribute<VertexShaderAttribute>() != null)),
+                EntryPoint.GeometryShader => GetActualNameForMethod(methods.FirstOrDefault(w => w.GetCustomAttribute<GeometryShaderAttribute>() != null)),
+                EntryPoint.FragmentShader => GetActualNameForMethod(methods.FirstOrDefault(w => w.GetCustomAttribute<FragmentShaderAttribute>() != null)),
+                _ => throw new ArgumentOutOfRangeException(nameof(e), e, null)
+            };
         }
 
-        private static string GetActualNameForMethod(MethodInfo m)
+        private static string GetActualNameForMethod(MethodInfo? m)
         {
+            if (m == null)
+                return "/* UNKNOWN */";
+
             var attr = m.GetCustomAttribute<FunctionAttribute>();
-            if (attr != null)
-                return attr.Alternative;
-            return m.Name;
+            return attr != null ? attr.Alternative : m.Name;
         }
     }
 }
