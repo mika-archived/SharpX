@@ -61,8 +61,7 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
             {
                 var statement = new SubShaderStructure
                 {
-                    Lod = shader.Lod,
-                    GrabPass = shader.GrabPass
+                    Lod = shader.Lod
                 };
 
                 foreach (var tag in shader.Tags)
@@ -77,6 +76,9 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
 
         private ShaderPassStructure BuildShaderPass(dynamic pass)
         {
+            if (pass.GrabPass != null)
+                return new ShaderPassStructure { GrabPass = pass.GrabPass };
+
             var s = new ShaderPassStructure
             {
                 AlphaToMask = pass.AlphaToMask,
@@ -99,7 +101,7 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
             foreach (var tag in pass.Tags)
                 s.Tags.Add(tag.Key, tag.Value);
 
-            s.ShaderIncludes.AddRange(BuildIncludeShaders(pass.ShaderReferences, pass.ShaderVariant));
+            s.ShaderIncludes.AddRange(BuildIncludeShaders(pass.ShaderReferences, pass.ShaderVariant ?? ""));
 
             return s;
         }
