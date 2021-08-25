@@ -1,6 +1,6 @@
 ﻿namespace SharpX.Library.ShaderLab.Enums
 {
-    public enum ZTest
+    public enum ZTestFunc
     {
         Less,
 
