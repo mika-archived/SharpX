@@ -25,7 +25,10 @@
           text="2. Check `Override References` and `No Engine References` in General" />
         <engine:TextElement
           class="my-1"
-          text="3. Apply it" />
+          text="3. Check `Editor` and uncheck others in Platforms" />
+        <engine:TextElement
+          class="my-1"
+          text="4. Apply it" />
       </engine:VisualElement>
 
       <engine:VisualElement class="my-4">
