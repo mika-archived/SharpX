@@ -87,7 +87,9 @@ namespace SharpX.CLI.Commands
                 if (obj == null)
                     return false;
 
-                return ValidateRawArguments(obj.BaseDir, obj.Includes, obj.Excludes, obj.Out, obj.References, obj.Plugins, obj.Target, obj.CustomOptions);
+                var root = Path.GetDirectoryName(_project)!;
+
+                return ValidateRawArguments(Path.Combine(root, obj.BaseDir), obj.Includes, obj.Excludes, Path.Combine(root, obj.Out), obj.References.Select(w => Path.Combine(root, w)).ToArray(), obj.Plugins.Select(w => Path.Combine(root, w)).ToArray(), obj.Target, obj.CustomOptions);
             }
             catch (Exception e)
             {
@@ -100,22 +102,40 @@ namespace SharpX.CLI.Commands
         private bool ValidateRawArguments(string? baseDir, string[]? includes, string[]? excludes, string? @out, string[]? references, string[]? plugins, string? target, Dictionary<string, JsonElement>? customOptions)
         {
             if (string.IsNullOrWhiteSpace(baseDir) || !Directory.Exists(baseDir))
+            {
+                _logger.LogError("invalid base directory: directory is empty or not exists.");
                 return false;
+            }
 
             if (includes == null || includes.Length == 0)
+            {
+                _logger.LogError("invalid includes: includes must be one or greater than items.");
                 return false;
+            }
 
             if (string.IsNullOrWhiteSpace(@out))
+            {
+                _logger.LogError("invalid out directory: directory is empty");
                 return false;
+            }
 
             if (references is { Length: > 0 } && references.Any(w => !File.Exists(w)))
+            {
+                _logger.LogError("invalid references: one or more reference dll is not exists");
                 return false;
+            }
 
             if (plugins is { Length: > 0 } && plugins.Any(w => !File.Exists(w)))
+            {
+                _logger.LogError("invalid plugins: one or more plugin dll is not exists");
                 return false;
+            }
 
             if (string.IsNullOrWhiteSpace(target))
+            {
+                _logger.LogError("invalid target: target is empty");
                 return false;
+            }
 
             _configuration = new CompilerConfiguration(Path.GetFullPath(baseDir), includes, excludes ?? Array.Empty<string>(), references ?? Array.Empty<string>(), plugins ?? Array.Empty<string>(), @out, target);
             _configuration = _configuration with { CustomOptions = customOptions ?? new Dictionary<string, JsonElement>() };
