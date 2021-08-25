@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<engine:UXML
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:engine="UnityEngine.UIElements"
+  xmlns:editor="UnityEditor.UIElements"
+  xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd"
+  xsi:schemaLocation="UnityEngine.UIElements ../../../../../UIElementsSchema/UnityEngine.UIElements.xsd UnityEditor.UIElements ../../../../../UIElementsSchema/UnityEditor.UIElements.xsd">
+  <engine:ScrollView class="min-h-full">
+    <engine:VisualElement class="container mx-auto my-2">
+      <engine:TextElement text="SharpX Editor Integration for Unity" class="text-lg" />
+
+      <engine:VisualElement class="my-4">
+        <engine:TextElement
+          class="text-wrap my-2 text-base"
+          text="Step. 1 - Configure Assembly Definition Files" />
+        <engine:TextElement
+          text="SharpX requires that you compile your C# scripts with the SharpX built-in compiler, rather than the Unity standard C# compiler. So please set the Assembly Definition Files under the corresponding directory as follows." />
+
+        <engine:TextElement
+          class="mt-2 mb-1"
+          text="1. Uncheck `Auto Referenced` in General" />
+        <engine:TextElement
+          class="my-1"
+          text="2. Check `Override References` and `No Engine References` in General" />
+        <engine:TextElement
+          class="my-1"
+          text="3. Apply it" />
+      </engine:VisualElement>
+
+      <engine:VisualElement class="my-4">
+        <engine:TextElement
+          class="text-wrap my-2 text-base"
+          text="Step. 2 - Configure Auto-Modification of csproj" />
+        <engine:TextElement
+          text="During the automatic generation of csproj during Unity recompilation, reference is made to the target assembly, to the SharpX compiler, and to the required libraries." />
+
+        <engine:TextElement
+          class="mt-2 mb-1"
+          text="1. Select `sxc.exe` (Windows) or `sxc.dll` (macOS or Linux)" />
+        <editor:PropertyField binding-path="_executable" />
+
+        <engine:TextElement
+          class="my-1"
+          text="2. Select references libraries that add to your csproj" />
+        <editor:PropertyField binding-path="_references" />
+
+        <engine:TextElement
+          class="my-1"
+          text="3. Select your projects separated by Assembly Definition Files" />
+        <editor:PropertyField binding-path="_assemblies" />
+
+        <engine:TextElement class="my-1"
+                            text="4. Apply configurations and re-generate csproj and enjoy programming by modern C#!" />
+        <engine:Button name="apply-button" class="w-full" text="Apply" />
+      </engine:VisualElement>
+
+      <engine:VisualElement class="my-4">
+        <engine:TextElement
+          class="text-wrap my-2 text-base"
+          text="Step. 3 - Writing Code and Compile It" />
+        <engine:TextElement
+          text="The section enclosed by SHARPX_COMPILER preprocessor will not be compiled by Unity. Therefore, you can use all C# features. But these section will be compiled by SharpX. If you are using some new C# features, be sure to enclose the code in SHARPX_COMPILER." />
+      </engine:VisualElement>
+
+      <engine:VisualElement class="my-4">
+        <engine:TextElement
+          class="text-wrap my-2 text-sm"
+          text="Note" />
+        <engine:TextElement
+          text="If you want to add a new project or library, configure the settings again and click the Apply button to apply them." />
+      </engine:VisualElement>
+    </engine:VisualElement>
+  </engine:ScrollView>
+</engine:UXML>
