@@ -86,12 +86,16 @@ namespace SharpX.Compiler
             {
                 context.SwitchVariant(variant.Key);
 
+                var preprocessors = variant.Value.ToList();
+                if (!preprocessors.Contains("SHARPX_COMPILER"))
+                    preprocessors.Add("SHARPX_COMPILER");
+
                 var modules = new ConcurrentBag<CompilationModule>();
                 var projectId = ProjectId.CreateNewId("SharpX.Assembly");
                 var workspace = new AdhocWorkspace();
                 var solution = workspace.CurrentSolution.AddProject(projectId, "SharpX.Assembly", "SharpX.Assembly", LanguageNames.CSharp)
                                         .WithProjectMetadataReferences(projectId, _references)
-                                        .WithProjectParseOptions(projectId, CSharpParseOptions.Default.WithPreprocessorSymbols(variant.Value))
+                                        .WithProjectParseOptions(projectId, CSharpParseOptions.Default.WithPreprocessorSymbols(preprocessors))
                                         .WithProjectCompilationOptions(projectId, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
                 foreach (var path in _options.Items)
@@ -180,6 +184,7 @@ namespace SharpX.Compiler
             yield return Path.Combine(runtime, "System.Private.CoreLib.dll");
             yield return Path.Combine(runtime, "System.Collections.dll");
             yield return Path.Combine(runtime, "System.Collections.Immutable.dll");
+            yield return Path.Combine(runtime, "System.Linq.dll");
         }
     }
 }
