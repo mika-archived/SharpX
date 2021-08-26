@@ -50,12 +50,12 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
 
         public static TypeDeclarationCapture Capture(TypeInfo info, SemanticModel model)
         {
-            return new(info, model, CapturedAs.Info);
+            return new TypeDeclarationCapture(info, model, CapturedAs.Info);
         }
 
         public static TypeDeclarationCapture Capture(ITypeSymbol symbol, SemanticModel model)
         {
-            return new(symbol, model, CapturedAs.Symbol);
+            return new TypeDeclarationCapture(symbol, model, CapturedAs.Symbol);
         }
 
         public ImmutableArray<MethodSymbolCapture> GetConstructors()
@@ -69,6 +69,13 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
 
         public string GetActualName()
         {
+            var symbol = _captured switch
+            {
+                CapturedAs.Info => _info!.Value.Type as INamedTypeSymbol,
+                CapturedAs.Symbol => _symbol! as INamedTypeSymbol,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
             if (HasAttribute<ComponentAttribute>())
             {
                 var attr = GetAttribute<ComponentAttribute>();
@@ -86,14 +93,11 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
                     if (generics != null)
                         return attr.GetActualName(Capture(generics.TypeArguments.First(), _model).GetActualName());
                 }
+
+                if (attr != null && string.IsNullOrWhiteSpace(attr.Name))
+                    return symbol?.Name ?? "void /* UNKNOWN */";
             }
 
-            var symbol = _captured switch
-            {
-                CapturedAs.Info => _info!.Value.Type as INamedTypeSymbol,
-                CapturedAs.Symbol => _symbol! as INamedTypeSymbol,
-                _ => throw new ArgumentOutOfRangeException()
-            };
 
             // enums
             if (symbol?.EnumUnderlyingType != null)
