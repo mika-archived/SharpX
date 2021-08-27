@@ -488,6 +488,11 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             }
         }
 
+        public override void VisitBreakStatement(BreakStatementSyntax node)
+        {
+            Statement?.AddSourcePart(new Statement(new Span("break")));
+        }
+
         public override void VisitReturnStatement(ReturnStatementSyntax node)
         {
             var declaration = _context.SourceContext.OfType<ShaderLabHLSLSourceContext>()?.FunctionDeclaration;
@@ -818,7 +823,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             {
                 ProcessInclude(capture);
 
-                var hasInOut = node.HasAttribute<InOutAttribute>(_context.SemanticModel);
+                var hasInOut = node.HasAttribute<InOutAttribute>(_context.SemanticModel) || node.Modifiers.Any(SyntaxKind.RefKeyword);
                 var hasOut = node.Modifiers.Any(SyntaxKind.OutKeyword);
 
                 if (hasInOut && hasOut)
