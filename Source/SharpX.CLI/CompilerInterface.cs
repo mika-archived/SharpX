@@ -34,5 +34,12 @@ namespace SharpX.CLI
         {
             return new BuildCommand(_logger, project, baseDir, src, excludes, @out, references, plugins, target).Run();
         }
+
+        [Command("watch")]
+        public int Watch([Option("project")] string? project = null, [Option("baseDir")] string? baseDir = null, [Option("src")] string[]? src = null, [Option("excludes")] string[]? excludes = null, [Option("out")] string? @out = null, [Option("references")] string[]? references = null, [Option("plugins")] string[]? plugins = null, [Option("target")] string? target = null)
+        {
+            return new WatchCommand(_logger, project, baseDir, src, excludes, @out, references, plugins, target).Run();
+        }
+
     }
 }
