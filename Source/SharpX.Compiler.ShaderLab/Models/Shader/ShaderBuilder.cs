@@ -174,6 +174,8 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
             var type = symbol.Type.Name;
             if (symbol.HasAttribute<RangeAttribute>(_model))
                 type = GetTypedRange(symbol);
+            if (symbol.HasAttribute<ColorAttribute>(_model))
+                type = "Color";
             var name = symbol.HasAttribute<PropertyAttribute>(_model) ? symbol.GetAttribute<PropertyAttribute>(_model)!.Alternative : symbol.Name;
             var displayName = symbol.HasAttribute<DisplayNameAttribute>(_model) ? symbol.GetAttribute<DisplayNameAttribute>(_model)!.DisplayName : symbol.Name;
             var @default = GetDefaultForType(symbol.GetAttribute<DefaultValueAttribute>(_model)?.Parameter ?? "");
@@ -194,6 +196,8 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
             var type = symbol.Type.Name;
             if (symbol.HasAttribute<RangeAttribute>(_model))
                 type = GetTypedRange(symbol);
+            if (symbol.HasAttribute<ColorAttribute>(_model))
+                type = "Color";
             var name = symbol.HasAttribute<PropertyAttribute>(_model) ? symbol.GetAttribute<PropertyAttribute>(_model)!.Alternative : symbol.Name;
             var displayName = symbol.HasAttribute<DisplayNameAttribute>(_model) ? symbol.GetAttribute<DisplayNameAttribute>(_model)!.DisplayName : symbol.Name;
             var @default = GetDefaultForType(symbol.GetAttribute<DefaultValueAttribute>(_model)?.Parameter ?? "");
