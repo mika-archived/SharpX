@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -12,7 +13,7 @@ using SharpX.Compiler.Models;
 
 namespace SharpX.CLI.Models
 {
-    public record CompilerConfiguration(string[] Sources, string[] References, string[] Plugins, string Out, string Target)
+    public record CompilerConfiguration(string BaseDir, string[] Includes, string[] Excludes, string[] References, string[] Plugins, string Out, string Target)
     {
         [JsonExtensionData]
         public Dictionary<string, JsonElement> CustomOptions { get; init; } = new();
@@ -20,11 +21,13 @@ namespace SharpX.CLI.Models
         public SharpXCompilerOptions ToCompilerOptions()
         {
             var matcher = new Matcher();
-            matcher.AddIncludePatterns(Sources);
+            matcher.AddIncludePatterns(Includes);
+            matcher.AddExcludePatterns(Excludes);
 
-            var items = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(Directory.GetCurrentDirectory())));
+            var items = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(BaseDir)));
 
-            return new SharpXCompilerOptions(items.Files.Select(w => w.Path).ToImmutableArray(), References.ToImmutableArray(), Plugins.ToImmutableArray(), Out, Target, CustomOptions.ToImmutableDictionary());
+            var options = new SharpXCompilerOptions(items.Files.Select(w => w.Path).ToImmutableArray(), References.ToImmutableArray(), Plugins.ToImmutableArray(), Out, Target, CustomOptions.ToImmutableDictionary());
+            return options with { ProjectRoot = BaseDir };
         }
     }
 }

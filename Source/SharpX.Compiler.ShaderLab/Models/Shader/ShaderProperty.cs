@@ -1,4 +1,6 @@
-﻿namespace SharpX.Compiler.ShaderLab.Models.Shader
+﻿using System.Linq;
+
+namespace SharpX.Compiler.ShaderLab.Models.Shader
 {
     internal record ShaderProperty(string Type, string Name, string DisplayName, object? Default, string[] InspectorAttributes)
     {
@@ -15,7 +17,7 @@
                         return "Float";
 
                     case "SlFloat4":
-                        return "Color";
+                        return "Vector";
 
                     case "Sampler1D":
                         return "1D";
@@ -29,7 +31,7 @@
                     case "SamplerCUBE":
                         return "CUBE";
 
-                    case { } when Type.StartsWith("Range"):
+                    case { } when Type.StartsWith("Range") || Type == "Color":
                         return Type;
                 }
 

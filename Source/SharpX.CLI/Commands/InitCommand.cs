@@ -23,7 +23,7 @@ namespace SharpX.CLI.Commands
         {
             try
             {
-                var defaultConfig = new CompilerConfiguration(new[] { "**/*.cs" }, Array.Empty<string>(), Array.Empty<string>(), "dist", "None");
+                var defaultConfig = new CompilerConfiguration("", new[] { "**/*.cs" }, Array.Empty<string>(), Array.Empty<string>(), Array.Empty<string>(), "dist", "None");
                 var options = new JsonSerializerOptions { WriteIndented = true };
                 var json = JsonSerializer.Serialize(defaultConfig, options);
 

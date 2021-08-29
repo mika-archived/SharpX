@@ -7,11 +7,15 @@ namespace SharpX.Compiler.ShaderLab.Models
 {
     public class ExtraCompilerOptions
     {
-        public ImmutableArray<ShaderVariant> ShaderVariants { get; init; }
+        public ImmutableArray<ShaderVariant>? ShaderVariants { get; private set; }
 
         public static ExtraCompilerOptions Create(JsonElement element)
         {
-            return element.ToObject<ExtraCompilerOptions>() ?? new ExtraCompilerOptions();
+            var obj= element.ToObject<ExtraCompilerOptions>() ?? new ExtraCompilerOptions();
+            if (obj.ShaderVariants == null)
+                obj.ShaderVariants = ImmutableArray<ShaderVariant>.Empty;
+
+            return obj;
         }
     }
 }

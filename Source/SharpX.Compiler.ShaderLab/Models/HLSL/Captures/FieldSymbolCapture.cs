@@ -40,6 +40,11 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
             return _symbol.Name;
         }
 
+        public bool HasValidType()
+        {
+            return TypeDeclarationCapture.Capture(_symbol.Type, _model).HasValidType();
+        }
+
         public string GetDeclaredType()
         {
             return TypeDeclarationCapture.Capture(_symbol.Type, _model).GetActualName();

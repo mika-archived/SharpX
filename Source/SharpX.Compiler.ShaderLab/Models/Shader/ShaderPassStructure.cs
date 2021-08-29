@@ -33,8 +33,24 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
 
         public string? ZWrite { get; set; }
 
+        public string? GrabPass { get; set; }
+
         public void WriteTo(SourceBuilder sb)
         {
+            if (GrabPass != null)
+            {
+                sb.WriteLineWithIndent("GrabPass {");
+                if (!string.IsNullOrWhiteSpace(GrabPass))
+                {
+                    sb.IncrementIndent();
+                    sb.WriteLineWithIndent($"\"{GrabPass}\"");
+                    sb.DecrementIndent();
+                }
+                sb.WriteLineWithIndent("}");
+
+                return;
+            }
+
             sb.WriteLineWithIndent("Pass {");
             sb.IncrementIndent();
 

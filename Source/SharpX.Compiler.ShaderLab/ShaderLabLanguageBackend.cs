@@ -34,7 +34,7 @@ namespace SharpX.Compiler.ShaderLab
         private void RegisterComponentsForShaderLabHLSL(ILanguageBackendContext context)
         {
             context.RegisterExtension("cginc");
-            context.RegisterSourceContextFileMappingGenerator(w => Path.Combine("includes", w.Variant, w.OriginalName));
+            context.RegisterSourceContextFileMappingGenerator(w => Path.Combine("includes", w.Variant ?? "", w.OriginalName));
             context.RegisterSourceContextGenerator(_ => new ShaderLabHLSLSourceContext());
             context.RegisterCSharpSyntaxWalker(w => new ShaderLabCSharpSyntaxWalker(w));
 
