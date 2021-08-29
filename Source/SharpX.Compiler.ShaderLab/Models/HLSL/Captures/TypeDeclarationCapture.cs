@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -12,6 +13,13 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
 {
     internal class TypeDeclarationCapture
     {
+        private static readonly ImmutableDictionary<string, string> CSharpPrimitiveToShaderPrimitive = new Dictionary<string, string>
+        {
+            { "int", "int" },
+            { "bool", "bool" },
+            { "float", "float" }
+        }.ToImmutableDictionary();
+
         private readonly CapturedAs _captured;
         private readonly TypeInfo? _info;
         private readonly SemanticModel _model;
@@ -67,6 +75,11 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
             return ImmutableArray<MethodSymbolCapture>.Empty;
         }
 
+        public bool HasValidType()
+        {
+            return GetActualName() != "void /* UNKNOWN */";
+        }
+
         public string GetActualName()
         {
             var symbol = _captured switch
@@ -115,6 +128,9 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
 
             if (array != null)
                 return $"{Capture(array.ElementType, _model).GetActualName()}";
+
+            if (CSharpPrimitiveToShaderPrimitive.ContainsKey(symbol?.Name ?? ""))
+                return CSharpPrimitiveToShaderPrimitive[symbol!.Name!];
 
             return "void /* UNKNOWN */";
         }
