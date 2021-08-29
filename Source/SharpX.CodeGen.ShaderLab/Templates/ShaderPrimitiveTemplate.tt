@@ -31,19 +31,19 @@ namespace SharpX.Library.ShaderLab.Primitives
         }
 
         [ImplicitCastInCompiler]
-        public static explicit operator <#= ClassNameWithoutComponent #>2(<#= ClassName #> _)
+        public static explicit operator <#= ClassName #>2(<#= ClassName #> _)
         {
             return default;
         }
 
         [ImplicitCastInCompiler]
-        public static explicit operator <#= ClassNameWithoutComponent #>3(<#= ClassName #> _)
+        public static explicit operator <#= ClassName #>3(<#= ClassName #> _)
         {
             return default;
         }
 
         [ImplicitCastInCompiler]
-        public static explicit operator <#= ClassNameWithoutComponent #>4(<#= ClassName #> _)
+        public static explicit operator <#= ClassName #>4(<#= ClassName #> _)
         {
             return default;
         }
@@ -202,11 +202,109 @@ namespace SharpX.Library.ShaderLab.Primitives
 <# } #>
 
 <# } else if (IsMatrix()) { #>
-<# var args = string.Join(", ", Enumerable.Range(0, MatrixConstructorCount()).Select(w => $"{CSharpPrimitive} _{w}").ToList()); #>
+<# var plainArgs = string.Join(", ", Enumerable.Range(0, MatrixConstructorCount()).Select(w => $"{CSharpPrimitive} _{w}").ToList()); #>
+<# var componentArgs = string.Join(", ", Enumerable.Range(0, BaseClassDuplication).Select(w => $"{BaseClassName} _{w}").ToList()); #>
 
         [Constructor]
-        public <#= ClassName #>(<#= args #>) {}
+        public <#= ClassName #>(<#= plainArgs #>) {}
 
+        [Constructor]
+        public <#= ClassName #>(<#= componentArgs #>) {}
+
+<# if (!Template.EndsWith("x2")) { #>
+        public static explicit operator <#= BaseClassName #>x2(<#= ClassName #> _)
+        {
+            return default;
+        }
+<# } #>
+
+<# if (!Template.EndsWith("x3")) { #>
+        public static explicit operator <#= BaseClassName #>x3(<#= ClassName #> _)
+        {
+            return default;
+        }
+<# } #>
+
+<# if (!Template.EndsWith("x4")) { #>
+        public static explicit operator <#= BaseClassName #>x4(<#= ClassName #> _)
+        {
+            return default;
+        }
+
+<# } #>
+
+<# var targets = new string[] { ClassName, "int", "float", "SlFloat", "SlInt" }; #>
+<# foreach (var target in targets ) { #>
+
+        public static <#= ClassName #> operator +(<#= ClassName #> a, <#= target #> b)
+        {
+            return default;
+        }
+
+<# if (target != ClassName) { #>
+        public static <#= ClassName #> operator +(<#= target #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+<# } #>
+
+        public static <#= ClassName #> operator -(<#= ClassName #> a, <#= target #> b)
+        {
+            return default;
+        }
+
+<# if (target != ClassName) { #>
+
+        public static <#= ClassName #> operator -(<#= target #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+<# } #>
+
+        public static <#= ClassName #> operator *(<#= ClassName #> a, <#= target #> b)
+        {
+            return default;
+        }
+
+<# if (target != ClassName) { #>
+
+        public static <#= ClassName #> operator *(<#= target #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+<# } #>
+
+        public static <#= ClassName #> operator /(<#= ClassName #> a, <#= target #> b)
+        {
+            return default;
+        }
+
+<# if (target != ClassName) { #>
+
+        public static <#= ClassName #> operator /(<#= target #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+<# } #>
+
+        public static <#= ClassName #> operator %(<#= ClassName #> a, <#= target #> b)
+        {
+            return default;
+        }
+
+<# if (target != ClassName) { #>
+
+        public static <#= ClassName #> operator %(<#= target #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+<# } #>
+<# } #>
 <# } #>
     }
 }

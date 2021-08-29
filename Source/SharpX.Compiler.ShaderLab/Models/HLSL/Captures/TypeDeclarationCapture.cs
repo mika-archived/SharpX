@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -12,6 +13,13 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
 {
     internal class TypeDeclarationCapture
     {
+        private static readonly ImmutableDictionary<string, string> CSharpPrimitiveToShaderPrimitive = new Dictionary<string, string>
+        {
+            { "int", "int" },
+            { "bool", "bool" },
+            { "float", "float" }
+        }.ToImmutableDictionary();
+
         private readonly CapturedAs _captured;
         private readonly TypeInfo? _info;
         private readonly SemanticModel _model;
@@ -50,12 +58,12 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
 
         public static TypeDeclarationCapture Capture(TypeInfo info, SemanticModel model)
         {
-            return new(info, model, CapturedAs.Info);
+            return new TypeDeclarationCapture(info, model, CapturedAs.Info);
         }
 
         public static TypeDeclarationCapture Capture(ITypeSymbol symbol, SemanticModel model)
         {
-            return new(symbol, model, CapturedAs.Symbol);
+            return new TypeDeclarationCapture(symbol, model, CapturedAs.Symbol);
         }
 
         public ImmutableArray<MethodSymbolCapture> GetConstructors()
@@ -67,8 +75,20 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
             return ImmutableArray<MethodSymbolCapture>.Empty;
         }
 
+        public bool HasValidType()
+        {
+            return GetActualName() != "void /* UNKNOWN */";
+        }
+
         public string GetActualName()
         {
+            var symbol = _captured switch
+            {
+                CapturedAs.Info => _info!.Value.Type as INamedTypeSymbol,
+                CapturedAs.Symbol => _symbol! as INamedTypeSymbol,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
             if (HasAttribute<ComponentAttribute>())
             {
                 var attr = GetAttribute<ComponentAttribute>();
@@ -86,14 +106,11 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
                     if (generics != null)
                         return attr.GetActualName(Capture(generics.TypeArguments.First(), _model).GetActualName());
                 }
+
+                if (attr != null && string.IsNullOrWhiteSpace(attr.Name))
+                    return symbol?.Name ?? "void /* UNKNOWN */";
             }
 
-            var symbol = _captured switch
-            {
-                CapturedAs.Info => _info!.Value.Type as INamedTypeSymbol,
-                CapturedAs.Symbol => _symbol! as INamedTypeSymbol,
-                _ => throw new ArgumentOutOfRangeException()
-            };
 
             // enums
             if (symbol?.EnumUnderlyingType != null)
@@ -111,6 +128,9 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
 
             if (array != null)
                 return $"{Capture(array.ElementType, _model).GetActualName()}";
+
+            if (CSharpPrimitiveToShaderPrimitive.ContainsKey(symbol?.Name ?? ""))
+                return CSharpPrimitiveToShaderPrimitive[symbol!.Name!];
 
             return "void /* UNKNOWN */";
         }

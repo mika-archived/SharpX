@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
-using System.Text.Json;
+﻿using System.Linq;
 
 using Microsoft.Extensions.Logging;
 
@@ -14,20 +9,23 @@ namespace SharpX.CLI.Commands
 {
     public class BuildCommand
     {
+        private readonly string? _baseDir;
+        private readonly string[]? _excludes;
+        private readonly string[]? _includes;
         private readonly ILogger<CompilerInterface> _logger;
         private readonly string? _out;
         private readonly string[]? _plugins;
         private readonly string? _project;
         private readonly string[]? _references;
-        private readonly string[]? _sources;
         private readonly string? _target;
-        private CompilerConfiguration? _configuration;
 
-        public BuildCommand(ILogger<CompilerInterface> logger, string? project, string[]? sources, string? @out, string[]? references, string[]? plugins, string? target)
+        public BuildCommand(ILogger<CompilerInterface> logger, string? project, string? baseDir, string[]? includes, string[]? excludes, string? @out, string[]? references, string[]? plugins, string? target)
         {
             _logger = logger;
             _project = project;
-            _sources = sources;
+            _baseDir = baseDir;
+            _includes = includes;
+            _excludes = excludes;
             _out = @out;
             _references = references;
             _plugins = plugins;
@@ -36,13 +34,14 @@ namespace SharpX.CLI.Commands
 
         public int Run()
         {
-            if (!ValidateOptions())
+            if (!ParameterValidator.ValidateOptions(_logger, _project, _baseDir, _includes, _excludes, _out, _references, _plugins, _target))
             {
                 _logger.LogError("Invalid compiler options, please check compiler CLI arguments.");
                 return 1;
             }
 
-            var compiler = new SharpXCompiler(_configuration.ToCompilerOptions());
+            var configuration = ParameterValidator.CreateConfiguration(_project, _baseDir, _includes, _excludes, _out, _references, _plugins, _target, null);
+            var compiler = new SharpXCompiler(configuration.ToCompilerOptions());
             compiler.LockReferences();
             compiler.LoadPluginModules();
             compiler.CompileAsync().Wait();
@@ -60,59 +59,6 @@ namespace SharpX.CLI.Commands
                 _logger.LogError(error);
 
             return 1;
-        }
-
-        [MemberNotNullWhen(true, nameof(_configuration))]
-        private bool ValidateOptions()
-        {
-            if (string.IsNullOrWhiteSpace(_project))
-                return ValidateRawArguments(_sources, _out, _references, _plugins, _target, new Dictionary<string, JsonElement>());
-
-            return ValidateProjectArgument();
-        }
-
-        [MemberNotNullWhen(true, nameof(_configuration))]
-        private bool ValidateProjectArgument()
-        {
-            if (!File.Exists(_project))
-                return false;
-
-            try
-            {
-                var obj = JsonSerializer.Deserialize<CompilerConfiguration>(File.ReadAllText(_project));
-                if (obj == null)
-                    return false;
-
-                return ValidateRawArguments(obj.Sources, obj.Out, obj.References, obj.Plugins, obj.Target, obj.CustomOptions);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Failed to load or parse project configuration.");
-                return false;
-            }
-        }
-
-        [MemberNotNullWhen(true, nameof(_configuration))]
-        private bool ValidateRawArguments(string[]? sources, string? @out, string[]? references, string[]? plugins, string? target, Dictionary<string, JsonElement>? customOptions)
-        {
-            if (sources == null || sources.Length == 0)
-                return false;
-
-            if (string.IsNullOrWhiteSpace(@out))
-                return false;
-
-            if (references is { Length: > 0 } && references.Any(w => !File.Exists(w)))
-                return false;
-
-            if (plugins is { Length: > 0 } && plugins.Any(w => !File.Exists(w)))
-                return false;
-
-            if (string.IsNullOrWhiteSpace(target))
-                return false;
-
-            _configuration = new CompilerConfiguration(sources, references ?? Array.Empty<string>(), plugins ?? Array.Empty<string>(), @out, target);
-            _configuration = _configuration with { CustomOptions = customOptions ?? new Dictionary<string, JsonElement>() };
-            return true;
         }
     }
 }

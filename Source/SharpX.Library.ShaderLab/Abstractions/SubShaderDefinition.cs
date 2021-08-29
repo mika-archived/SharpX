@@ -12,19 +12,18 @@ namespace SharpX.Library.ShaderLab.Abstractions
 
         public uint? Lod { get; protected set; }
 
-        public string? GrabPass { get; }
+        public string? UsePass { get; }
 
         public ImmutableArray<ShaderPassDefinition> Pass { get; }
 
         protected SubShaderDefinition(string pass)
         {
-            GrabPass = pass;
+            UsePass = pass;
             Pass = ImmutableArray<ShaderPassDefinition>.Empty;
         }
 
         protected SubShaderDefinition(ImmutableArray<ShaderPassDefinition> pass)
         {
-            GrabPass = null;
             Pass = pass;
         }
     }

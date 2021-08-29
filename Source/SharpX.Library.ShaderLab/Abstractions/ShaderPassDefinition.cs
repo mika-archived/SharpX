@@ -25,9 +25,9 @@ namespace SharpX.Library.ShaderLab.Abstractions
 
         public (float, float)? Offset { get; protected set; }
 
-        public ImmutableDictionary<string, string> Pragmas { get; }
+        public ImmutableDictionary<string, string>? Pragmas { get; }
 
-        public ImmutableArray<Type> ShaderReferences { get; }
+        public ImmutableArray<Type>? ShaderReferences { get; }
 
         public string? ShaderVariant { get; protected set; }
 
@@ -37,10 +37,17 @@ namespace SharpX.Library.ShaderLab.Abstractions
 
         public string? Name { get; protected set; }
 
+        public string? GrabPass { get; }
+
         public ShaderPassDefinition(ImmutableDictionary<string, string> pragmas, ImmutableArray<Type> shaders)
         {
             Pragmas = pragmas;
             ShaderReferences = shaders;
+        }
+
+        public ShaderPassDefinition(string? grab)
+        {
+            GrabPass = grab;
         }
     }
 }

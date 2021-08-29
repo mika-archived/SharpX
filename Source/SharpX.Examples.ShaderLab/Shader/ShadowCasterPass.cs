@@ -15,9 +15,9 @@ namespace SharpX.Examples.ShaderLab.Shader
         {
             { "require", "geometry" },
             { "target", "4.5" },
-            { "vertex", "vs" },
-            { "geometry", "gs" },
-            { "fragment", "fs" },
+            { "vertex", Configuration.GetShaderEntryPoint(typeof(VertexShader), Configuration.EntryPoint.VertexShader) },
+            { "geometry", Configuration.GetShaderEntryPoint(typeof(GeometryShader), Configuration.EntryPoint.GeometryShader) },
+            { "fragment", Configuration.GetShaderEntryPoint(typeof(FragmentShader), Configuration.EntryPoint.FragmentShader) },
             { "multi_compile_shadowcaster", "" },
             { "multi_compile_fog", "" }
         }.ToImmutableDictionary();

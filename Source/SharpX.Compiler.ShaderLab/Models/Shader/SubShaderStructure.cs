@@ -11,8 +11,6 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
 
         public Dictionary<string, string> Tags { get; } = new();
 
-        public string? GrabPass { get; set; }
-
         public List<ShaderPassStructure> Pass { get; } = new();
 
         public void WriteTo(SourceBuilder sb)
@@ -32,11 +30,6 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
                 sb.DecrementIndent();
                 sb.WriteLineWithIndent("}");
             }
-
-
-            // TODO: Ordering
-            if (GrabPass != null)
-                sb.WriteLineWithIndent(string.IsNullOrWhiteSpace(GrabPass) ? "GrabPass {}" : $"GrabPass {{ \"{GrabPass}\" }}");
 
             foreach (var pass in Pass) 
                 pass.WriteTo(sb);

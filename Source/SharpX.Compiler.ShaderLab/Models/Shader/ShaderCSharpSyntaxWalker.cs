@@ -50,7 +50,7 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
             var emit = _context.SemanticModel.Compilation.Emit(stream);
             if (!emit.Success)
             {
-                _context.Errors.Add(new DefaultError(node, $"Failed to compile definitions: \n\t{emit.Diagnostics.First().GetMessage()}"));
+                _context.Errors.Add(new VisualStudioCatchError(node, $"Failed to compile definitions: \n\t{emit.Diagnostics.First().GetMessage()}"));
                 return;
             }
 
@@ -60,14 +60,14 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
             var t = asm.GetType(qualifiedName);
             if (t == null)
             {
-                _context.Errors.Add(new DefaultError(node, $"Failed to find a type for {qualifiedName} in built assembly"));
+                _context.Errors.Add(new VisualStudioCatchError(node, $"Failed to find a type for {qualifiedName} in built assembly"));
                 return;
             }
 
             var instance = Activator.CreateInstance(t) as dynamic; // it is a ShaderLabDefinition, but reference to "other" assembly.
             if (instance == null)
             {
-                _context.Errors.Add(new DefaultError(node, $"Failed to construct {qualifiedName}, it does not have a default (empty arguments) constructor"));
+                _context.Errors.Add(new VisualStudioCatchError(node, $"Failed to construct {qualifiedName}, it does not have a default (empty arguments) constructor"));
                 return;
             }
 
@@ -81,7 +81,7 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
             }
             catch (RuntimeBinderException e)
             {
-                _context.Errors.Add(new DefaultError(node, e.Message));
+                _context.Errors.Add(new VisualStudioCatchError(node, e.Message));
             }
             catch (Exception e) when (Debugger.IsAttached)
             {
