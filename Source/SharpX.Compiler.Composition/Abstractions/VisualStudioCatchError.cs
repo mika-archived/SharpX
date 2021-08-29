@@ -13,11 +13,13 @@ namespace SharpX.Compiler.Composition.Abstractions
         private readonly Diagnostic? _diagnostic;
         private readonly string? _msg;
         private readonly CSharpSyntaxNode? _node;
+        private readonly int? _code;
 
-        public VisualStudioCatchError(CSharpSyntaxNode node, string message)
+        public VisualStudioCatchError(CSharpSyntaxNode node, string message, int? code = null)
         {
             _node = node;
             _msg = message;
+            _code = code;
             _captured = CapturedType.Node;
         }
 
@@ -32,7 +34,7 @@ namespace SharpX.Compiler.Composition.Abstractions
             return _captured switch
             {
                 CapturedType.Diagnostic => GetMessage(_diagnostic!),
-                CapturedType.Node => GetMessage(_node!, _msg!),
+                CapturedType.Node => GetMessage(_node!, _msg!, _code),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -44,11 +46,11 @@ namespace SharpX.Compiler.Composition.Abstractions
             return $"{path}({position.Line + 1},{position.Character}): Error {diagnostic.Id}: {diagnostic.GetMessage()}";
         }
 
-        private static string GetMessage(CSharpSyntaxNode node, string msg)
+        private static string GetMessage(CSharpSyntaxNode node, string msg, int? code)
         {
             var path = node.SyntaxTree.FilePath;
             var position = node.GetLocation().GetLineSpan().StartLinePosition;
-            return $"{path}({position.Line + 1},{position.Character}): Error SXC0001: {msg}";
+            return $"{path}({position.Line + 1},{position.Character}): Error SXC{(code.HasValue ? code.Value.ToString("0000") : "9999")}: {msg}";
         }
 
         private enum CapturedType
