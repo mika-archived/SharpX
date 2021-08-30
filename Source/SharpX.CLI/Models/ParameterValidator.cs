@@ -19,7 +19,7 @@ namespace SharpX.CLI.Models
 
         public static CompilerConfiguration CreateConfiguration(string? project, string? baseDir, string[]? includes, string[]? excludes, string? @out, string[]? references, string[]? plugins, string? target, Dictionary<string, JsonElement>? extras)
         {
-            if (string.IsNullOrWhiteSpace(project)) 
+            if (string.IsNullOrWhiteSpace(project))
                 return new CompilerConfiguration(baseDir!, includes!, excludes ?? Array.Empty<string>(), references ?? Array.Empty<string>(), plugins ?? Array.Empty<string>(), @out!, target!) { CustomOptions = extras ?? new Dictionary<string, JsonElement>() };
 
             try
@@ -80,6 +80,8 @@ namespace SharpX.CLI.Models
             if (references is { Length: > 0 } && references.Any(w => !File.Exists(w)))
             {
                 logger.LogError("invalid references: one or more reference dll is not exists");
+                foreach (var missing in references.Where(w => !File.Exists(w)))
+                    logger.LogError($"missing file: {missing}");
                 return false;
             }
 
