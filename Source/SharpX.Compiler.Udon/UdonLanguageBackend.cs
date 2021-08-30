@@ -28,7 +28,7 @@ namespace SharpX.Compiler.Udon
         private void RegisterComponentsForUdon(ILanguageBackendContext context)
         {
             context.RegisterExtension("uasm");
-            context.RegisterSourceContextFileMappingGenerator(w => Path.Combine("compiled", w.OriginalName));
+            context.RegisterSourceContextFileMappingGenerator(w => Path.Combine("SerializedUdonPrograms", w.OriginalName));
             context.RegisterSourceContextGenerator(_ => new UdonSourceContext());
             context.RegisterCSharpSyntaxWalker(w => new UdonCSharpSyntaxWalker(w));
         }

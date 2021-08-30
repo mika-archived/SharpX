@@ -33,7 +33,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Asterisk", "Asterisk", "{82
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpX.Library.CodeCleanup", "SharpX.Library.CodeCleanup\SharpX.Library.CodeCleanup.csproj", "{48826634-A96F-4265-9F19-A91261AE8079}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpX.Compiler.Udon", "SharpX.Compiler.Udon\SharpX.Compiler.Udon.csproj", "{25211FE9-F3F2-40F8-AFF2-2BE780F858E5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpX.Compiler.Udon", "SharpX.Compiler.Udon\SharpX.Compiler.Udon.csproj", "{25211FE9-F3F2-40F8-AFF2-2BE780F858E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpX.Library.Udon", "SharpX.Library.Udon\SharpX.Library.Udon.csproj", "{34960893-36C4-48D2-82B5-5289A67571A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpX.Examples.Udon", "SharpX.Examples.Udon\SharpX.Examples.Udon.csproj", "{7AD370DA-2CE6-4F8D-BFBC-0E9B3720DE2A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -85,6 +89,14 @@ Global
 		{25211FE9-F3F2-40F8-AFF2-2BE780F858E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{25211FE9-F3F2-40F8-AFF2-2BE780F858E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{25211FE9-F3F2-40F8-AFF2-2BE780F858E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34960893-36C4-48D2-82B5-5289A67571A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34960893-36C4-48D2-82B5-5289A67571A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34960893-36C4-48D2-82B5-5289A67571A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34960893-36C4-48D2-82B5-5289A67571A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7AD370DA-2CE6-4F8D-BFBC-0E9B3720DE2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AD370DA-2CE6-4F8D-BFBC-0E9B3720DE2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AD370DA-2CE6-4F8D-BFBC-0E9B3720DE2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AD370DA-2CE6-4F8D-BFBC-0E9B3720DE2A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,6 +116,8 @@ Global
 		{82B10035-D454-4B97-8B26-9167EC3DEB03} = {CE315993-A93D-4572-831E-53FCCE1AB4DA}
 		{48826634-A96F-4265-9F19-A91261AE8079} = {82B10035-D454-4B97-8B26-9167EC3DEB03}
 		{25211FE9-F3F2-40F8-AFF2-2BE780F858E5} = {9C77AF65-EECE-4C26-8A56-855100C3B24C}
+		{34960893-36C4-48D2-82B5-5289A67571A4} = {9C77AF65-EECE-4C26-8A56-855100C3B24C}
+		{7AD370DA-2CE6-4F8D-BFBC-0E9B3720DE2A} = {9C77AF65-EECE-4C26-8A56-855100C3B24C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {65FFF662-C863-4FD9-BA3A-708EFC303DF4}

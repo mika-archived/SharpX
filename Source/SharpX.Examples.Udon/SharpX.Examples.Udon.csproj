@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SharpX.Library.Udon\SharpX.Library.Udon.csproj" />
+  </ItemGroup>
+
+    <Reference Include="VRC.Udon">
+      <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.dll</HintPath>
+    </Reference>
+    <Reference Include="VRC.Udon.ClientBindings">
+      <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.ClientBindings.dll</HintPath>
+    </Reference>
+    <Reference Include="VRC.Udon.Common">
+      <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="VRC.Udon.Compiler">
+      <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.Compiler.dll</HintPath>
+    </Reference>
+    <Reference Include="VRC.Udon.Editor">
+      <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="VRC.Udon.EditorBindings">
+      <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.EditorBindings.dll</HintPath>
+    </Reference>
+    <Reference Include="VRC.Udon.Graph">
+      <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.Graph.dll</HintPath>
+    </Reference>
+    <Reference Include="VRC.Udon.Security">
+      <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="VRC.Udon.Serialization.OdinSerializer">
+      <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.Serialization.OdinSerializer.dll</HintPath>
+    </Reference>
+    <Reference Include="VRC.Udon.UAssembly">
+      <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.UAssembly.dll</HintPath>
+    </Reference>
+    <Reference Include="VRC.Udon.VRCTypeResolverModules">
+      <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.VRCTypeResolverModules.dll</HintPath>
+    </Reference>
+    <Reference Include="VRCSDK3">
+      <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRCSDK3.dll</HintPath>
+    </Reference>
+    <Reference Include="VRCSDKBase">
+      <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRCSDKBase.dll</HintPath>
+    </Reference>
+    <Reference Include="VRCSDKBase-Editor">
+      <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRCSDKBase-Editor.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
