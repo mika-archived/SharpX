@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Reflection;
 using System.Text.Json;
 
 using SharpX.Compiler.Composition.Attributes;
@@ -23,6 +24,21 @@ namespace SharpX.Compiler.Udon
         private void ParseCompilerOptions(JsonElement element)
         {
             _options = ExtraCompilerOptions.Create(element);
+
+            foreach (var assembly in Directory.GetFiles(_options.UnityResolver, "*.dll", SearchOption.AllDirectories))
+                Assembly.LoadFrom(assembly);
+
+            foreach (var assembly in Directory.GetFiles(_options.VRChatResolver, "*.dll"))
+                Assembly.LoadFrom(assembly);
+
+            foreach (var assembly in Directory.GetFiles(_options.UdonResolver, "*.dll"))
+                Assembly.LoadFrom(assembly);
+
+            foreach (var assembly in Directory.GetFiles(_options.UdonEditorResolver, "*.dll"))
+                Assembly.LoadFrom(assembly);
+
+            foreach (var assembly in Directory.GetFiles(_options.ExternalsResolver, "*.dll"))
+                Assembly.LoadFrom(assembly);
         }
 
         private void RegisterComponentsForUdon(ILanguageBackendContext context)
