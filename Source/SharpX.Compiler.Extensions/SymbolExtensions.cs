@@ -21,6 +21,19 @@ namespace SharpX.Compiler.Extensions
             return obj?.GetAttributes().FirstOrDefault(w => w.AttributeClass != null && w.AttributeClass.Equals(t, SymbolEqualityComparer.Default))?.AsAttributeInstance<T>();
         }
 
+        public static T? GetLooseAttribute<T>(this ISymbol? obj, SemanticModel model) where T : Attribute
+        {
+            var fullyQualifiedMetadataName = typeof(T).FullName;
+            if (string.IsNullOrWhiteSpace(fullyQualifiedMetadataName))
+                return default;
+
+            var t = model.Compilation.GetTypeByMetadataName(fullyQualifiedMetadataName);
+            if (t == null)
+                return default;
+
+            return obj?.GetAttributes().FirstOrDefault(w => w.AttributeClass != null && w.AttributeClass.ToDisplayString() == t.ToDisplayString())?.AsAttributeInstance<T>();
+        }
+
         public static bool HasAttribute(this ISymbol? obj, string fullyQualifiedMetadataName, SemanticModel model)
         {
             var t = model.Compilation.GetTypeByMetadataName(fullyQualifiedMetadataName);
@@ -29,6 +42,7 @@ namespace SharpX.Compiler.Extensions
 
             return obj?.GetAttributes().Any(w => w.AttributeClass != null && w.AttributeClass.Equals(t, SymbolEqualityComparer.Default)) == true;
         }
+
 
         public static bool HasAttribute<T>(this ISymbol? obj, SemanticModel model) where T : Attribute
         {
@@ -41,6 +55,19 @@ namespace SharpX.Compiler.Extensions
                 return false;
 
             return obj?.GetAttributes().Any(w => w.AttributeClass != null && w.AttributeClass.Equals(t, SymbolEqualityComparer.Default)) == true;
+        }
+
+        public static bool HasLooseAttribute<T>(this ISymbol? obj, SemanticModel model) where T : Attribute
+        {
+            var fullyQualifiedMetadataName = typeof(T).FullName;
+            if (string.IsNullOrWhiteSpace(fullyQualifiedMetadataName))
+                return default;
+
+            var t = model.Compilation.GetTypeByMetadataName(fullyQualifiedMetadataName);
+            if (t == null)
+                return false;
+
+            return obj?.GetAttributes().Any(w => w.AttributeClass != null && w.AttributeClass.ToDisplayString() == t.ToDisplayString()) == true;
         }
 
         public static string ToUniqueSignature(this ISymbol obj)
