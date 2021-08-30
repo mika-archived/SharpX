@@ -2,38 +2,49 @@
 {
     internal static class ErrorConstants
     {
+        // Unsupported Features by Compiler
+        public const int NotSupportedLinqFeatures = 1;
 
-        // Unsupported Features
-        public const int NotSupportedPointerTypes = 1;
+        public const int NotSupportedGoto = 2;
 
-        public const int NotSupportedFunctionPointers = 2;
+        public const int NotSupportedInParameter = 3;
 
-        public const int NotSupportedAsyncAwaitExpression = 3;
+        public const int NotSupportedOutParameter = 4;
 
-        public const int NotSupportedRefTypes = 4;
+        public const int NotSupportedRefParameter = 5;
 
-        public const int NotSupportedCheckedExpression = 5;
 
-        public const int NotSupportedSizeofExpression = 6;
+        // Udon Related Features
+        public const int NotSupportedPointerTypes = 1001;
 
-        public const int NotSupportedStackalloc = 7;
+        public const int NotSupportedFunctionPointers = 1002;
 
-        public const int NotSupportedLinqFeatures = 8;
+        public const int NotSupportedAsyncAwaitExpression = 1003;
 
-        public const int NotSupportedThrowingExceptions = 9;
+        public const int NotSupportedRefTypes = 1004;
 
-        public const int NotSupportedGoto = 10;
+        public const int NotSupportedCheckedExpression = 1005;
 
-        public const int NotSupportedUsingStatement = 11;
+        public const int NotSupportedSizeofExpression = 1006;
 
-        public const int NotSupportedFixedStatement = 12;
+        public const int NotSupportedStackalloc = 1007;
 
-        public const int NotSupportedCheckedStatement = 13;
+        public const int NotSupportedThrowingExceptions = 1009;
 
-        public const int NotSupportedUnsafeStatement = 14;
+        public const int NotSupportedUsingStatement = 1011;
 
-        public const int NotSupportedLockedStatement = 15;
+        public const int NotSupportedFixedStatement = 1012;
 
-        public const int NotSupportedHandlingExceptions = 16;
+        public const int NotSupportedCheckedStatement = 1013;
+
+        public const int NotSupportedUnsafeStatement = 1014;
+
+        public const int NotSupportedLockedStatement = 1015;
+
+        public const int NotSupportedHandlingExceptions = 1016;
+
+        public const int NotSupportedUdonType = 1017;
+
+        public const int NotSupportedAwakeEvent = 1018;
     }
 }

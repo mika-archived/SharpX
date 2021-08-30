@@ -1,9 +1,17 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Linq;
+
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.Composition.Interfaces;
+using SharpX.Compiler.Extensions;
+using SharpX.Compiler.Udon.Models.Captures;
+using SharpX.Compiler.Udon.Models.Declarators;
+using SharpX.Library.Udon;
+using SharpX.Library.Udon.Attributes;
+using SharpX.Library.Udon.Enums;
 
 namespace SharpX.Compiler.Udon.Models
 {
@@ -25,6 +33,83 @@ namespace SharpX.Compiler.Udon.Models
         {
             base.VisitIdentifierName(node);
         }
+
+        public override void VisitClassDeclaration(ClassDeclarationSyntax node)
+        {
+            var declarator = TypeDeclarationDeclarator.Create(node, _context.SemanticModel);
+
+            // compiled as Udon
+            if (declarator.IsInherited<SharpXUdonBehaviour>())
+            {
+                _context.CreateOrGetContext(declarator.GetFullyQualifiedName());
+
+                foreach (var member in node.Members)
+                    Visit(member);
+
+                _context.CloseContext();
+            }
+        }
+
+        public override void VisitFieldDeclaration(FieldDeclarationSyntax node)
+        {
+            var context = _context.SourceContext.OfType<UdonSourceContext>()!;
+            var capture = TypeDeclarationCapture.Capture(node.Declaration.Type, _context.SemanticModel);
+            if (!capture.HasValidType())
+            {
+                _context.Errors.Add(new VisualStudioCatchError(node, $"The type {capture.GetActualName()} does not supported by Udon", ErrorConstants.NotSupportedUdonType));
+                return;
+            }
+
+            var export = node.Modifiers.Any(SyntaxKind.PublicKeyword);
+
+            foreach (var variable in node.Declaration.Variables)
+            {
+                var symbol = _context.SemanticModel.GetDeclaredSymbol(variable);
+
+                // why loose???
+                var sync = symbol.GetLooseAttribute<UdonSyncedAttribute>(_context.SemanticModel)?.SyncMode;
+                if (symbol.HasLooseAttribute<UdonSyncedAttribute>(_context.SemanticModel))
+                    sync = UdonSyncMode.None;
+
+                context.UasmBuilder.AddVariableSymbol(variable.Identifier.ValueText, capture.GetUdonName(), export, sync, "null");
+            }
+        }
+
+        public override void VisitMethodDeclaration(MethodDeclarationSyntax node)
+        {
+            var name = node.Identifier.ValueText;
+            if (name == "Awake")
+                _context.Errors.Add(new VisualStudioCatchError(node, "Awake event does not supported by Udon, use Start event instead", ErrorConstants.NotSupportedAwakeEvent));
+
+            foreach (var parameter in node.ParameterList.Parameters)
+            {
+                Visit(parameter);
+
+                if (parameter.Modifiers.Any(SyntaxKind.InKeyword))
+                    _context.Errors.Add(new VisualStudioCatchError(parameter, "SharpX.Udon does not support `in` parameters on user-defined types", ErrorConstants.NotSupportedInParameter));
+                if (parameter.Modifiers.Any(SyntaxKind.OutKeyword))
+                    _context.Errors.Add(new VisualStudioCatchError(parameter, "SharpX.Udon does not support `out` parameters on user-defined types", ErrorConstants.NotSupportedOutParameter));
+                if (parameter.Modifiers.Any(SyntaxKind.RefKeyword))
+                    _context.Errors.Add(new VisualStudioCatchError(parameter, "SharpX.Udon does not support `ref` parameters on user-defined types", ErrorConstants.NotSupportedOutParameter));
+            }
+
+            var returnType = TypeDeclarationCapture.Capture(node.ReturnType, _context.SemanticModel);
+            var arguments = node.ParameterList.Parameters.Select(w => TypeDeclarationCapture.Capture(w.Type!, _context.SemanticModel)).Select(w => w.GetUdonName()).ToArray();
+            var isExport = UdonNodeResolver.Instance.IsBuiltinEvent(name) || node.Modifiers.Any(SyntaxKind.PublicKeyword);
+
+            var context = _context.SourceContext.OfType<UdonSourceContext>()!;
+            context.UasmBuilder.StartMethod(name, returnType.GetUdonName(), arguments, isExport);
+
+
+            if (node.Body != null)
+                Visit(node.Body);
+            else if (node.ExpressionBody != null)
+                Visit(node.ExpressionBody);
+
+            context.UasmBuilder.CloseMethod();
+        }
+
+        public override void VisitPropertyDeclaration(PropertyDeclarationSyntax node) { }
 
         #region UnSupported Syntaxes
 
@@ -77,6 +162,7 @@ namespace SharpX.Compiler.Udon.Models
         {
             _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.Udon Compiler does not support ref types", ErrorConstants.NotSupportedRefTypes));
         }
+
         public override void VisitCheckedExpression(CheckedExpressionSyntax node)
         {
             _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.Udon Compiler does not support checked expressions", ErrorConstants.NotSupportedCheckedExpression));
@@ -231,7 +317,6 @@ namespace SharpX.Compiler.Udon.Models
         {
             _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.Udon Compiler does not support try-catch(-finally) statements", ErrorConstants.NotSupportedHandlingExceptions));
         }
-
 
         #endregion
     }

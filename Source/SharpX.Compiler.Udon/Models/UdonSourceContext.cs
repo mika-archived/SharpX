@@ -4,16 +4,17 @@ namespace SharpX.Compiler.Udon.Models
 {
     internal class UdonSourceContext : VerifiableSourceContext
     {
-        private readonly UdonStructuredSourceBuilder _sb;
+        public UasmBuilder UasmBuilder { get; }
 
         public UdonSourceContext()
         {
-            _sb = new UdonStructuredSourceBuilder();
+            UasmBuilder = new UasmBuilder();
         }
+
 
         public override string ToSourceString()
         {
-            return _sb.ToSource();
+            return UasmBuilder.ToAssemblyString();
         }
     }
 }
