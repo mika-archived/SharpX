@@ -11,45 +11,73 @@
 
     <Reference Include="VRC.Udon">
       <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.dll</HintPath>
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </Reference>
     <Reference Include="VRC.Udon.ClientBindings">
       <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.ClientBindings.dll</HintPath>
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </Reference>
     <Reference Include="VRC.Udon.Common">
       <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.Common.dll</HintPath>
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </Reference>
     <Reference Include="VRC.Udon.Compiler">
       <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.Compiler.dll</HintPath>
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </Reference>
     <Reference Include="VRC.Udon.Editor">
       <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.Editor.dll</HintPath>
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </Reference>
     <Reference Include="VRC.Udon.EditorBindings">
       <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.EditorBindings.dll</HintPath>
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </Reference>
     <Reference Include="VRC.Udon.Graph">
       <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.Graph.dll</HintPath>
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </Reference>
     <Reference Include="VRC.Udon.Security">
       <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.Security.dll</HintPath>
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </Reference>
     <Reference Include="VRC.Udon.Serialization.OdinSerializer">
       <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.Serialization.OdinSerializer.dll</HintPath>
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </Reference>
     <Reference Include="VRC.Udon.UAssembly">
       <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.UAssembly.dll</HintPath>
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </Reference>
     <Reference Include="VRC.Udon.VRCTypeResolverModules">
       <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRC.Udon.VRCTypeResolverModules.dll</HintPath>
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </Reference>
     <Reference Include="VRCSDK3">
       <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRCSDK3.dll</HintPath>
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </Reference>
     <Reference Include="VRCSDKBase">
       <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRCSDKBase.dll</HintPath>
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </Reference>
     <Reference Include="VRCSDKBase-Editor">
       <HintPath>..\SharpX.CLI\bin\Debug\net6.0\externals\VRCSDKBase-Editor.dll</HintPath>
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </Reference>
   </ItemGroup>
 
