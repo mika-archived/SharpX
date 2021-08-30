@@ -98,8 +98,7 @@ namespace SharpX.Compiler.Udon.Models
             var isExport = UdonNodeResolver.Instance.IsBuiltinEvent(name) || node.Modifiers.Any(SyntaxKind.PublicKeyword);
 
             var context = _context.SourceContext.OfType<UdonSourceContext>()!;
-            context.UasmBuilder.StartMethod(name, returnType.GetUdonName(), arguments, isExport);
-
+            context.UasmBuilder.StartMethod(UdonNodeResolver.Instance.RemappedBuiltinEvent(name), returnType.GetUdonName(), arguments, isExport);
 
             if (node.Body != null)
                 Visit(node.Body);

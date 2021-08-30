@@ -25,10 +25,17 @@ namespace SharpX.Compiler.Udon.Models
 
         public bool IsBuiltinEvent(string name)
         {
-            if (_builtinEventLookup?.ContainsKey(name) == true)
+            if (_builtinEventLookup!.ContainsKey(name) == true)
                 return true;
 
             return false;
+        }
+
+        public string RemappedBuiltinEvent(string name)
+        {
+            if (IsBuiltinEvent(name))
+                return _builtinEventLookup![name];
+            return name;
         }
 
         public string SanitizeTypeName(string typeName)

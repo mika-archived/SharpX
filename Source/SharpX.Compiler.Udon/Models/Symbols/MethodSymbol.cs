@@ -2,6 +2,6 @@
 {
     internal record MethodSymbol(string Name, string ReturnType, string[] Arguments, bool IsExport)
     {
-        public UasmBuilder UAssembly { get; init; } = new();
+        public MethodUasmBuilder UAssembly { get; init; } = new();
     }
 }

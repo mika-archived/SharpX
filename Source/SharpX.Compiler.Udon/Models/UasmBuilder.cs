@@ -14,7 +14,7 @@ namespace SharpX.Compiler.Udon.Models
         private readonly SourceBuilder _sb;
         private readonly List<VariableSymbol> _variables;
 
-        public UasmBuilder? CurrentMethodAssemblyBuilder => _currentMethodSymbol.Count > 0 ? _currentMethodSymbol.Peek().UAssembly : null;
+        public MethodUasmBuilder? CurrentMethodAssemblyBuilder => _currentMethodSymbol.Count > 0 ? _currentMethodSymbol.Peek().UAssembly : null;
 
         public UasmBuilder()
         {
@@ -74,12 +74,40 @@ namespace SharpX.Compiler.Udon.Models
                     _sb.WriteNewLine();
                 }
 
-                foreach (var symbol in _variables) 
+                foreach (var symbol in _variables)
                     _sb.WriteLineWithIndent($"{symbol.Name}: %{symbol.Type}, {symbol.InitialValue ?? "null"}");
 
                 _sb.WriteNewLine();
                 _sb.DecrementIndent();
                 _sb.WriteLineWithIndent(".data_end");
+            }
+
+            if (_methods.Count > 0)
+            {
+                _sb.WriteLineWithIndent(".code_start");
+                _sb.IncrementIndent();
+                _sb.WriteNewLine();
+
+                foreach (var symbol in _methods)
+                {
+                    if (symbol.IsExport)
+                    {
+                        _sb.WriteLineWithIndent($".export {symbol.Name}");
+                        _sb.WriteNewLine();
+                    }
+
+                    _sb.WriteLineWithIndent($"{symbol.Name}:");
+                    _sb.IncrementIndent();
+                    
+                    symbol.UAssembly.WriteTo(_sb);
+
+                    _sb.WriteNewLine();
+                    _sb.DecrementIndent();
+                }
+
+                _sb.WriteNewLine();
+                _sb.DecrementIndent();
+                _sb.WriteLineWithIndent(".code_end");
             }
 
             return _sb.ToSource();
