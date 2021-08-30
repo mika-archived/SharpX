@@ -33,6 +33,11 @@ namespace SharpX.Compiler.Udon.Models
             _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"PUSH, {symbol.Name}" : $"PUSH, {symbol.Name} # {comment}");
         }
 
+        public void AddPush(NamedAddressSymbol address, string? comment = null)
+        {
+            _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"PUSH, {address.Name}" : $"PUSH, {address.Name} # {comment}");
+        }
+
         public void AddPush(AddressSymbol address, string? comment = null)
         {
             _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"PUSH, {address.Address}" : $"PUSH, {address.Address} # {comment}");
@@ -43,24 +48,24 @@ namespace SharpX.Compiler.Udon.Models
             _codes.Add(string.IsNullOrWhiteSpace(comment) ? "POP" : $"POP # {comment}");
         }
         
-        public void AddJumpIfFalse(AddressSymbol address, string? comment = null)
+        public void AddJumpIfFalse(IAddressSymbol address, string? comment = null)
         {
-            _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"JUMP_IF_FALSE {address.Address}" : $"JUMP_IF_FALSE {address.Address} # {comment}");
+            _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"JUMP_IF_FALSE, {address.Address}" : $"JUMP_IF_FALSE, {address.Address} # {comment}");
         }
 
-        public void AddJump(AddressSymbol address, string? comment = null)
+        public void AddJump(IAddressSymbol address, string? comment = null)
         {
-            _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"JUMP {address.Address}" : $"JUMP {address.Address} # {comment}");
+            _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"JUMP, {address.Address}" : $"JUMP, {address.Address} # {comment}");
         }
 
         public void AddExtern(string signature, string? comment = null)
         {
-            _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"EXTERN, \"{signature}\"" : $"EXTERN \"{signature}\" # {comment}");
+            _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"EXTERN, \"{signature}\"" : $"EXTERN, \"{signature}\" # {comment}");
         }
 
-        public void AddJumpIndirect(AddressSymbol address, string? comment = null)
+        public void AddJumpIndirect(NamedAddressSymbol address, string? comment = null)
         {
-            _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"JUMP_INDIRECT {address.Address}" : $"JUMP_INDIRECT {address.Address} # {comment}");
+            _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"JUMP_INDIRECT, {address.Name}" : $"JUMP_INDIRECT, {address.Name} # {comment}");
         }
 
         public void AddCopy(string? comment = null)
