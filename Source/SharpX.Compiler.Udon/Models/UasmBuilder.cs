@@ -24,9 +24,12 @@ namespace SharpX.Compiler.Udon.Models
             _currentMethodSymbol = new Stack<MethodSymbol>();
         }
 
-        public void AddVariableSymbol(string name, string type, bool export, UdonSyncMode? sync, object? initialValue)
+        public VariableSymbol AddVariableSymbol(string name, string type, bool export, UdonSyncMode? sync, object? initialValue)
         {
-            _variables.Add(new VariableSymbol(name, type, export, sync, initialValue));
+            var symbol = new VariableSymbol(name, type, export, sync, initialValue);
+            _variables.Add(symbol);
+
+            return symbol;
         }
 
         public void AppendLine(string str, string? comment = null)

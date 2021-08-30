@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -9,19 +11,34 @@ using SharpX.Compiler.Composition.Interfaces;
 using SharpX.Compiler.Extensions;
 using SharpX.Compiler.Udon.Models.Captures;
 using SharpX.Compiler.Udon.Models.Declarators;
+using SharpX.Compiler.Udon.Models.Symbols;
 using SharpX.Library.Udon;
 using SharpX.Library.Udon.Attributes;
 using SharpX.Library.Udon.Enums;
+
+using ISymbol = Microsoft.CodeAnalysis.ISymbol;
 
 namespace SharpX.Compiler.Udon.Models
 {
     internal class UdonCSharpSyntaxWalker : CSharpSyntaxWalker
     {
+        private readonly Stack<string> _capturingMethodNameStack;
+        private readonly Stack<Dictionary<string, ISymbol>> _capturingVariablesStack;
         private readonly ILanguageSyntaxWalkerContext _context;
+        private int _currentCapturingParameterIndex;
+        private INamedTypeSymbol? _currentClass;
+        private UdonSymbolTable? _symbolTable;
+
+        private string? CurrentCaptureMethodName => _capturingMethodNameStack.Count > 0 ? _capturingMethodNameStack.Peek() : null;
+
+        private Dictionary<string, ISymbol> CurrentCaptureVariables => _capturingVariablesStack.Count > 0 ? _capturingVariablesStack.Peek() : new Dictionary<string, ISymbol>();
 
         public UdonCSharpSyntaxWalker(ILanguageSyntaxWalkerContext context) : base(SyntaxWalkerDepth.Token)
         {
             _context = context;
+            _capturingMethodNameStack = new Stack<string>();
+            _capturingVariablesStack = new Stack<Dictionary<string, ISymbol>>();
+            _currentCapturingParameterIndex = 0;
         }
 
         public override void DefaultVisit(SyntaxNode node)
@@ -34,6 +51,36 @@ namespace SharpX.Compiler.Udon.Models
             base.VisitIdentifierName(node);
         }
 
+        public override void VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
+        {
+            var info = _context.SemanticModel.GetSymbolInfo(node.Expression);
+            if (info.Symbol == null)
+                return;
+
+            var symbol = info.Symbol;
+            var context = _context.SourceContext.OfType<UdonSourceContext>()!.UasmBuilder.CurrentMethodAssemblyBuilder!;
+
+            if (CurrentCaptureVariables.ContainsValue(symbol))
+            {
+                if (symbol is IFieldSymbol)
+                {
+                    // is capturing fields
+                    context.AddPush(_symbolTable.GetNamedSymbol(symbol.Name));
+                }
+                else
+                {
+                    Debug.WriteLine("Who are you?");
+                }
+            }
+        }
+
+        public override void VisitAssignmentExpression(AssignmentExpressionSyntax node)
+        {
+            Visit(node.Right);
+
+            Visit(node.Left);
+        }
+
         public override void VisitClassDeclaration(ClassDeclarationSyntax node)
         {
             var declarator = TypeDeclarationDeclarator.Create(node, _context.SemanticModel);
@@ -42,11 +89,21 @@ namespace SharpX.Compiler.Udon.Models
             if (declarator.IsInherited<SharpXUdonBehaviour>())
             {
                 _context.CreateOrGetContext(declarator.GetFullyQualifiedName());
+                _symbolTable = new UdonSymbolTable();
+                _currentClass = _context.SemanticModel.GetDeclaredSymbol(node)!;
+                _capturingVariablesStack.Push(new Dictionary<string, ISymbol>());
 
                 foreach (var member in node.Members)
                     Visit(member);
 
+                foreach (var symbol in _symbolTable.VariableSymbols)
+                    _context.SourceContext.OfType<UdonSourceContext>()!.UasmBuilder.AddVariableSymbol(symbol.Name, symbol.Type, symbol.IsExport, symbol.SyncMode, symbol.InitialValue);
+                foreach (var symbol in _symbolTable.NamedAddressSymbols)
+                    _context.SourceContext.OfType<UdonSourceContext>()!.UasmBuilder.AddVariableSymbol(symbol.Name, "SystemUInt32", false, null, "null");
+
                 _context.CloseContext();
+                _symbolTable.Dispose();
+                _capturingVariablesStack.Pop();
             }
         }
 
@@ -71,7 +128,8 @@ namespace SharpX.Compiler.Udon.Models
                 if (symbol.HasLooseAttribute<UdonSyncedAttribute>(_context.SemanticModel))
                     sync = UdonSyncMode.None;
 
-                context.UasmBuilder.AddVariableSymbol(variable.Identifier.ValueText, capture.GetUdonName(), export, sync, "null");
+                CurrentCaptureVariables.Add(variable.Identifier.ValueText, symbol!);
+                _symbolTable!.AddNamedSymbol(new VariableSymbol(variable.Identifier.ValueText, capture.GetUdonName(), export, sync, "null"));
             }
         }
 
@@ -81,9 +139,27 @@ namespace SharpX.Compiler.Udon.Models
             if (name == "Awake")
                 _context.Errors.Add(new VisualStudioCatchError(node, "Awake event does not supported by Udon, use Start event instead", ErrorConstants.NotSupportedAwakeEvent));
 
+            _capturingMethodNameStack.Push(UdonNodeResolver.Instance.RemappedBuiltinEvent(name));
+            _currentCapturingParameterIndex = 0;
+            _capturingVariablesStack.Push(new Dictionary<string, ISymbol>(CurrentCaptureVariables));
+
+            var returnType = TypeDeclarationCapture.Capture(node.ReturnType, _context.SemanticModel);
+            var arguments = node.ParameterList.Parameters.Select(w => TypeDeclarationCapture.Capture(w.Type!, _context.SemanticModel)).Select(w => w.GetUdonName()).ToArray();
+            var isExport = UdonNodeResolver.Instance.IsBuiltinEvent(name) || node.Modifiers.Any(SyntaxKind.PublicKeyword);
+
+            var context = _context.SourceContext.OfType<UdonSourceContext>()!;
+
+            if (!returnType.HasValidType())
+                _context.Errors.Add(new VisualStudioCatchError(node, $"The return type {returnType.GetActualName()} does not supported by Udon", ErrorConstants.NotSupportedUdonType));
+
+            context.UasmBuilder.StartMethod(UdonNodeResolver.Instance.RemappedBuiltinEvent(name), returnType.GetUdonName(), arguments, isExport);
+
+            context.UasmBuilder.CurrentMethodAssemblyBuilder!.AddPush(_symbolTable!.GetConstantSymbol("", 0x00000000));
+
             foreach (var parameter in node.ParameterList.Parameters)
             {
                 Visit(parameter);
+                _currentCapturingParameterIndex++;
 
                 if (parameter.Modifiers.Any(SyntaxKind.InKeyword))
                     _context.Errors.Add(new VisualStudioCatchError(parameter, "SharpX.Udon does not support `in` parameters on user-defined types", ErrorConstants.NotSupportedInParameter));
@@ -93,19 +169,41 @@ namespace SharpX.Compiler.Udon.Models
                     _context.Errors.Add(new VisualStudioCatchError(parameter, "SharpX.Udon does not support `ref` parameters on user-defined types", ErrorConstants.NotSupportedOutParameter));
             }
 
-            var returnType = TypeDeclarationCapture.Capture(node.ReturnType, _context.SemanticModel);
-            var arguments = node.ParameterList.Parameters.Select(w => TypeDeclarationCapture.Capture(w.Type!, _context.SemanticModel)).Select(w => w.GetUdonName()).ToArray();
-            var isExport = UdonNodeResolver.Instance.IsBuiltinEvent(name) || node.Modifiers.Any(SyntaxKind.PublicKeyword);
-
-            var context = _context.SourceContext.OfType<UdonSourceContext>()!;
-            context.UasmBuilder.StartMethod(UdonNodeResolver.Instance.RemappedBuiltinEvent(name), returnType.GetUdonName(), arguments, isExport);
 
             if (node.Body != null)
                 Visit(node.Body);
             else if (node.ExpressionBody != null)
                 Visit(node.ExpressionBody);
 
+            context.UasmBuilder.CurrentMethodAssemblyBuilder!.AddPush(_symbolTable!.GetConstantSymbol("returnTarget", 0xFFFFFFFF));
+            context.UasmBuilder.CurrentMethodAssemblyBuilder!.AddCopy();
+            context.UasmBuilder.CurrentMethodAssemblyBuilder!.AddJumpIndirect(_symbolTable!.GetConstantSymbol("returnTarget", 0xFFFFFFFF));
+
             context.UasmBuilder.CloseMethod();
+
+            _capturingMethodNameStack.Pop();
+            _capturingVariablesStack.Pop();
+        }
+
+        public override void VisitParameter(ParameterSyntax node)
+        {
+            var symbol = _context.SemanticModel.GetDeclaredSymbol(node);
+            var parameter = UdonNodeResolver.Instance.GetMethodCustomArgs(CurrentCaptureMethodName!)?[_currentCapturingParameterIndex];
+            if (parameter != null && parameter.Item2 != symbol!.Name)
+            {
+                // copy arguments to user-named variables
+                var builder = _context.SourceContext.OfType<UdonSourceContext>()!.UasmBuilder.CurrentMethodAssemblyBuilder!;
+                builder.AddPush(new VariableSymbol(parameter.Item2, "", false, null, "null"));
+
+                var t = TypeDeclarationCapture.Capture(symbol, _context.SemanticModel);
+                var variable = _symbolTable!.CreateNamedSymbol(node.Identifier.ValueText, t.GetUdonName());
+
+                builder.AddPush(variable);
+                builder.AddCopy();
+            }
+
+            CurrentCaptureVariables.Add(node.Identifier.ValueText, symbol!);
+
         }
 
         public override void VisitPropertyDeclaration(PropertyDeclarationSyntax node) { }

@@ -55,6 +55,11 @@ namespace SharpX.Compiler.Udon.Models.Captures
             return new TypeDeclarationCapture(symbol, model, CapturedAs.Symbol);
         }
 
+        public static TypeDeclarationCapture Capture(IParameterSymbol symbol, SemanticModel model)
+        {
+            return new TypeDeclarationCapture(symbol.Type, model, CapturedAs.Symbol);
+        }
+
         public bool HasValidType()
         {
             var symbol = _captured switch
@@ -64,6 +69,8 @@ namespace SharpX.Compiler.Udon.Models.Captures
                 _ => throw new ArgumentOutOfRangeException()
             };
 
+            if (symbol?.ToDisplayString() == "void")
+                return true;
 
             return UdonNodeResolver.Instance.IsValidType(symbol!, _model);
         }
