@@ -6,9 +6,9 @@ using Microsoft.CodeAnalysis;
 namespace SharpX.Compiler.Udon.Models
 {
     // ReSharper disable once InconsistentNaming
-    internal class ITypeSymbolEqualityComparer : IEqualityComparer<ITypeSymbol>
+    internal class ISymbolEqualityComparer : IEqualityComparer<ISymbol>
     {
-        public bool Equals(ITypeSymbol? x, ITypeSymbol? y)
+        public bool Equals(ISymbol? x, ISymbol? y)
         {
             if (x == null && y == null)
                 return true;
@@ -19,7 +19,7 @@ namespace SharpX.Compiler.Udon.Models
         }
 
         [SuppressMessage("MicrosoftCodeAnalysisCorrectness", "RS1024:Compare symbols correctly", Justification = "<Pending>")]
-        public int GetHashCode(ITypeSymbol obj)
+        public int GetHashCode(ISymbol obj)
         {
             return obj.GetHashCode();
         }

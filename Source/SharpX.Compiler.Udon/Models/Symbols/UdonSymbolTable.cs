@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
+using Microsoft.CodeAnalysis;
+
 using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.Udon.Enums;
 
@@ -10,6 +12,7 @@ namespace SharpX.Compiler.Udon.Models.Symbols
 {
     internal class UdonSymbolTable
     {
+        private readonly Dictionary<ISymbol, UdonSymbol> _associatedSymbols;
         private readonly List<UdonSymbolTable> _childSymbolTables;
         private readonly List<UdonSymbol> _contextDefinedSymbols;
         private readonly List<UdonSymbol> _contextReferenceableSymbols;
@@ -23,8 +26,10 @@ namespace SharpX.Compiler.Udon.Models.Symbols
 
         public IReadOnlyCollection<UdonSymbol> ContextDefinedSymbols => _stack.SafePeek(this)._contextDefinedSymbols.AsReadOnly();
 
+        [SuppressMessage("MicrosoftCodeAnalysisCorrectness", "RS1024:Compare symbols correctly", Justification = "<Pending>")]
         public UdonSymbolTable()
         {
+            _associatedSymbols = new Dictionary<ISymbol, UdonSymbol>(new ISymbolEqualityComparer());
             _childSymbolTables = new List<UdonSymbolTable>();
             _contextDefinedSymbols = new List<UdonSymbol>();
             _contextReferenceableSymbols = new List<UdonSymbol>();
@@ -33,19 +38,21 @@ namespace SharpX.Compiler.Udon.Models.Symbols
             _stack = new SafeStack<UdonSymbolTable>();
         }
 
-        private UdonSymbolTable(UdonSymbolTable root, List<UdonSymbol> parentSymbols, Dictionary<string, uint> counter)
+        [SuppressMessage("MicrosoftCodeAnalysisCorrectness", "RS1024:Compare symbols correctly", Justification = "<Pending>")]
+        private UdonSymbolTable(UdonSymbolTable root, UdonSymbolTable parent)
         {
+            _associatedSymbols = new Dictionary<ISymbol, UdonSymbol>(parent._associatedSymbols, new ISymbolEqualityComparer());
             _childSymbolTables = new List<UdonSymbolTable>(); // unused
             _contextDefinedSymbols = new List<UdonSymbol>();
-            _contextReferenceableSymbols = new List<UdonSymbol>(parentSymbols);
-            _counter = new Dictionary<string, uint>(counter);
+            _contextReferenceableSymbols = new List<UdonSymbol>(parent._contextReferenceableSymbols);
+            _counter = new Dictionary<string, uint>(root._counter);
             _rootSymbolTable = root;
             _stack = new SafeStack<UdonSymbolTable>(); // unused
         }
 
         private UdonSymbolTable Inherit()
         {
-            return new UdonSymbolTable(_rootSymbolTable, _contextReferenceableSymbols, _counter);
+            return new UdonSymbolTable(_rootSymbolTable, this);
         }
 
         public void OpenSymbolTable()
@@ -58,11 +65,14 @@ namespace SharpX.Compiler.Udon.Models.Symbols
             var child = _stack.Pop();
             _childSymbolTables.Add(child);
 
-            foreach (var counterKey in _counter.Keys)
+            foreach (var counterKey in child._counter.Keys)
                 if (_counter.ContainsKey(counterKey))
                     _counter[counterKey] = child._counter[counterKey];
                 else
                     _counter.Add(counterKey, child._counter[counterKey]);
+
+            foreach (var s in child._associatedSymbols.Keys.Where(s => !_associatedSymbols.ContainsKey(s)))
+                _associatedSymbols.Add(s, child._associatedSymbols[s]);
         }
 
         public void ToFlatten()
@@ -161,6 +171,18 @@ namespace SharpX.Compiler.Udon.Models.Symbols
         {
             _contextReferenceableSymbols.Add(symbol);
             _contextDefinedSymbols.Add(symbol);
+        }
+
+        public void AssociateWithSymbol(UdonSymbol udon, ISymbol symbol)
+        {
+            _associatedSymbols.Add(symbol, udon);
+        }
+
+        public UdonSymbol? GetAssociatedSymbol(ISymbol symbol)
+        {
+            if (_associatedSymbols.ContainsKey(symbol))
+                return _associatedSymbols[symbol];
+            return null;
         }
 
 
