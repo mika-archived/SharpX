@@ -5,6 +5,8 @@ using System.Linq;
 
 using Microsoft.CodeAnalysis;
 
+using SharpX.Library.Udon;
+
 using UnityEngine;
 
 using VRC.SDK3.Components.Video;
@@ -25,6 +27,27 @@ namespace SharpX.Compiler.Udon.Models
         private static HashSet<string>? _nodeDefinitions;
         private static Dictionary<string, string>? _builtinEventLookup;
         private static Dictionary<string, string>? _inheritTypeMappings;
+
+
+        private static readonly Dictionary<string, string> BuiltinTypes = new()
+        {
+            { "void", typeof(void).FullName! },
+            { "string", typeof(string).FullName! },
+            { "int", typeof(int).FullName! },
+            { "uint", typeof(uint).FullName! },
+            { "long", typeof(long).FullName! },
+            { "ulong", typeof(ulong).FullName! },
+            { "short", typeof(short).FullName! },
+            { "ushort", typeof(ushort).FullName! },
+            { "char", typeof(char).FullName! },
+            { "bool", typeof(bool).FullName! },
+            { "byte", typeof(byte).FullName! },
+            { "sbyte", typeof(sbyte).FullName! },
+            { "float", typeof(float).FullName! },
+            { "double", typeof(double).FullName! },
+            { "decimal", typeof(decimal).FullName! },
+            { "object", typeof(object).FullName! }
+        };
 
         private static readonly Dictionary<string, Tuple<Type, string>[]> InternalMethodArguments = new()
         {
@@ -112,11 +135,18 @@ namespace SharpX.Compiler.Udon.Models
 
         public bool IsValidType(ITypeSymbol symbol, SemanticModel model)
         {
-            var name = GetUdonName(symbol, model);
+            var name = GetUdonTypeName(symbol, model);
+            if (name == "SystemVoid")
+                return true;
             return _nodeDefinitions!.Contains($"Type_{name}");
         }
 
-        public string GetUdonName(ITypeSymbol symbol, SemanticModel model, bool isSkipBaseTypeRemapping = false)
+        public string GetUdonTypeName(Type t, SemanticModel model, bool isSkipBaseTypeRemapping = false)
+        {
+            return GetUdonTypeName(model.Compilation.GetTypeByMetadataName(t.FullName!)!, model, isSkipBaseTypeRemapping);
+        }
+
+        public string GetUdonTypeName(ITypeSymbol symbol, SemanticModel model, bool isSkipBaseTypeRemapping = false)
         {
             if (!isSkipBaseTypeRemapping)
                 symbol = RemapBaseType(symbol, model);
@@ -138,14 +168,86 @@ namespace SharpX.Compiler.Udon.Models
 
             if (@extern is INamedTypeSymbol n)
                 foreach (var t in n.TypeArguments)
-                    fullyQualifiedMetadataName += GetUdonName(t, model);
+                    fullyQualifiedMetadataName += GetUdonTypeName(t, model);
 
             if (fullyQualifiedMetadataName == "SystemCollectionsGenericListT")
                 fullyQualifiedMetadataName = "ListT";
             if (fullyQualifiedMetadataName == "SystemCollectionsGenericIEnumerableT")
                 fullyQualifiedMetadataName = "IEnumerableT";
+            if (BuiltinTypes.ContainsKey(fullyQualifiedMetadataName))
+                fullyQualifiedMetadataName = BuiltinTypes[fullyQualifiedMetadataName];
 
             return fullyQualifiedMetadataName.Replace("VRCUdonUdonBehaviour", "VRCUdonCommonInterfacesIUdonEventReceiver");
+        }
+
+        public bool IsValidMethod(IMethodSymbol method, SemanticModel model)
+        {
+            var signature = GetUdonMethodName(method, model);
+            return _nodeDefinitions!.Contains(signature);
+        }
+
+        public string GetUdonMethodName(IMethodSymbol method, SemanticModel model)
+        {
+            var symbol = RemapBaseType(method.ContainingType, model);
+            
+            bool isUdonBehaviour = symbol.Equals(model.Compilation.GetTypeByMetadataName(typeof(SharpXUdonBehaviour).FullName!), SymbolEqualityComparer.Default);
+            if (symbol.BaseType?.Equals(model.Compilation.GetTypeByMetadataName(typeof(SharpXUdonBehaviour).FullName!), SymbolEqualityComparer.Default) == true)
+                isUdonBehaviour = true;
+            
+            var functionNamespace = SanitizeTypeName(GetUdonTypeName(symbol, model)).Replace("VRCUdonUdonBehaviour", "VRCUdonCommonInterfacesIUdonEventReceiver");
+            var methodName = $"__{method.Name.Trim('_').TrimStart('.')}";
+            if (isUdonBehaviour && methodName == "__VRCInstantiate")
+            {
+                functionNamespace = "VRCInstantiate";
+                methodName = "__Instantiate";
+            }
+
+            var paramsStr = "";
+            if (method.Parameters.Length > 0)
+            {
+                paramsStr += "_";
+
+                foreach (var parameter in method.Parameters)
+                    paramsStr += $"_{GetUdonTypeName(parameter.Type, model, true)}";
+            }
+            else if (method.Name == ".ctor")
+                paramsStr = "__";
+
+            var returnStr = method.Name == ".ctor" ? $"__{GetUdonTypeName(method.ReturnType, model, true)}" : $"__{GetUdonTypeName(method.ReturnType, model)}";
+
+            return  $"{functionNamespace}.{methodName}{paramsStr}{returnStr}";
+        }
+
+        public bool IsValidPropertyAccessor(IPropertySymbol property, SemanticModel model,  bool isGetter)
+        {
+            var signature = GetUdonPropertyAccessorName(property, model, isGetter);
+            return _nodeDefinitions!.Contains(signature);
+        }
+
+        public string GetUdonPropertyAccessorName(IPropertySymbol property, SemanticModel model, bool isGetter)
+        {
+            var symbol = RemapBaseType(property.ContainingType, model);
+
+            var functionNamespace = SanitizeTypeName(GetUdonTypeName(symbol, model)).Replace("VRCUdonUdonBehaviour", "VRCUdonCommonInterfacesIUdonEventReceiver");
+            var methodName = $"__{(isGetter ? "get" : "set")}_{property.Name.Trim('_')}";
+            var paramStr = $"__{GetUdonTypeName(property.Type, model)}";
+            return $"{functionNamespace}.{methodName}{paramStr}";
+        }
+
+        public bool IsValidPropertyAccessor(IFieldSymbol property, SemanticModel model, bool isGetter)
+        {
+            var signature = GetUdonPropertyAccessorName(property, model, isGetter);
+            return _nodeDefinitions!.Contains(signature);
+        }
+
+        public string GetUdonPropertyAccessorName(IFieldSymbol property, SemanticModel model, bool isGetter)
+        {
+            var symbol = RemapBaseType(property.Type, model);
+
+            var functionNamespace = SanitizeTypeName(symbol.ToDisplayString()).Replace("VRCUdonUdonBehaviour", "VRCUdonCommonInterfacesIUdonEventReceiver");
+            var methodName = $"__{(isGetter ? "get" : "set")}_{property.Name.Trim('_')}";
+            var paramStr = $"__{GetUdonTypeName(property.Type, model)}";
+            return $"{functionNamespace}.{methodName}{paramStr}";
         }
 
         private ITypeSymbol RemapBaseType(ITypeSymbol symbol, SemanticModel model)
