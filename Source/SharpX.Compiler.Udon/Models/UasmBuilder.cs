@@ -2,6 +2,7 @@
 using System.Linq;
 
 using SharpX.Compiler.Composition.Abstractions;
+using SharpX.Compiler.Extensions;
 using SharpX.Compiler.Udon.Models.Symbols;
 using SharpX.Library.Udon.Enums;
 
@@ -16,12 +17,15 @@ namespace SharpX.Compiler.Udon.Models
 
         public MethodUasmBuilder? CurrentMethodAssemblyBuilder => _currentMethodSymbol.Count > 0 ? _currentMethodSymbol.Peek().UAssembly : null;
 
+        public uint CurrentProgramCounter { get; }
+
         public UasmBuilder()
         {
             _sb = new SourceBuilder();
             _variables = new List<VariableSymbol>();
             _methods = new List<MethodSymbol>();
             _currentMethodSymbol = new Stack<MethodSymbol>();
+            CurrentProgramCounter = 0;
         }
 
         public VariableSymbol AddVariableSymbol(string name, string type, bool export, UdonSyncMode? sync, object? initialValue)
@@ -44,13 +48,21 @@ namespace SharpX.Compiler.Udon.Models
 
         public void StartMethod(string name, string @return, string[] arguments, bool export)
         {
-            _currentMethodSymbol.Push(new MethodSymbol(name, @return, arguments, export));
+            _currentMethodSymbol.Push(new MethodSymbol(name, @return, arguments, export, _methods.Count == 0 ? 0 : _methods.Last().UAssembly.CalcMethodLastAddress()));
         }
 
         public void CloseMethod()
         {
             var method = _currentMethodSymbol.Pop();
             _methods.Add(method);
+        }
+
+        public IReadOnlySet<string> GetHeapExternSignatures()
+        {
+            var set = new HashSet<string>();
+            _methods.SelectMany(w => w.UAssembly.ExternSignatures).ForEach(w => set.Add(w));
+
+            return set;
         }
 
         public string ToAssemblyString()
@@ -101,7 +113,7 @@ namespace SharpX.Compiler.Udon.Models
 
                     _sb.WriteLineWithIndent($"{symbol.Name}:");
                     _sb.IncrementIndent();
-                    
+
                     symbol.UAssembly.WriteTo(_sb);
 
                     _sb.WriteNewLine();

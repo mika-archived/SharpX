@@ -1,83 +1,182 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.Udon.Models.Symbols;
+using SharpX.Compiler.Udon.Models.UdonAssembly;
 
 namespace SharpX.Compiler.Udon.Models
 {
     internal class MethodUasmBuilder
     {
-        private readonly List<string> _codes;
+        private readonly List<IAssemblyOpCode> _codes;
+        private readonly uint _programCounterOffset;
+        private readonly HashSet<string> _externSignatures;
 
-        public MethodUasmBuilder()
+        private uint CurrentProgramCounter => _programCounterOffset + (uint)_codes.Sum(w => w.IncrementalProgramCounter);
+
+        public IReadOnlySet<string> ExternSignatures => _externSignatures;
+
+        public MethodUasmBuilder(uint programCounterOffset)
         {
-            _codes = new List<string>();
+            _programCounterOffset = programCounterOffset;
+            _codes = new List<IAssemblyOpCode>();
+            _externSignatures = new HashSet<string>();
+        }
+
+        public void AddBlankLine()
+        {
+            _codes.Add(new OnlyComment());
         }
 
         public void AddComment(string comment)
         {
-            _codes.Add($"# {comment}");
+            _codes.Add(new OnlyComment { Comment = comment });
         }
 
-        public void AddRaw(string raw, string? comment = null)
-        {
-            _codes.Add(string.IsNullOrWhiteSpace(comment) ? raw : $"{raw} # {comment}");
-        }
         public void AddNop(string? comment = null)
         {
-            _codes.Add(string.IsNullOrWhiteSpace(comment) ? "NOP" : $"NOP # {comment}");
+            var code = new Nop
+            {
+                Comment = comment,
+                ActualProgramCounter = CurrentProgramCounter
+            };
+
+            _codes.Add(code);
         }
 
-        public void AddPush(VariableSymbol symbol, string? comment = null)
+        public void AddLabel(string label, string? comment = null)
         {
-            _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"PUSH, {symbol.Name}" : $"PUSH, {symbol.Name} # {comment}");
+            var code = new Label
+            {
+                Name = label,
+                Comment = comment,
+                ActualProgramCounter = CurrentProgramCounter,
+            };
+
+            _codes.Add(code);
         }
 
-        public void AddPush(NamedAddressSymbol address, string? comment = null)
+        public void AddPush(IAddressableSymbol symbol, string? comment = null)
         {
-            _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"PUSH, {address.Name}" : $"PUSH, {address.Name} # {comment}");
+            var code = new Push
+            {
+                Address = symbol,
+                Comment = comment,
+                ActualProgramCounter = CurrentProgramCounter
+            };
+
+            _codes.Add(code);
         }
 
-        public void AddPush(AddressSymbol address, string? comment = null)
-        {
-            _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"PUSH, {address.Address}" : $"PUSH, {address.Address} # {comment}");
-        }
 
         public void AddPop(string? comment = null)
         {
-            _codes.Add(string.IsNullOrWhiteSpace(comment) ? "POP" : $"POP # {comment}");
-        }
-        
-        public void AddJumpIfFalse(IAddressSymbol address, string? comment = null)
-        {
-            _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"JUMP_IF_FALSE, {address.Address}" : $"JUMP_IF_FALSE, {address.Address} # {comment}");
+            var code = new Pop
+            {
+                Comment = comment,
+                ActualProgramCounter = CurrentProgramCounter
+            };
+
+            _codes.Add(code);
         }
 
-        public void AddJump(IAddressSymbol address, string? comment = null)
+        public void AddJumpIfFalse(IAddressableSymbol address, string? comment = null)
         {
-            _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"JUMP, {address.Address}" : $"JUMP, {address.Address} # {comment}");
+            var code = new JumpIfFalse
+            {
+                Address = address,
+                Comment = comment,
+                ActualProgramCounter = CurrentProgramCounter
+            };
+
+            _codes.Add(code);
+        }
+
+        public void AddJumpIfFalseLabel(string label, string? comment = null)
+        {
+            var code = new JumpIfFalseLabel
+            {
+                Label = label,
+                Comment = comment,
+                ActualProgramCounter = CurrentProgramCounter
+            };
+
+            _codes.Add(code);
+        }
+
+        public void AddJump(IAddressableSymbol address, string? comment = null)
+        {
+            var code = new Jump
+            {
+                Address = address,
+                Comment = comment,
+                ActualProgramCounter = CurrentProgramCounter
+            };
+
+            _codes.Add(code);
+        }
+
+        public void AddJumpLabel(string label, string? comment = null)
+        {
+            var code = new JumpLabel
+            {
+                Label = label,
+                Comment = comment,
+                ActualProgramCounter = CurrentProgramCounter
+            };
+
+            _codes.Add(code);
         }
 
         public void AddExtern(string signature, string? comment = null)
         {
-            _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"EXTERN, \"{signature}\"" : $"EXTERN, \"{signature}\" # {comment}");
+            _externSignatures.Add(signature);
+
+            var code = new Extern
+            {
+                Signature = signature,
+                Comment = comment,
+                ActualProgramCounter = CurrentProgramCounter
+            };
+
+            _codes.Add(code);
         }
 
         public void AddJumpIndirect(NamedAddressSymbol address, string? comment = null)
         {
-            _codes.Add(string.IsNullOrWhiteSpace(comment) ? $"JUMP_INDIRECT, {address.Name}" : $"JUMP_INDIRECT, {address.Name} # {comment}");
+            var code = new JumpIndirect
+            {
+                Symbol = address,
+                Comment = comment,
+                ActualProgramCounter = CurrentProgramCounter
+            };
+
+            _codes.Add(code);
         }
 
         public void AddCopy(string? comment = null)
         {
-            _codes.Add(string.IsNullOrWhiteSpace(comment) ? "COPY" : $"COPY # {comment}");
+            var code = new Copy
+            {
+                Comment = comment,
+                ActualProgramCounter = CurrentProgramCounter
+            };
+
+            _codes.Add(code);
+        }
+
+        public uint CalcMethodLastAddress()
+        {
+            var last = _codes.Last();
+            return last.ActualProgramCounter + last.IncrementalProgramCounter;
         }
 
 
         public void WriteTo(SourceBuilder sb)
         {
             foreach (var code in _codes)
-                sb.WriteLineWithIndent(code);
+                sb.WriteLineWithIndent(code.ToAssemblyString(_codes));
         }
     }
 }

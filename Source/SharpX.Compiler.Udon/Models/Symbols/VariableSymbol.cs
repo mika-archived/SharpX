@@ -2,5 +2,13 @@
 
 namespace SharpX.Compiler.Udon.Models.Symbols
 {
-    public record VariableSymbol(string Name, string Type, bool IsExport, UdonSyncMode? SyncMode, object? InitialValue) : ISymbol { }
+    public record VariableSymbol(string Name, string Type, bool IsExport, UdonSyncMode? SyncMode, object? InitialValue) : IAddressableSymbol
+    {
+        public string Address { get; }
+
+        public string ToAddressString()
+        {
+            return Name;
+        }
+    }
 }
