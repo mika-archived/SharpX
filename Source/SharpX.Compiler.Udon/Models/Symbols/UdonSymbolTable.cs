@@ -1,77 +1,213 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+
+using SharpX.Compiler.Composition.Abstractions;
+using SharpX.Compiler.Udon.Enums;
 
 namespace SharpX.Compiler.Udon.Models.Symbols
 {
-    internal class UdonSymbolTable : IDisposable
+    internal class UdonSymbolTable
     {
-        private readonly Dictionary<string, uint> _nameCounter;
-        private readonly List<NamedAddressSymbol> _namedAddressSymbols;
-        private readonly List<VariableSymbol> _namedSymbols;
+        private readonly List<UdonSymbolTable> _childSymbolTables;
+        private readonly List<UdonSymbol> _contextDefinedSymbols;
+        private readonly List<UdonSymbol> _contextReferenceableSymbols;
+        private readonly Dictionary<string, uint> _counter;
+        private readonly UdonSymbolTable _rootSymbolTable;
+        private readonly SafeStack<UdonSymbolTable> _stack;
 
-        public IReadOnlyCollection<NamedAddressSymbol> NamedAddressSymbols => _namedAddressSymbols.AsReadOnly();
+        private UdonSymbolTable CurrentContextSymbolTable => _stack.SafePeek() ?? this;
 
-        public IReadOnlyCollection<VariableSymbol> VariableSymbols => _namedSymbols.AsReadOnly();
+        public IReadOnlyCollection<UdonSymbol> ContextReferenceableSymbols => _stack.SafePeek(this)._contextReferenceableSymbols.AsReadOnly();
+
+        public IReadOnlyCollection<UdonSymbol> ContextDefinedSymbols => _stack.SafePeek(this)._contextDefinedSymbols.AsReadOnly();
 
         public UdonSymbolTable()
         {
-            _namedAddressSymbols = new List<NamedAddressSymbol>();
-            _namedSymbols = new List<VariableSymbol>();
-            _nameCounter = new Dictionary<string, uint>();
+            _childSymbolTables = new List<UdonSymbolTable>();
+            _contextDefinedSymbols = new List<UdonSymbol>();
+            _contextReferenceableSymbols = new List<UdonSymbol>();
+            _counter = new Dictionary<string, uint>();
+            _rootSymbolTable = this;
+            _stack = new SafeStack<UdonSymbolTable>();
         }
 
-        public void Dispose() { }
-
-        public NamedAddressSymbol GetConstantSymbol(string name, long value)
+        private UdonSymbolTable(UdonSymbolTable root, List<UdonSymbol> parentSymbols, Dictionary<string, uint> counter)
         {
-            if (_namedAddressSymbols.Any(w => w.RawAddress == value))
-                return _namedAddressSymbols.First(w => w.RawAddress == value);
-
-            SetNamedCounter(name, out var counter);
-
-            var symbol = new NamedAddressSymbol($"__internal_const_{name}_SystemUInt32_{counter}", value);
-            _namedAddressSymbols.Add(symbol);
-
-            return symbol;
+            _childSymbolTables = new List<UdonSymbolTable>(); // unused
+            _contextDefinedSymbols = new List<UdonSymbol>();
+            _contextReferenceableSymbols = new List<UdonSymbol>(parentSymbols);
+            _counter = new Dictionary<string, uint>(counter);
+            _rootSymbolTable = root;
+            _stack = new SafeStack<UdonSymbolTable>(); // unused
         }
 
-        public VariableSymbol CreateNamedSymbol(string name, string type, bool isThis = false)
+        private UdonSymbolTable Inherit()
         {
-            SetNamedCounter(name, out var counter);
-
-            var symbol = new VariableSymbol($"__internal_variable_{name}_{type}_{counter}", type, false, null, isThis ? "this" : "null");
-            _namedSymbols.Add(symbol);
-
-            return symbol;
+            return new UdonSymbolTable(_rootSymbolTable, _contextReferenceableSymbols, _counter);
         }
 
-        public VariableSymbol? GetNamedSymbol(string name)
+        public void OpenSymbolTable()
         {
-            return _namedSymbols.FirstOrDefault(w => w.Name == name);
+            _stack.Push(Inherit());
         }
 
-        public void AddNamedSymbol(VariableSymbol symbol)
+        public void CloseSymbolTable()
         {
-            if (_namedSymbols.Contains(symbol))
+            var child = _stack.Pop();
+            _childSymbolTables.Add(child);
+
+            foreach (var counterKey in _counter.Keys)
+                if (_counter.ContainsKey(counterKey))
+                    _counter[counterKey] = child._counter[counterKey];
+                else
+                    _counter.Add(counterKey, child._counter[counterKey]);
+        }
+
+        public void ToFlatten()
+        {
+            foreach (var table in _childSymbolTables)
+                _contextDefinedSymbols.AddRange(table._contextDefinedSymbols);
+        }
+
+        public UdonSymbol CreateOrGetNamedConstantSymbol(string type, string name, object? value)
+        {
+            if (TryGetGlobalSymbol(type, name, value, UdonSymbolDeclarations.PrivateConstant, out var symbol))
+                return symbol;
+
+            IncrementNameCounter(type, name, out var counter);
+
+            var u = GetSymbolSignature(counter, type, name, UdonSymbolDeclarations.PrivateConstant);
+            var s = new UdonSymbol(type, u, name, UdonSymbolDeclarations.PrivateConstant, value, "null");
+            _rootSymbolTable.AddNewSymbol(s);
+
+            return s;
+        }
+
+        public UdonSymbol CreateOrGetUnnamedConstantSymbol(string type, object? value)
+        {
+            if (TryGetGlobalSymbol(type, null, value, UdonSymbolDeclarations.PrivateConstant, out var symbol))
+                return symbol;
+
+            IncrementNameCounter(type, null, out var counter);
+
+            var u = GetSymbolSignature(counter, type, null, UdonSymbolDeclarations.PrivateConstant);
+            var s = new UdonSymbol(type, u, null, UdonSymbolDeclarations.PrivateConstant, value, "null");
+            _rootSymbolTable.AddNewSymbol(s);
+
+            return s;
+        }
+
+        public UdonSymbol CreateNamedThisSymbol(string type, string name)
+        {
+            IncrementNameCounter(type, name, out var counter);
+
+            var u = GetSymbolSignature(counter, type, name, UdonSymbolDeclarations.This);
+            var s = new UdonSymbol(type, u, name, UdonSymbolDeclarations.This, null, "this");
+            AddNewSymbol(s);
+
+            return s;
+        }
+
+        public UdonSymbol CreateUnnamedThisSymbol(string type)
+        {
+            IncrementNameCounter(type, null, out var counter);
+
+            var u = GetSymbolSignature(counter, type, null, UdonSymbolDeclarations.This);
+            var s = new UdonSymbol(type, u, null, UdonSymbolDeclarations.This, null, "this");
+            AddNewSymbol(s);
+
+            return s;
+        }
+
+        public UdonSymbol CreateNamedSymbol(string type, string name, UdonSymbolDeclarations declaration = UdonSymbolDeclarations.Local)
+        {
+            IncrementNameCounter(type, name, out var counter);
+
+            var u = GetSymbolSignature(counter, type, name, declaration);
+            var s = new UdonSymbol(type, u, name, declaration, "null", null);
+            AddNewSymbol(s);
+
+            return s;
+        }
+
+        public UdonSymbol? GetNamedSymbol(string type, string name, UdonSymbolDeclarations declaration = UdonSymbolDeclarations.Local)
+        {
+            if (TryGetSymbol(type, name, null, declaration, out var symbol))
+                return symbol;
+            return null;
+        }
+
+        public UdonSymbol CreateUnnamedSymbol(string type, UdonSymbolDeclarations declaration = UdonSymbolDeclarations.Local)
+        {
+            IncrementNameCounter(type, null, out var counter);
+
+            var u = GetSymbolSignature(counter, type, null, declaration);
+            var s = new UdonSymbol(type, u, null, declaration, "null", null);
+            AddNewSymbol(s);
+
+            return s;
+        }
+
+        public UdonSymbol? GetUnnamedSymbol(string type, UdonSymbolDeclarations declaration = UdonSymbolDeclarations.Local)
+        {
+            if (TryGetSymbol(type, null, null, declaration, out var symbol))
+                return symbol;
+            return null;
+        }
+
+        public void AddNewSymbol(UdonSymbol symbol)
+        {
+            _contextReferenceableSymbols.Add(symbol);
+            _contextDefinedSymbols.Add(symbol);
+        }
+
+
+        private bool TryGetGlobalSymbol(string type, string? name, object? value, UdonSymbolDeclarations declaration, [NotNullWhen(true)] out UdonSymbol? symbol)
+        {
+            return _rootSymbolTable.TryGetSymbol(type, name, value, declaration, out symbol);
+        }
+
+        private bool TryGetSymbol(string type, string? name, object? value, UdonSymbolDeclarations declaration, [NotNullWhen(true)] out UdonSymbol? symbol)
+        {
+            if (_contextReferenceableSymbols.Any(w => w.Type == type && w.OriginalName == name && w.HeapInitialValue?.Equals(value) == true && w.Declaration == declaration))
+            {
+                symbol = _contextReferenceableSymbols.First(w => w.Type == type && w.OriginalName == name && w.HeapInitialValue?.Equals(value) == true && w.Declaration == declaration);
+                return true;
+            }
+
+            symbol = null;
+            return false;
+        }
+
+        private void IncrementNameCounter(string type, string? name, out uint counter)
+        {
+            var signature = $"{type}_{name ?? "_unnamed_"}";
+            if (_counter.ContainsKey(signature))
+            {
+                counter = ++_counter[signature];
                 return;
+            }
 
-            _namedSymbols.Add(symbol);
-            SetNamedCounter(symbol.Name, out _);
+            _counter.Add(signature, 0);
+            counter = 0;
         }
 
-        public void SetNamedCounter(string name, out uint counter)
+        private string GetSymbolSignature(uint counter, string type, string? name, UdonSymbolDeclarations declarations)
         {
-            if (_nameCounter.ContainsKey(name))
+            return declarations switch
             {
-                _nameCounter[name]++;
-                counter = _nameCounter[name];
-            }
-            else
-            {
-                _nameCounter.Add(name, 0);
-                counter = 0;
-            }
+                UdonSymbolDeclarations.Public => $"__{counter}_{name ?? "unnamed"}_{type}",
+                UdonSymbolDeclarations.Private => $"__{counter}_private_{name ?? "unnamed"}_{type}",
+                UdonSymbolDeclarations.Local => $"__{counter}_variable_{name ?? "unnamed"}_{type}",
+                UdonSymbolDeclarations.This => $"__{counter}_this_{name ?? "unnamed"}_{type}",
+                UdonSymbolDeclarations.MethodParameter => $"__{counter}_method_parameter_{name ?? "unnamed"}_{type}",
+                UdonSymbolDeclarations.PublicConstant => $"__{counter}_public_const_{name ?? "unnamed"}_{type}",
+                UdonSymbolDeclarations.PrivateConstant => $"__{counter}_private_const_{name ?? "unnamed"}_{type}",
+                UdonSymbolDeclarations.PropertyBackingField => $"__{counter}_k_backing_field_{name ?? "unnamed"}_{type}",
+                _ => throw new ArgumentOutOfRangeException(nameof(declarations), declarations, null)
+            };
         }
     }
 }

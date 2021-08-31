@@ -57,7 +57,7 @@ namespace SharpX.Compiler.Udon.Models
             _codes.Add(code);
         }
 
-        public void AddPush(IAddressableSymbol symbol, string? comment = null)
+        public void AddPush(UdonSymbol symbol, string? comment = null)
         {
             var code = new Push
             {
@@ -81,7 +81,7 @@ namespace SharpX.Compiler.Udon.Models
             _codes.Add(code);
         }
 
-        public void AddJumpIfFalse(IAddressableSymbol address, string? comment = null)
+        public void AddJumpIfFalse(UdonSymbol address, string? comment = null)
         {
             var code = new JumpIfFalse
             {
@@ -105,7 +105,7 @@ namespace SharpX.Compiler.Udon.Models
             _codes.Add(code);
         }
 
-        public void AddJump(IAddressableSymbol address, string? comment = null)
+        public void AddJump(UdonSymbol address, string? comment = null)
         {
             var code = new Jump
             {
@@ -143,7 +143,7 @@ namespace SharpX.Compiler.Udon.Models
             _codes.Add(code);
         }
 
-        public void AddJumpIndirect(NamedAddressSymbol address, string? comment = null)
+        public void AddJumpIndirect(UdonSymbol address, string? comment = null)
         {
             var code = new JumpIndirect
             {

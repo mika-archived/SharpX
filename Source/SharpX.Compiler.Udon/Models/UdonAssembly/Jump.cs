@@ -6,7 +6,7 @@ namespace SharpX.Compiler.Udon.Models.UdonAssembly
 {
     internal class Jump : IAssemblyOpCode
     {
-        public IAddressableSymbol Address { get; init; }
+        public UdonSymbol Address { get; init; }
 
         public uint IncrementalProgramCounter => 8;
 

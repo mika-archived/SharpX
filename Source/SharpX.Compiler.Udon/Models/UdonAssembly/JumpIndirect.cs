@@ -6,7 +6,7 @@ namespace SharpX.Compiler.Udon.Models.UdonAssembly
 {
     internal class JumpIndirect : IAssemblyOpCode
     {
-        public NamedAddressSymbol Symbol { get; init; }
+        public UdonSymbol Symbol { get; init; }
 
         public uint IncrementalProgramCounter => 8;
 
@@ -17,8 +17,8 @@ namespace SharpX.Compiler.Udon.Models.UdonAssembly
         public string ToAssemblyString(List<IAssemblyOpCode> inheritCodes)
         {
             if (string.IsNullOrWhiteSpace(Comment))
-                return $"JUMP_INDIRECT, {Symbol.Name}";
-            return $"JUMP_INDIRECT, {Symbol.Name} # {Comment}";
+                return $"JUMP_INDIRECT, {Symbol.UniqueName}";
+            return $"JUMP_INDIRECT, {Symbol.UniqueName} # {Comment}";
         }
     }
 }

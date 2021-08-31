@@ -3,6 +3,7 @@ using System.Linq;
 
 using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.Extensions;
+using SharpX.Compiler.Udon.Enums;
 using SharpX.Compiler.Udon.Models.Symbols;
 using SharpX.Library.Udon.Enums;
 
@@ -13,7 +14,7 @@ namespace SharpX.Compiler.Udon.Models
         private readonly Stack<MethodSymbol> _currentMethodSymbol;
         private readonly List<MethodSymbol> _methods;
         private readonly SourceBuilder _sb;
-        private readonly List<VariableSymbol> _variables;
+        private readonly List<UdonSymbol> _variables;
 
         public MethodUasmBuilder? CurrentMethodAssemblyBuilder => _currentMethodSymbol.Count > 0 ? _currentMethodSymbol.Peek().UAssembly : null;
 
@@ -22,15 +23,15 @@ namespace SharpX.Compiler.Udon.Models
         public UasmBuilder()
         {
             _sb = new SourceBuilder();
-            _variables = new List<VariableSymbol>();
+            _variables = new List<UdonSymbol>();
             _methods = new List<MethodSymbol>();
             _currentMethodSymbol = new Stack<MethodSymbol>();
             CurrentProgramCounter = 0;
         }
 
-        public VariableSymbol AddVariableSymbol(string name, string type, bool export, UdonSyncMode? sync, object? initialValue)
+        public UdonSymbol AddVariableSymbol(string name, string type, bool export, UdonSyncMode? sync, object? initialValue)
         {
-            var symbol = new VariableSymbol(name, type, export, sync, initialValue);
+            var symbol = new UdonSymbol(type, name, name, UdonSymbolDeclarations.Public, initialValue, null, export, sync);
             _variables.Add(symbol);
 
             return symbol;
@@ -76,7 +77,7 @@ namespace SharpX.Compiler.Udon.Models
                 if (_variables.Any(w => w.IsExport))
                 {
                     foreach (var symbol in _variables.Where(w => w.IsExport))
-                        _sb.WriteLineWithIndent($".export {symbol.Name}");
+                        _sb.WriteLineWithIndent($".export {symbol.UniqueName}");
 
                     _sb.WriteNewLine();
                 }
@@ -84,13 +85,13 @@ namespace SharpX.Compiler.Udon.Models
                 if (_variables.Any(w => w.SyncMode != null))
                 {
                     foreach (var symbol in _variables.Where(w => w.SyncMode != null))
-                        _sb.WriteLineWithIndent($".sync {symbol.Name}, {symbol.SyncMode!.ToString()!.ToLowerInvariant()}");
+                        _sb.WriteLineWithIndent($".sync {symbol.UniqueName}, {symbol.SyncMode!.ToString()!.ToLowerInvariant()}");
 
                     _sb.WriteNewLine();
                 }
 
                 foreach (var symbol in _variables)
-                    _sb.WriteLineWithIndent($"{symbol.Name}: %{symbol.Type}, {symbol.InitialValue ?? "null"}");
+                    _sb.WriteLineWithIndent($"{symbol.UniqueName}: %{symbol.Type}, {symbol.ConstantValue ?? "null"}");
 
                 _sb.WriteNewLine();
                 _sb.DecrementIndent();
