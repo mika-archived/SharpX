@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
+using SharpX.Compiler.Udon.Enums;
 using SharpX.Library.Udon;
 
 using UnityEngine;
@@ -23,6 +26,7 @@ namespace SharpX.Compiler.Udon.Models
     internal class UdonNodeResolver
     {
         private static readonly object LockObj = new();
+        private static readonly Regex OperatorRegex = new("__op_(.+?)__", RegexOptions.Compiled);
 
         private static HashSet<string>? _nodeDefinitions;
         private static Dictionary<string, string>? _builtinEventLookup;
@@ -183,17 +187,22 @@ namespace SharpX.Compiler.Udon.Models
         public bool IsValidMethod(IMethodSymbol method, SemanticModel model)
         {
             var signature = GetUdonMethodName(method, model);
+            return IsValidMethod(signature);
+        }
+
+        public bool IsValidMethod(string signature)
+        {
             return _nodeDefinitions!.Contains(signature);
         }
 
         public string GetUdonMethodName(IMethodSymbol method, SemanticModel model)
         {
             var symbol = RemapBaseType(method.ContainingType, model);
-            
-            bool isUdonBehaviour = symbol.Equals(model.Compilation.GetTypeByMetadataName(typeof(SharpXUdonBehaviour).FullName!), SymbolEqualityComparer.Default);
+
+            var isUdonBehaviour = symbol.Equals(model.Compilation.GetTypeByMetadataName(typeof(SharpXUdonBehaviour).FullName!), SymbolEqualityComparer.Default);
             if (symbol.BaseType?.Equals(model.Compilation.GetTypeByMetadataName(typeof(SharpXUdonBehaviour).FullName!), SymbolEqualityComparer.Default) == true)
                 isUdonBehaviour = true;
-            
+
             var functionNamespace = SanitizeTypeName(GetUdonTypeName(symbol, model)).Replace("VRCUdonUdonBehaviour", "VRCUdonCommonInterfacesIUdonEventReceiver");
             var methodName = $"__{method.Name.Trim('_').TrimStart('.')}";
             if (isUdonBehaviour && methodName == "__VRCInstantiate")
@@ -211,14 +220,16 @@ namespace SharpX.Compiler.Udon.Models
                     paramsStr += $"_{GetUdonTypeName(parameter.Type, model, true)}";
             }
             else if (method.Name == ".ctor")
+            {
                 paramsStr = "__";
+            }
 
             var returnStr = method.Name == ".ctor" ? $"__{GetUdonTypeName(method.ReturnType, model, true)}" : $"__{GetUdonTypeName(method.ReturnType, model)}";
 
-            return  $"{functionNamespace}.{methodName}{paramsStr}{returnStr}";
+            return $"{functionNamespace}.{methodName}{paramsStr}{returnStr}";
         }
 
-        public bool IsValidPropertyAccessor(IPropertySymbol property, SemanticModel model,  bool isGetter)
+        public bool IsValidPropertyAccessor(IPropertySymbol property, SemanticModel model, bool isGetter)
         {
             var signature = GetUdonPropertyAccessorName(property, model, isGetter);
             return _nodeDefinitions!.Contains(signature);
@@ -249,6 +260,113 @@ namespace SharpX.Compiler.Udon.Models
             var paramStr = $"__{GetUdonTypeName(property.Type, model)}";
             return $"{functionNamespace}.{methodName}{paramStr}";
         }
+
+        public string RemappedToBuiltinOperator(IMethodSymbol symbol, SemanticModel model, SyntaxKind kind)
+        {
+            string ToSignature(BuiltinOperators @operator)
+            {
+                var name = GetUdonMethodName(symbol, model);
+                return OperatorRegex.Replace(name, $"__op_{@operator}__");
+            }
+
+            switch (kind)
+            {
+                case SyntaxKind.AddExpression:
+                case SyntaxKind.AddAssignmentExpression:
+                case SyntaxKind.PlusEqualsToken:
+                case SyntaxKind.PlusPlusToken:
+                case SyntaxKind.PreIncrementExpression:
+                case SyntaxKind.PostIncrementExpression:
+                    return ToSignature(BuiltinOperators.Addition);
+
+                case SyntaxKind.SubtractExpression:
+                case SyntaxKind.SubtractAssignmentExpression:
+                case SyntaxKind.MinusEqualsToken:
+                case SyntaxKind.MinusMinusToken:
+                case SyntaxKind.PreDecrementExpression:
+                case SyntaxKind.PostDecrementExpression:
+                    return ToSignature(BuiltinOperators.Subtraction);
+
+                case SyntaxKind.MultiplyExpression:
+                case SyntaxKind.MultiplyAssignmentExpression:
+                case SyntaxKind.AsteriskEqualsToken:
+                    return ToSignature(BuiltinOperators.Multiplication);
+
+                case SyntaxKind.DivideExpression:
+                case SyntaxKind.DivideAssignmentExpression:
+                case SyntaxKind.SlashEqualsToken:
+                    return ToSignature(BuiltinOperators.Division);
+
+                case SyntaxKind.ModuloExpression:
+                case SyntaxKind.ModuloAssignmentExpression:
+                case SyntaxKind.PercentEqualsToken:
+                    return ToSignature(BuiltinOperators.Remainder);
+
+                case SyntaxKind.UnaryMinusExpression:
+                case SyntaxKind.MinusToken:
+                    return ToSignature(BuiltinOperators.UnaryMinus);
+
+                case SyntaxKind.LeftShiftExpression:
+                case SyntaxKind.LeftShiftAssignmentExpression:
+                case SyntaxKind.LessThanLessThanEqualsToken:
+                    return ToSignature(BuiltinOperators.LeftShift);
+
+                case SyntaxKind.RightShiftExpression:
+                case SyntaxKind.RightShiftAssignmentExpression:
+                case SyntaxKind.GreaterThanGreaterThanEqualsToken:
+                    return ToSignature(BuiltinOperators.RightShift);
+
+                case SyntaxKind.BitwiseAndExpression:
+                case SyntaxKind.AndAssignmentExpression:
+                case SyntaxKind.AmpersandEqualsToken:
+                    return ToSignature(BuiltinOperators.LogicalAnd);
+
+                case SyntaxKind.BitwiseOrExpression:
+                case SyntaxKind.OrAssignmentExpression:
+                case SyntaxKind.BarEqualsToken:
+                    return ToSignature(BuiltinOperators.LogicalOr);
+
+                case SyntaxKind.BitwiseNotExpression:
+                case SyntaxKind.TildeToken:
+                    return ToSignature(BuiltinOperators.BitwiseNot);
+
+                case SyntaxKind.ExclusiveOrExpression:
+                case SyntaxKind.ExclusiveOrAssignmentExpression:
+                case SyntaxKind.CaretEqualsToken:
+                    return ToSignature(BuiltinOperators.LogicalXor);
+
+                case SyntaxKind.LogicalOrExpression:
+                    return ToSignature(BuiltinOperators.ConditionalOr);
+
+                case SyntaxKind.LogicalAndExpression:
+                    return ToSignature(BuiltinOperators.ConditionalAnd);
+
+                case SyntaxKind.LogicalNotExpression:
+                case SyntaxKind.ExclamationToken:
+                    return ToSignature(BuiltinOperators.UnaryNegation);
+
+                case SyntaxKind.EqualsExpression:
+                    return ToSignature(BuiltinOperators.Equality);
+
+                case SyntaxKind.GreaterThanExpression:
+                    return ToSignature(BuiltinOperators.GreaterThan);
+
+                case SyntaxKind.GreaterThanOrEqualExpression:
+                    return ToSignature(BuiltinOperators.GreaterThanOrEqual);
+
+                case SyntaxKind.LessThanExpression:
+                    return ToSignature(BuiltinOperators.LessThan);
+
+                case SyntaxKind.LessThanOrEqualExpression:
+                    return ToSignature(BuiltinOperators.LessThanOrEqual);
+
+                case SyntaxKind.NotEqualsExpression:
+                    return ToSignature(BuiltinOperators.Inequality);
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
 
         private ITypeSymbol RemapBaseType(ITypeSymbol symbol, SemanticModel model)
         {
