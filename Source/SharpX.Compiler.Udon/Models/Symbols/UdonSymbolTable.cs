@@ -120,12 +120,12 @@ namespace SharpX.Compiler.Udon.Models.Symbols
             return s;
         }
 
-        public UdonSymbol CreateUnnamedThisSymbol(string type)
+        public UdonSymbol CreateUnnamedThisSymbol(string type, object? heapValue = null)
         {
             IncrementNameCounter(type, null, out var counter);
 
             var u = GetSymbolSignature(counter, type, null, UdonSymbolDeclarations.This);
-            var s = new UdonSymbol(type, u, null, UdonSymbolDeclarations.This, null, "this");
+            var s = new UdonSymbol(type, u, null, UdonSymbolDeclarations.This, heapValue, "this");
             AddNewSymbol(s);
 
             return s;
