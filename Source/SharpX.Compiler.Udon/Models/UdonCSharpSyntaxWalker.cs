@@ -29,8 +29,6 @@ namespace SharpX.Compiler.Udon.Models
 
         private UdonSymbol? CurrentDestinationSymbol => DestinationSymbolStack.SafePeek();
 
-        private WellKnownSyntax CurrentCapturingStack => CapturingStack.SafePeek(WellKnownSyntax.CompilationUnitSyntax);
-
         private string? CurrentCaptureMethodName => MethodCapturingStack.SafePeek();
 
         private SafeStack<UdonSymbol>? CurrentCapturingExpressions => ExpressionCapturingStack.SafePeek();
@@ -67,6 +65,7 @@ namespace SharpX.Compiler.Udon.Models
                 return;
             }
 
+            // this calls
             switch (info.Symbol)
             {
                 case IPropertySymbol property:
@@ -79,6 +78,19 @@ namespace SharpX.Compiler.Udon.Models
                     var destinationSymbol = CurrentDestinationSymbol ?? SymbolTable.CreateUnnamedThisSymbol(t,$"this.{property.Name}");
 
                     CurrentCapturingExpressions?.Push(destinationSymbol);
+                    break;
+                }
+
+                case IMethodSymbol method:
+                {
+                    if (!UdonNodeResolver.Instance.IsValidMethod(method.OriginalDefinition, _context.SemanticModel))
+                        _context.Errors.Add(new VisualStudioCatchError(node, $"The method {method.Name} does not supported by Udon", ErrorConstants.NotSupportedUdonMethod));
+
+                    var signature = UdonNodeResolver.Instance.GetUdonMethodName(method.OriginalDefinition, _context.SemanticModel);
+                    var thisSymbol = CurrentDestinationSymbol ?? SymbolTable.CreateUnnamedThisSymbol("VRCUdonUdonBehaviour", "this");
+
+                    MethodAssemblyBuilder?.AddPush(thisSymbol);
+                    MethodAssemblyBuilder?.AddExtern(signature);
                     break;
                 }
             }

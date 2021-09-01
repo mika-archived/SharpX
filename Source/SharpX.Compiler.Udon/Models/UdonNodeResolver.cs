@@ -204,6 +204,9 @@ namespace SharpX.Compiler.Udon.Models
                 isUdonBehaviour = true;
 
             var functionNamespace = SanitizeTypeName(GetUdonTypeName(symbol, model)).Replace("VRCUdonUdonBehaviour", "VRCUdonCommonInterfacesIUdonEventReceiver");
+            if (isUdonBehaviour && functionNamespace == typeof(SharpXUdonBehaviour).FullName!.Replace(".", ""))
+                functionNamespace = "VRCUdonCommonInterfacesIUdonEventReceiver";
+
             var methodName = $"__{method.Name.Trim('_').TrimStart('.')}";
             if (isUdonBehaviour && methodName == "__VRCInstantiate")
             {
