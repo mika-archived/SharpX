@@ -13,6 +13,8 @@
 
         public const int NotSupportedRefParameter = 5;
 
+        public const int NotSupportedNamedParameter = 6;
+
 
         // Udon Related Features
         public const int NotSupportedPointerTypes = 1001;
@@ -46,5 +48,12 @@
         public const int NotSupportedUdonType = 1017;
 
         public const int NotSupportedAwakeEvent = 1018;
+
+        public const int NotSupportedUserDefinedConstructors = 1019;
+
+        public const int NotSupportedUdonMethod = 1020;
+
+        // Unhandled Errors
+        public const int FailedToCaptureSymbols = 3000;
     }
 }

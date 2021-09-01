@@ -69,6 +69,18 @@ namespace SharpX.Compiler.Udon.Models
             _codes.Add(code);
         }
 
+        public void AddPushBeforeCurrent(UdonSymbol symbol, string? comment = null)
+        {
+            var code = new Push
+            {
+                Address = symbol,
+                Comment = comment,
+                ActualProgramCounter = CurrentProgramCounter,
+            };
+
+            _codes.Insert(_codes.Count - 1, code);
+            RecalculateProgramCounter();
+        }
 
         public void AddPop(string? comment = null)
         {
@@ -172,11 +184,21 @@ namespace SharpX.Compiler.Udon.Models
             return last.ActualProgramCounter + last.IncrementalProgramCounter;
         }
 
-
         public void WriteTo(SourceBuilder sb)
         {
             foreach (var code in _codes)
                 sb.WriteLineWithIndent(code.ToAssemblyString(_codes));
+        }
+
+        private void RecalculateProgramCounter()
+        {
+            var counter = _programCounterOffset;
+
+            foreach (var code in _codes)
+            {
+                code.ActualProgramCounter = counter;
+                counter += code.IncrementalProgramCounter;
+            }
         }
     }
 }
