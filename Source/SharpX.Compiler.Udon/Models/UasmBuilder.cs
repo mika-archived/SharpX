@@ -31,7 +31,7 @@ namespace SharpX.Compiler.Udon.Models
 
         public UdonSymbol AddVariableSymbol(string name, string type, bool export, UdonSyncMode? sync, object? initialValue)
         {
-            var symbol = new UdonSymbol(type, name, name, UdonSymbolDeclarations.Public, initialValue, null, export, sync);
+            var symbol = new UdonSymbol(type, name, name, UdonSymbolDeclarations.Public, null, initialValue, export, sync);
             _variables.Add(symbol);
 
             return symbol;
