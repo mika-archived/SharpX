@@ -60,6 +60,18 @@ namespace SharpX.Compiler.Udon.Models.Captures
             return new TypeDeclarationCapture(symbol.Type, model, CapturedAs.Symbol);
         }
 
+        public bool IsVoid()
+        {
+            var symbol = _captured switch
+            {
+                CapturedAs.Info => _info!.Value.Type as INamedTypeSymbol,
+                CapturedAs.Symbol => _symbol! as INamedTypeSymbol,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            return symbol?.Name == "Void";
+        }
+
         public bool HasValidType()
         {
             var symbol = _captured switch
@@ -68,9 +80,6 @@ namespace SharpX.Compiler.Udon.Models.Captures
                 CapturedAs.Symbol => _symbol!,
                 _ => throw new ArgumentOutOfRangeException()
             };
-
-            if (symbol?.ToDisplayString() == "void")
-                return true;
 
             return UdonNodeResolver.Instance.IsValidType(symbol!, _model);
         }
@@ -113,7 +122,7 @@ namespace SharpX.Compiler.Udon.Models.Captures
                 _ => throw new ArgumentOutOfRangeException()
             };
 
-            return UdonNodeResolver.Instance.GetUdonName(symbol!, _model);
+            return UdonNodeResolver.Instance.GetUdonTypeName(symbol!, _model);
         }
 
         public bool HasAttribute<T>() where T : Attribute
