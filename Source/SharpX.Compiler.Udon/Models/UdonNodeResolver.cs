@@ -142,6 +142,10 @@ namespace SharpX.Compiler.Udon.Models
             var name = GetUdonTypeName(symbol, model);
             if (name == "SystemVoid")
                 return true;
+            if (IsAllowed(symbol)) // no type checking for user-defined types
+                return true;
+            if (symbol.Equals(model.Compilation.GetTypeByMetadataName(typeof(SharpXUdonBehaviour).FullName!), SymbolEqualityComparer.Default))
+                return true;
             return _nodeDefinitions!.Contains($"Type_{name}");
         }
 
@@ -162,8 +166,19 @@ namespace SharpX.Compiler.Udon.Models
                 @extern = pointer.PointedAtType;
 
             var @namespace = @extern.ContainingNamespace.ToDisplayString();
-            if (@extern.ToDisplayString().Contains("+"))
-                @namespace = @extern.ToDisplayString().Replace("+", ".").Substring(0, @extern.ToDisplayString().LastIndexOf("+", StringComparison.Ordinal));
+            if (@extern.ContainingType != null)
+            {
+                var declaringNamespace = "";
+                var t = @extern.ContainingType;
+
+                while (t != null)
+                {
+                    declaringNamespace = $"{@extern.ContainingType.Name}.{declaringNamespace}";
+                    t = t.ContainingType;
+                }
+
+                @namespace += $".{declaringNamespace}";
+            }
 
             if (@extern.ToDisplayString() is "T" or "T[]")
                 @namespace = "";
@@ -186,6 +201,9 @@ namespace SharpX.Compiler.Udon.Models
 
         public bool IsValidMethod(IMethodSymbol method, SemanticModel model)
         {
+            if (IsAllowed(method)) // no method checking for user-defined types
+                return true;
+
             var signature = GetUdonMethodName(method, model);
             return IsValidMethod(signature);
         }
@@ -193,6 +211,18 @@ namespace SharpX.Compiler.Udon.Models
         public bool IsValidMethod(string signature)
         {
             return _nodeDefinitions!.Contains(signature);
+        }
+
+        public bool IsAllowed(ISymbol symbol)
+        {
+            if (symbol is IArrayTypeSymbol array)
+                return IsAllowed(array.ElementType);
+            return symbol.OriginalDefinition.Locations.Any(w => w.IsInSource);
+        }
+
+        public bool IsAllowedEnum(ISymbol symbol, SemanticModel model)
+        {
+            return IsValidType(symbol.ContainingType, model) && symbol.ContainingType.TypeKind == TypeKind.Enum;
         }
 
         public string GetUdonMethodName(IMethodSymbol method, SemanticModel model)
@@ -234,6 +264,9 @@ namespace SharpX.Compiler.Udon.Models
 
         public bool IsValidPropertyAccessor(IPropertySymbol property, SemanticModel model, bool isGetter)
         {
+            if (property.Locations.First().IsInSource) // no accessor checking for user-defined types
+                return true;
+
             var signature = GetUdonPropertyAccessorName(property, model, isGetter);
             return _nodeDefinitions!.Contains(signature);
         }
@@ -256,12 +289,18 @@ namespace SharpX.Compiler.Udon.Models
 
         public string GetUdonPropertyAccessorName(IFieldSymbol property, SemanticModel model, bool isGetter)
         {
-            var symbol = RemapBaseType(property.Type, model);
+            var symbol = RemapBaseType(property.ContainingType, model);
 
-            var functionNamespace = SanitizeTypeName(symbol.ToDisplayString()).Replace("VRCUdonUdonBehaviour", "VRCUdonCommonInterfacesIUdonEventReceiver");
+            var functionNamespace = SanitizeTypeName(GetUdonTypeName(symbol, model)).Replace("VRCUdonUdonBehaviour", "VRCUdonCommonInterfacesIUdonEventReceiver");
             var methodName = $"__{(isGetter ? "get" : "set")}_{property.Name.Trim('_')}";
             var paramStr = $"__{GetUdonTypeName(property.Type, model)}";
             return $"{functionNamespace}.{methodName}{paramStr}";
+        }
+
+        public string GetOperator(Type symbol, SemanticModel model, BuiltinOperators operators)
+        {
+            var t = GetUdonTypeName(symbol, model);
+            return $"{t}.__op_{operators}__._{t}__{t}";
         }
 
         public string RemappedToBuiltinOperator(IMethodSymbol symbol, SemanticModel model, SyntaxKind kind)
@@ -293,7 +332,7 @@ namespace SharpX.Compiler.Udon.Models
                 case SyntaxKind.MultiplyExpression:
                 case SyntaxKind.MultiplyAssignmentExpression:
                 case SyntaxKind.AsteriskEqualsToken:
-                    return ToSignature(BuiltinOperators.Multiplication);
+                    return ToSignature(BuiltinOperators.Multiply);
 
                 case SyntaxKind.DivideExpression:
                 case SyntaxKind.DivideAssignmentExpression:
@@ -307,7 +346,7 @@ namespace SharpX.Compiler.Udon.Models
 
                 case SyntaxKind.UnaryMinusExpression:
                 case SyntaxKind.MinusToken:
-                    return ToSignature(BuiltinOperators.UnaryMinus);
+                    return ToSignature(BuiltinOperators.UnaryMinus); // negation????
 
                 case SyntaxKind.LeftShiftExpression:
                 case SyntaxKind.LeftShiftAssignmentExpression:
@@ -385,7 +424,7 @@ namespace SharpX.Compiler.Udon.Models
             {
                 var metadata = _inheritTypeMappings[cur.ToDisplayString()];
                 var sig = Enumerable.Repeat("[]", depth);
-                return model.Compilation.GetTypeByMetadataName(metadata + sig)!;
+                return model.Compilation.GetTypeByMetadataName(metadata + string.Join("", sig))!;
             }
 
             return symbol;

@@ -53,6 +53,10 @@
 
         public const int NotSupportedUdonMethod = 1020;
 
+        public const int NotSupportedIsKeyword = 1021;
+
+        public const int NotSupportedAsKeyword = 1022;
+
         // Unhandled Errors
         public const int FailedToCaptureSymbols = 3000;
     }
