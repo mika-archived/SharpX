@@ -6,7 +6,7 @@
 
         Subtraction,
 
-        Multiplication,
+        Multiply,
 
         Division,
 

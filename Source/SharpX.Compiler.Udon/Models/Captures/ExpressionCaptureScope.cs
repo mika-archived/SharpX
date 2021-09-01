@@ -13,12 +13,15 @@ namespace SharpX.Compiler.Udon.Models.Captures
 
         public UdonSymbol? DestinationSymbol { get; }
 
+        public bool IsGetterContext { get; }
+
         public ExpressionCaptureScope(UdonCSharpSyntaxWalker walker, bool isGetterContext = false, UdonSymbol? destination = null)
         {
             _walker = walker;
 
              CapturingExpressions = new SafeStack<UdonSymbol>();
             DestinationSymbol = destination;
+            IsGetterContext = isGetterContext;
 
             _walker.ExpressionCapturingStack.Push(CapturingExpressions);
             _walker.IsGetterContext.Push(isGetterContext);
