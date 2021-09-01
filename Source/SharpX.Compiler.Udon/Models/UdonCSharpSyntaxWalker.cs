@@ -252,8 +252,12 @@ namespace SharpX.Compiler.Udon.Models
         {
             UdonSymbol? candidateDestinationSymbol = null;
 
-            using (var invocation = new ExpressionCaptureScope(this, IsGetterContext.SafePeek(false).Value, CurrentDestinationSymbol))
+            using (var invocationCapture = new ExpressionCaptureScope(this, IsGetterContext.SafePeek(false).Value, CurrentDestinationSymbol))
             {
+                var invocation = _context.SemanticModel.GetSymbolInfo(node);
+                if (invocation.Symbol is not IMethodSymbol methodCall)
+                    return;
+
                 var args = new List<UdonSymbol>();
                 foreach (var argument in node.ArgumentList.Arguments)
                 {
@@ -282,10 +286,10 @@ namespace SharpX.Compiler.Udon.Models
                 Visit(node.Expression);
 
                 foreach (var symbol in args)
-                   MethodAssemblyBuilder?.AddPushBeforeCurrent(symbol);
+                   MethodAssemblyBuilder?.AddPushBeforeCurrent(symbol, methodCall.ReturnType.SpecialType == SpecialType.System_Void ? 1 : 2);
 
 
-                candidateDestinationSymbol = invocation.CapturingExpressions.SafePeek();
+                candidateDestinationSymbol = invocationCapture.CapturingExpressions.SafePeek();
             }
 
             if (CurrentDestinationSymbol == null && candidateDestinationSymbol != null)

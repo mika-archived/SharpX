@@ -69,7 +69,7 @@ namespace SharpX.Compiler.Udon.Models
             _codes.Add(code);
         }
 
-        public void AddPushBeforeCurrent(UdonSymbol symbol, string? comment = null)
+        public void AddPushBeforeCurrent(UdonSymbol symbol, int index = 1, string? comment = null)
         {
             var code = new Push
             {
@@ -78,7 +78,7 @@ namespace SharpX.Compiler.Udon.Models
                 ActualProgramCounter = CurrentProgramCounter,
             };
 
-            _codes.Insert(_codes.Count - 1, code);
+            _codes.Insert(_codes.Count - index, code);
             RecalculateProgramCounter();
         }
 
