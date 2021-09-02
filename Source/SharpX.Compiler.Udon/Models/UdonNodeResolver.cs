@@ -224,6 +224,11 @@ namespace SharpX.Compiler.Udon.Models
             return false;
         }
 
+        public bool IsUserDefinedSource(ISymbol symbol)
+        {
+            return symbol.Locations.Any(w => w.IsInSource);
+        }
+
         public bool IsAllowedEnum(ISymbol symbol, SemanticModel model)
         {
             return IsValidType(symbol.ContainingType, model) && symbol.ContainingType.TypeKind == TypeKind.Enum;
@@ -335,6 +340,7 @@ namespace SharpX.Compiler.Udon.Models
 
                 case SyntaxKind.MultiplyExpression:
                 case SyntaxKind.MultiplyAssignmentExpression:
+                case SyntaxKind.AsteriskToken:
                 case SyntaxKind.AsteriskEqualsToken:
                     return ToSignature(BuiltinOperators.Multiply);
 
