@@ -13,7 +13,7 @@ namespace SharpX.Compiler.Udon.Models.UdonAssembly
 
         public string? Comment { get; init; }
 
-        public string ToAssemblyString(List<IAssemblyOpCode> inheritCodes)
+        public string ToAssemblyString(IReadOnlyList<IAssemblyOpCode> inheritCodes)
         {
             var addr = inheritCodes.OfType<Label>().First(w => w.Name == Label);
             if (string.IsNullOrWhiteSpace(Comment))

@@ -10,6 +10,6 @@ namespace SharpX.Compiler.Udon.Models.UdonAssembly
 
         string? Comment { get; init; }
 
-        string ToAssemblyString(List<IAssemblyOpCode> inheritCodes);
+        string ToAssemblyString(IReadOnlyList<IAssemblyOpCode> inheritCodes);
     }
 }

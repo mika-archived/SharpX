@@ -12,7 +12,7 @@ namespace SharpX.Compiler.Udon.Models.UdonAssembly
 
         public string? Comment { get; init; }
 
-        public string ToAssemblyString(List<IAssemblyOpCode> inheritCodes)
+        public string ToAssemblyString(IReadOnlyList<IAssemblyOpCode> inheritCodes)
         {
             if (string.IsNullOrWhiteSpace(Comment))
                 return $"EXTERN, \"{Signature}\"";

@@ -7,17 +7,17 @@ namespace SharpX.Compiler.Udon.Models.UdonAssembly
     {
         public string Name { get; init; }
 
-        public uint IncrementalProgramCounter => 4;
+        public uint IncrementalProgramCounter => 0;
 
         public uint ActualProgramCounter { get; set; }
 
         public string? Comment { get; init; }
 
-        public string ToAssemblyString(List<IAssemblyOpCode> inheritCodes)
+        public string ToAssemblyString(IReadOnlyList<IAssemblyOpCode> inheritCodes)
         {
             if (string.IsNullOrWhiteSpace(Comment))
-                return $"NOP # LABELED {Name}";
-            return $"NOP # LABELED {Name} - {Comment}";
+                return $"# LABELED {Name}";
+            return $"# LABELED {Name} - {Comment}";
         }
     }
 }

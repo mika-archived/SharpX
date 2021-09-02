@@ -186,7 +186,7 @@ namespace SharpX.Compiler.Udon.Models
 
         public void WriteTo(SourceBuilder sb)
         {
-            foreach (var code in _codes)
+            foreach (var code in _codes.AsReadOnly())
                 sb.WriteLineWithIndent(code.ToAssemblyString(_codes));
         }
 
