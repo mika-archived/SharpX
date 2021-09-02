@@ -35,6 +35,8 @@ namespace SharpX.Compiler.Udon.Models
 
         private MethodUasmBuilder? MethodAssemblyBuilder => _context.SourceContext.OfType<UdonSourceContext>()?.UasmBuilder.CurrentMethodAssemblyBuilder;
 
+        private bool IsGetterContext => IsGetterContextStack.SafePeek() ?? false;
+
         public UdonCSharpSyntaxWalker(ILanguageSyntaxWalkerContext context) : base(SyntaxWalkerDepth.Token)
         {
             _context = context;
@@ -43,7 +45,7 @@ namespace SharpX.Compiler.Udon.Models
             CapturingStack = new SafeStack<WellKnownSyntax>();
             DestinationSymbolStack = new SafeStack<UdonSymbol?>();
             ExpressionCapturingStack = new SafeStack<SafeStack<UdonSymbol>>();
-            IsGetterContext = new SafeStack<bool?>();
+            IsGetterContextStack = new SafeStack<bool?>();
             MethodCapturingStack = new SafeStack<string?>();
         }
 
@@ -70,12 +72,12 @@ namespace SharpX.Compiler.Udon.Models
             {
                 case IPropertySymbol property:
                 {
-                    if (!UdonNodeResolver.Instance.IsValidPropertyAccessor(property, _context.SemanticModel, IsGetterContext.SafePeek(false).Value))
+                    if (!UdonNodeResolver.Instance.IsValidPropertyAccessor(property, null, _context.SemanticModel, IsGetterContext))
                         _context.Errors.Add(new VisualStudioCatchError(node, $"The method {property.Name} does not supported by Udon", ErrorConstants.NotSupportedUdonMethod));
 
 
                     var t = UdonNodeResolver.Instance.GetUdonTypeName(property.Type, _context.SemanticModel);
-                    var destinationSymbol = CurrentDestinationSymbol ?? SymbolTable.CreateUnnamedThisSymbol(t,$"this.{property.Name}");
+                    var destinationSymbol = CurrentDestinationSymbol ?? SymbolTable.CreateUnnamedThisSymbol(t, $"this.{property.Name}");
 
                     CurrentCapturingExpressions?.Push(destinationSymbol);
                     break;
@@ -100,7 +102,7 @@ namespace SharpX.Compiler.Udon.Models
         {
             UdonSymbol destinationSymbol;
 
-            using (var expression = new ExpressionCaptureScope(this))
+            using (var expression = new ExpressionCaptureScope(this, true))
             {
                 var operatorMethod = _context.SemanticModel.GetSymbolInfo(node);
                 if (operatorMethod.Symbol is not IMethodSymbol symbol)
@@ -135,14 +137,24 @@ namespace SharpX.Compiler.Udon.Models
         {
             UdonSymbol? destinationSymbol = null;
 
-            using (var capture = new ExpressionCaptureScope(this, true, CurrentDestinationSymbol))
+            using (var capture = new ExpressionCaptureScope(this, IsGetterContext, CurrentDestinationSymbol))
             {
-                Visit(node.Expression);
-
                 var info = _context.SemanticModel.GetSymbolInfo(node);
                 if (info.Symbol is not (IFieldSymbol or IMethodSymbol or IPropertySymbol))
                 {
-                    _context.Errors.Add(new VisualStudioCatchError(node, "Failed to capture symbols by semantic model", ErrorConstants.FailedToCaptureSymbols));
+#if DEBUG
+                    // Maybe catch ITypeSymbol for nested type declarations
+                    _context.Warnings.Add(new VisualStudioCatchError(node, "Failed to capture symbols by semantic model", ErrorConstants.FailedToCaptureSymbols));
+#endif
+                    return;
+                }
+
+                Visit(node.Expression);
+
+                var r = _context.SemanticModel.GetTypeInfo(node.Expression);
+                if (r.Type == null)
+                {
+                    _context.Errors.Add(new VisualStudioCatchError(node.Expression, "Failed to capture symbols by semantic model", ErrorConstants.FailedToCaptureSymbols));
                     return;
                 }
 
@@ -151,13 +163,14 @@ namespace SharpX.Compiler.Udon.Models
                 var s = info.Symbol switch
                 {
                     IMethodSymbol m => UdonNodeResolver.Instance.GetUdonMethodName(m, _context.SemanticModel),
-                    IPropertySymbol p => UdonNodeResolver.Instance.GetUdonPropertyAccessorName(p, _context.SemanticModel, true),
-                    IFieldSymbol f => UdonNodeResolver.Instance.GetUdonPropertyAccessorName(f, _context.SemanticModel, true),
+                    IPropertySymbol p => UdonNodeResolver.Instance.GetUdonPropertyAccessorName(p, r.Type, _context.SemanticModel, capture.IsGetterContext),
+                    IFieldSymbol f => UdonNodeResolver.Instance.GetUdonPropertyAccessorName(f, _context.SemanticModel, capture.IsGetterContext),
                     _ => throw new ArgumentOutOfRangeException()
                 };
 
-                if (!UdonNodeResolver.Instance.IsValidMethod(s))
-                    _context.Errors.Add(new VisualStudioCatchError(node, $"The method or field {info.Symbol.Name} does not supported by Udon", ErrorConstants.NotSupportedUdonMethod));
+                var isAllowed = UdonNodeResolver.Instance.IsAllowed(info.Symbol, _context.SemanticModel) || UdonNodeResolver.Instance.IsAllowed(r.Type, _context.SemanticModel);
+                if (!UdonNodeResolver.Instance.IsValidMethod(s) && !isAllowed && !UdonNodeResolver.Instance.IsAllowedEnum(info.Symbol, _context.SemanticModel))
+                    _context.Errors.Add(new VisualStudioCatchError(node, $"The method or field `{info.Symbol.Name}` does not supported by Udon", ErrorConstants.NotSupportedUdonMethod));
 
                 if (capture.CapturingExpressions.SafePeek() != null)
                     MethodAssemblyBuilder?.AddPush(capture.CapturingExpressions.Pop());
@@ -177,37 +190,105 @@ namespace SharpX.Compiler.Udon.Models
 
         public override void VisitBinaryExpression(BinaryExpressionSyntax node)
         {
-            var info = _context.SemanticModel.GetSymbolInfo(node);
-            if (info.Symbol is not IMethodSymbol methodCall)
-            {
-                _context.Errors.Add(new VisualStudioCatchError(node, "Failed to capture symbols by semantic model", ErrorConstants.FailedToCaptureSymbols));
-                return;
-            }
-
-            if (!UdonNodeResolver.Instance.IsValidMethod(methodCall, _context.SemanticModel))
-                _context.Errors.Add(new VisualStudioCatchError(node, $"The method {methodCall.Name} is not supported by Udon", ErrorConstants.NotSupportedUdonMethod));
-
             UdonSymbol? destinationSymbol = null;
 
-            using (var expression = new ExpressionCaptureScope(this, true, CurrentDestinationSymbol))
+            if (node.Kind() is SyntaxKind.IsExpression)
             {
-                Visit(node.Right);
-                Visit(node.Left);
-
-                while (expression.CapturingExpressions.SafePeek() != null)
+                _context.Errors.Add(new VisualStudioCatchError(node, "The `is` keyword is not supported by Udon", ErrorConstants.NotSupportedIsKeyword));
+            }
+            else if (node.Kind() is SyntaxKind.AsExpression)
+            {
+                _context.Errors.Add(new VisualStudioCatchError(node, "The `as` keyword is not supported by Udon", ErrorConstants.NotSupportedIsKeyword));
+            }
+            else if (node.Kind() is (SyntaxKind.LogicalAndExpression or SyntaxKind.LogicalOrExpression))
+            {
+                using (var left = new ExpressionCaptureScope(this, true))
                 {
-                    destinationSymbol = expression.CapturingExpressions.Pop();
-                    MethodAssemblyBuilder?.AddPush(destinationSymbol);
+                    Visit(node.Left);
+
+                    using (var right = new ExpressionCaptureScope(this, true))
+                    {
+                        Visit(node.Right);
+
+                        _jumpStack.Push(Guid.NewGuid().ToString());
+
+                        destinationSymbol = SymbolTable!.CreateUnnamedSymbol("SystemBoolean");
+                        
+                        if (node.Kind() is SyntaxKind.LogicalAndExpression)
+                        {
+                            // and
+                            MethodAssemblyBuilder?.AddPush(left.CapturingExpressions.Pop());
+                            MethodAssemblyBuilder?.AddPush(destinationSymbol);
+                            MethodAssemblyBuilder?.AddCopy();
+                            MethodAssemblyBuilder?.AddPush(destinationSymbol);
+                            MethodAssemblyBuilder?.AddJumpIfFalseLabel(_jumpStack.Peek());
+
+                            MethodAssemblyBuilder?.AddPush(right.CapturingExpressions.Pop());
+                            MethodAssemblyBuilder?.AddPush(destinationSymbol);
+                            MethodAssemblyBuilder?.AddCopy();
+                            MethodAssemblyBuilder?.AddPush(destinationSymbol);
+                        }
+                        else
+                        {
+                            // or
+                            var temporary = SymbolTable!.CreateUnnamedSymbol("SystemBoolean");
+                            MethodAssemblyBuilder?.AddPush(left.CapturingExpressions.Pop());
+                            MethodAssemblyBuilder?.AddPush(destinationSymbol);
+                            MethodAssemblyBuilder?.AddCopy();
+                            MethodAssemblyBuilder?.AddPush(temporary);
+                            MethodAssemblyBuilder?.AddPush(destinationSymbol);
+                            MethodAssemblyBuilder?.AddExtern(UdonNodeResolver.Instance.GetOperator(typeof(bool), _context.SemanticModel, BuiltinOperators.UnaryNegation));
+                            MethodAssemblyBuilder?.AddPush(temporary);
+                            MethodAssemblyBuilder?.AddJumpIfFalseLabel(_jumpStack.Peek());
+
+                            MethodAssemblyBuilder?.AddPush(right.CapturingExpressions.Pop());
+                            MethodAssemblyBuilder?.AddPush(destinationSymbol);
+                            MethodAssemblyBuilder?.AddCopy();
+                            MethodAssemblyBuilder?.AddPush(destinationSymbol);
+                        }
+
+                        MethodAssemblyBuilder?.AddLabel(_jumpStack.Pop());
+                    }
                 }
 
-                if (expression.DestinationSymbol != null)
+            }
+            else if (node.Kind() is (SyntaxKind.CoalesceExpression or SyntaxKind.QuestionQuestionToken))
+            {
+                Debug.WriteLine("");
+            }
+            else
+            {
+                var info = _context.SemanticModel.GetSymbolInfo(node);
+                if (info.Symbol is not IMethodSymbol methodCall)
                 {
-                    destinationSymbol = expression.DestinationSymbol;
-                    MethodAssemblyBuilder?.AddPush(expression.DestinationSymbol);
+                    _context.Errors.Add(new VisualStudioCatchError(node, "Failed to capture symbols by semantic model", ErrorConstants.FailedToCaptureSymbols));
+                    return;
                 }
 
-                var name = UdonNodeResolver.Instance.GetUdonMethodName(methodCall, _context.SemanticModel);
-                MethodAssemblyBuilder?.AddExtern(name);
+                if (!UdonNodeResolver.Instance.IsValidMethod(methodCall, _context.SemanticModel))
+                    _context.Errors.Add(new VisualStudioCatchError(node, $"The method {methodCall.Name} is not supported by Udon", ErrorConstants.NotSupportedUdonMethod));
+
+
+                using (var expression = new ExpressionCaptureScope(this, true, CurrentDestinationSymbol))
+                {
+                    Visit(node.Right);
+                    Visit(node.Left);
+
+                    while (expression.CapturingExpressions.SafePeek() != null)
+                    {
+                        destinationSymbol = expression.CapturingExpressions.Pop();
+                        MethodAssemblyBuilder?.AddPush(destinationSymbol);
+                    }
+
+                    if (expression.DestinationSymbol != null)
+                    {
+                        destinationSymbol = expression.DestinationSymbol;
+                        MethodAssemblyBuilder?.AddPush(expression.DestinationSymbol);
+                    }
+
+                    var name = UdonNodeResolver.Instance.GetUdonMethodName(methodCall, _context.SemanticModel);
+                    MethodAssemblyBuilder?.AddExtern(name);
+                }
             }
 
             if (destinationSymbol != null)
@@ -216,7 +297,7 @@ namespace SharpX.Compiler.Udon.Models
 
         public override void VisitAssignmentExpression(AssignmentExpressionSyntax node)
         {
-            using (var left = new ExpressionCaptureScope(this))
+            using (var left = new ExpressionCaptureScope(this, false))
             {
                 Visit(node.Left);
 
@@ -233,7 +314,6 @@ namespace SharpX.Compiler.Udon.Models
                         MethodAssemblyBuilder?.AddPush(source);
                         MethodAssemblyBuilder?.AddPush(destination);
                         MethodAssemblyBuilder?.AddCopy();
-
                     }
                 }
             }
@@ -264,44 +344,55 @@ namespace SharpX.Compiler.Udon.Models
         {
             UdonSymbol? candidateDestinationSymbol = null;
 
-            using (var invocationCapture = new ExpressionCaptureScope(this, IsGetterContext.SafePeek(false).Value, CurrentDestinationSymbol))
+            var constant = _context.SemanticModel.GetConstantValue(node);
+            if (constant.HasValue)
             {
-                var invocation = _context.SemanticModel.GetSymbolInfo(node);
-                if (invocation.Symbol is not IMethodSymbol methodCall)
-                    return;
-
-                var args = new List<UdonSymbol>();
-                foreach (var argument in node.ArgumentList.Arguments)
+                // nameof invocation
+                var t = UdonNodeResolver.Instance.GetUdonTypeName(constant.Value!.GetType(), _context.SemanticModel);
+                candidateDestinationSymbol = SymbolTable!.CreateOrGetUnnamedConstantSymbol(t, constant.Value);
+            }
+            else
+            {
+                // method invocation
+                using (var invocationCapture = new ExpressionCaptureScope(this, IsGetterContext, CurrentDestinationSymbol))
                 {
-                    if (argument.RefKindKeyword != default)
-                        _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.Udon does not support ref or out keyword in arguments", ErrorConstants.NotSupportedRefParameter));
-                    if (argument.NameColon != null)
-                        _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.Udon does not support named parameter arguments", ErrorConstants.NotSupportedNamedParameter));
+                    var invocation = _context.SemanticModel.GetSymbolInfo(node);
+                    if (invocation.Symbol is not IMethodSymbol methodCall)
+                        return;
 
-                    var info = _context.SemanticModel.GetSymbolInfo(node.Expression);
-                    if (info.Symbol != null && SymbolTable!.GetAssociatedSymbol(info.Symbol) != null)
+                    var args = new List<UdonSymbol>();
+                    foreach (var argument in node.ArgumentList.Arguments)
                     {
-                        var symbol = SymbolTable!.GetAssociatedSymbol(info.Symbol)!;
-                        args.Add(symbol);
-                        continue;
+                        if (argument.RefKindKeyword != default)
+                            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.Udon does not support ref or out keyword in arguments", ErrorConstants.NotSupportedRefParameter));
+                        if (argument.NameColon != null)
+                            _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.Udon does not support named parameter arguments", ErrorConstants.NotSupportedNamedParameter));
+
+                        var info = _context.SemanticModel.GetSymbolInfo(node.Expression);
+                        if (info.Symbol != null && SymbolTable!.GetAssociatedSymbol(info.Symbol) != null)
+                        {
+                            var symbol = SymbolTable!.GetAssociatedSymbol(info.Symbol)!;
+                            args.Add(symbol);
+                            continue;
+                        }
+
+                        using (var capture = new ExpressionCaptureScope(this, true))
+                        {
+                            Visit(argument.Expression);
+
+                            if (capture.CapturingExpressions.SafePeek() != null)
+                                args.Add(capture.CapturingExpressions.Pop());
+                        }
                     }
 
-                    using (var capture = new ExpressionCaptureScope(this, true))
-                    {
-                        Visit(argument.Expression);
+                    Visit(node.Expression);
 
-                        if (capture.CapturingExpressions.SafePeek() != null)
-                            args.Add(capture.CapturingExpressions.Pop());
-                    }
+                    foreach (var symbol in args)
+                        MethodAssemblyBuilder?.AddPushBeforeCurrent(symbol, methodCall.ReturnType.SpecialType == SpecialType.System_Void ? 1 : 2);
+
+
+                    candidateDestinationSymbol = invocationCapture.CapturingExpressions.SafePeek();
                 }
-
-                Visit(node.Expression);
-
-                foreach (var symbol in args)
-                   MethodAssemblyBuilder?.AddPushBeforeCurrent(symbol, methodCall.ReturnType.SpecialType == SpecialType.System_Void ? 1 : 2);
-
-
-                candidateDestinationSymbol = invocationCapture.CapturingExpressions.SafePeek();
             }
 
             if (CurrentDestinationSymbol == null && candidateDestinationSymbol != null)
@@ -330,13 +421,14 @@ namespace SharpX.Compiler.Udon.Models
             foreach (var variable in node.Variables)
             {
                 var info = _context.SemanticModel.GetSymbolInfo(variable);
-                if (info.Symbol == null)
+                var symbol = info.Symbol != null ? info.Symbol : _context.SemanticModel.GetDeclaredSymbol(variable);
+
+                if (symbol == null)
                 {
                     _context.Errors.Add(new VisualStudioCatchError(variable, "Failed to capture semantic model symbols", ErrorConstants.FailedToCaptureSymbols));
                     continue;
                 }
-
-                var symbol = info.Symbol;
+                
                 var namedSymbol = SymbolTable!.CreateNamedSymbol(t.GetUdonName(), variable.Identifier.ValueText);
                 SymbolTable!.AssociateWithSymbol(namedSymbol, symbol);
             }
@@ -362,7 +454,7 @@ namespace SharpX.Compiler.Udon.Models
                 return;
             }
 
-            using (var returnCapture = new ExpressionCaptureScope(this))
+            using (var returnCapture = new ExpressionCaptureScope(this, true))
             {
                 var t = _context.SemanticModel.GetTypeInfo(node.Expression);
                 var u = UdonNodeResolver.Instance.GetUdonTypeName(t.Type, _context.SemanticModel);
@@ -386,13 +478,13 @@ namespace SharpX.Compiler.Udon.Models
 
         public override void VisitForStatement(ForStatementSyntax node)
         {
-            base.VisitForStatement(node);
+            // base.VisitForStatement(node);
         }
 
         public override void VisitForEachStatement(ForEachStatementSyntax node)
         {
             // foreach (var el of array) { } -> for (var i = 0; i < array.Length; i++) { var el = array[i]; } 
-            base.VisitForEachStatement(node);
+            // base.VisitForEachStatement(node);
         }
 
         public override void VisitIfStatement(IfStatementSyntax node)
@@ -408,9 +500,6 @@ namespace SharpX.Compiler.Udon.Models
 
                 MethodAssemblyBuilder?.AddPush(condition.CapturingExpressions.Pop());
             }
-
-            // using (SyntaxCaptureScope.Create(this, WellKnownSyntax.IfStatementSyntax, true))
-            //    Visit(node.Condition);
 
             _jumpStack.Push(Guid.NewGuid().ToString());
 
@@ -582,7 +671,7 @@ namespace SharpX.Compiler.Udon.Models
 
         internal SafeStack<WellKnownSyntax> CapturingStack { get; }
 
-        internal SafeStack<bool?> IsGetterContext { get; }
+        internal SafeStack<bool?> IsGetterContextStack { get; }
 
         internal SafeStack<string?> MethodCapturingStack { get; }
 

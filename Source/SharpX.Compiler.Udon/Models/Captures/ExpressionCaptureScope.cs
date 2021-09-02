@@ -15,7 +15,7 @@ namespace SharpX.Compiler.Udon.Models.Captures
 
         public bool IsGetterContext { get; }
 
-        public ExpressionCaptureScope(UdonCSharpSyntaxWalker walker, bool isGetterContext = false, UdonSymbol? destination = null)
+        public ExpressionCaptureScope(UdonCSharpSyntaxWalker walker, bool isGetterContext, UdonSymbol? destination = null)
         {
             _walker = walker;
 
@@ -24,14 +24,14 @@ namespace SharpX.Compiler.Udon.Models.Captures
             IsGetterContext = isGetterContext;
 
             _walker.ExpressionCapturingStack.Push(CapturingExpressions);
-            _walker.IsGetterContext.Push(isGetterContext);
+            _walker.IsGetterContextStack.Push(isGetterContext);
             _walker.DestinationSymbolStack.Push(destination);
         }
 
         public void Dispose()
         {
             _walker.DestinationSymbolStack.Pop();
-            _walker.IsGetterContext.Pop();
+            _walker.IsGetterContextStack.Pop();
             _walker.ExpressionCapturingStack.Pop();
         }
     }
