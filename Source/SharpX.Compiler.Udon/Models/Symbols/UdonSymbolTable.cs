@@ -45,7 +45,7 @@ namespace SharpX.Compiler.Udon.Models.Symbols
             _childSymbolTables = new List<UdonSymbolTable>(); // unused
             _contextDefinedSymbols = new List<UdonSymbol>();
             _contextReferenceableSymbols = new List<UdonSymbol>(parent._contextReferenceableSymbols);
-            _counter = new Dictionary<string, uint>(root._counter);
+            _counter = new Dictionary<string, uint>(); // unused
             _rootSymbolTable = root;
             _stack = new SafeStack<UdonSymbolTable>(); // unused
         }
@@ -64,12 +64,6 @@ namespace SharpX.Compiler.Udon.Models.Symbols
         {
             var child = _stack.Pop();
             _childSymbolTables.Add(child);
-
-            foreach (var counterKey in child._counter.Keys)
-                if (_counter.ContainsKey(counterKey))
-                    _counter[counterKey] = child._counter[counterKey];
-                else
-                    _counter.Add(counterKey, child._counter[counterKey]);
 
             foreach (var s in child._associatedSymbols.Keys.Where(s => !_associatedSymbols.ContainsKey(s)))
                 _associatedSymbols.Add(s, child._associatedSymbols[s]);
@@ -131,6 +125,13 @@ namespace SharpX.Compiler.Udon.Models.Symbols
             return s;
         }
 
+        public UdonSymbol CreateOrGetNamedSymbol(string type, string name, UdonSymbolDeclarations declaration = UdonSymbolDeclarations.Local)
+        {
+            if (TryGetGlobalSymbol(type, name, "null", declaration, out var symbol))
+                return symbol;
+            return CreateNamedSymbol(type, name, declaration);
+        }
+
         public UdonSymbol CreateNamedSymbol(string type, string name, UdonSymbolDeclarations declaration = UdonSymbolDeclarations.Local)
         {
             IncrementNameCounter(type, name, out var counter);
@@ -140,6 +141,33 @@ namespace SharpX.Compiler.Udon.Models.Symbols
             AddNewSymbol(s);
 
             return s;
+        }
+
+        public UdonSymbol CreateParameterNamedSymbol(IMethodSymbol m, string type, string name)
+        {
+            var signature = $"__{m.Name}__parameter__{name}_{type}";
+
+            if (TryGetGlobalSymbol(type, signature, "null", UdonSymbolDeclarations.MethodParameter, out _))
+                throw new InvalidOperationException();
+
+            var symbol = new UdonSymbol(type, signature, signature, UdonSymbolDeclarations.MethodParameter, "null", null);
+            AddNewSymbol(symbol);
+
+            return symbol;
+        }
+
+        public UdonSymbol CreateReturnUnnamedSymbol(IMethodSymbol m, SemanticModel model, string type)
+        {
+            var parameters = string.Join("_", m.Parameters.Select(w => UdonNodeResolver.Instance.GetUdonTypeName(w.Type, model)));
+            var signature = $"__{m.Name}__{parameters}__returnValue_{type}";
+
+            if (TryGetGlobalSymbol(type, signature, "null", UdonSymbolDeclarations.Private, out _))
+                throw new InvalidOperationException();
+
+            var symbol = new UdonSymbol(type, signature, signature, UdonSymbolDeclarations.Private, "null", null);
+            AddNewSymbol(symbol);
+
+            return symbol;
         }
 
         public UdonSymbol? GetNamedSymbol(string type, string name, UdonSymbolDeclarations declaration = UdonSymbolDeclarations.Local)
@@ -206,13 +234,13 @@ namespace SharpX.Compiler.Udon.Models.Symbols
         private void IncrementNameCounter(string type, string? name, out uint counter)
         {
             var signature = $"{type}_{name ?? "_unnamed_"}";
-            if (_counter.ContainsKey(signature))
+            if (_rootSymbolTable._counter.ContainsKey(signature))
             {
-                counter = ++_counter[signature];
+                counter = ++_rootSymbolTable._counter[signature];
                 return;
             }
 
-            _counter.Add(signature, 0);
+            _rootSymbolTable._counter.Add(signature, 0);
             counter = 0;
         }
 
