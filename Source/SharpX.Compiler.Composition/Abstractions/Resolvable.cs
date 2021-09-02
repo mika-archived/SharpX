@@ -1,9 +1,12 @@
-﻿namespace SharpX.Compiler.Composition.Abstractions
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SharpX.Compiler.Composition.Abstractions
 {
     public class Resolvable<T>
     {
-        public T? Value { get; set; }
+        public T? ResolvedValue { get; set; }
 
-        public bool IsResolved => Value != null;
+        [MemberNotNullWhen(true, nameof(ResolvedValue))]
+        public bool IsResolved => ResolvedValue != null;
     }
 }
