@@ -142,7 +142,7 @@ namespace SharpX.Compiler.Udon.Models
             var name = GetUdonTypeName(symbol, model);
             if (name == "SystemVoid")
                 return true;
-            if (IsAllowed(symbol)) // no type checking for user-defined types
+            if (IsAllowed(symbol, model)) // no type checking for user-defined types
                 return true;
             if (symbol.Equals(model.Compilation.GetTypeByMetadataName(typeof(SharpXUdonBehaviour).FullName!), SymbolEqualityComparer.Default))
                 return true;
@@ -201,7 +201,7 @@ namespace SharpX.Compiler.Udon.Models
 
         public bool IsValidMethod(IMethodSymbol method, SemanticModel model)
         {
-            if (IsAllowed(method)) // no method checking for user-defined types
+            if (IsAllowed(method, model)) // no method checking for user-defined types
                 return true;
 
             var signature = GetUdonMethodName(method, model);
@@ -213,11 +213,15 @@ namespace SharpX.Compiler.Udon.Models
             return _nodeDefinitions!.Contains(signature);
         }
 
-        public bool IsAllowed(ISymbol symbol)
+        public bool IsAllowed(ISymbol symbol, SemanticModel model, bool isArrayRecursive = false)
         {
             if (symbol is IArrayTypeSymbol array)
-                return IsAllowed(array.ElementType);
-            return symbol.OriginalDefinition.Locations.Any(w => w.IsInSource);
+                return IsAllowed(array.ElementType, model, true);
+            if (symbol.OriginalDefinition.Locations.Any(w => w.IsInSource))
+                return true;
+            if (symbol is ITypeSymbol t)
+                return t.BaseType?.Equals(model.Compilation.GetTypeByMetadataName(typeof(SharpXUdonBehaviour).FullName!), SymbolEqualityComparer.Default) == true || (isArrayRecursive && IsValidType(t, model));
+            return false;
         }
 
         public bool IsAllowedEnum(ISymbol symbol, SemanticModel model)
@@ -225,9 +229,9 @@ namespace SharpX.Compiler.Udon.Models
             return IsValidType(symbol.ContainingType, model) && symbol.ContainingType.TypeKind == TypeKind.Enum;
         }
 
-        public string GetUdonMethodName(IMethodSymbol method, SemanticModel model)
+        public string GetUdonMethodName(IMethodSymbol method, SemanticModel model, ITypeSymbol? receiver = null)
         {
-            var symbol = RemapBaseType(method.ContainingType, model);
+            var symbol = RemapBaseType(receiver ?? method.ReceiverType ?? method.ContainingType, model);
 
             var isUdonBehaviour = symbol.Equals(model.Compilation.GetTypeByMetadataName(typeof(SharpXUdonBehaviour).FullName!), SymbolEqualityComparer.Default);
             if (symbol.BaseType?.Equals(model.Compilation.GetTypeByMetadataName(typeof(SharpXUdonBehaviour).FullName!), SymbolEqualityComparer.Default) == true)
@@ -262,23 +266,23 @@ namespace SharpX.Compiler.Udon.Models
             return $"{functionNamespace}.{methodName}{paramsStr}{returnStr}";
         }
 
-        public bool IsValidPropertyAccessor(IPropertySymbol property, SemanticModel model, bool isGetter)
+        public bool IsValidPropertyAccessor(IPropertySymbol property, ITypeSymbol? receiver, SemanticModel model, bool isGetter)
         {
             if (property.Locations.First().IsInSource) // no accessor checking for user-defined types
                 return true;
 
-            var signature = GetUdonPropertyAccessorName(property, model, isGetter);
+            var signature = GetUdonPropertyAccessorName(property, receiver, model, isGetter);
             return _nodeDefinitions!.Contains(signature);
         }
 
-        public string GetUdonPropertyAccessorName(IPropertySymbol property, SemanticModel model, bool isGetter)
+        public string GetUdonPropertyAccessorName(IPropertySymbol property, ITypeSymbol? receiver, SemanticModel model, bool isGetter)
         {
-            var symbol = RemapBaseType(property.ContainingType, model);
+            if (isGetter && property.GetMethod == null)
+                throw new InvalidOperationException();
+            if (!isGetter && property.SetMethod == null)
+                throw new InvalidOperationException();
 
-            var functionNamespace = SanitizeTypeName(GetUdonTypeName(symbol, model)).Replace("VRCUdonUdonBehaviour", "VRCUdonCommonInterfacesIUdonEventReceiver");
-            var methodName = $"__{(isGetter ? "get" : "set")}_{property.Name.Trim('_')}";
-            var paramStr = $"__{GetUdonTypeName(property.Type, model)}";
-            return $"{functionNamespace}.{methodName}{paramStr}";
+            return GetUdonMethodName(isGetter ? property.GetMethod! : property.SetMethod!, model, receiver);
         }
 
         public bool IsValidPropertyAccessor(IFieldSymbol property, SemanticModel model, bool isGetter)
