@@ -40,6 +40,11 @@ namespace SharpX.Compiler.Composition.Abstractions
             return _stack.Pop();
         }
 
+        public bool Any()
+        {
+            return _stack.Count > 0;
+        }
+
         public bool Contains(T data)
         {
             return _stack.Contains(data);
