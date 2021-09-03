@@ -55,7 +55,7 @@ namespace SharpX.Compiler.Models
         private bool HasContext<T>(string name, out string fullName)
         {
             var replaced = CurrentLanguageBackendContext.GetSourceMappingGeneratorFor<T>().Invoke(new SourceContextMappingGeneratorArgs(_variant, name));
-            fullName = replaced.Replace("{extension}", CurrentLanguageBackendContext.GetExtensionFor<T>());
+            fullName = $"{replaced}.{CurrentLanguageBackendContext.GetExtensionFor<T>()}";
             return _contexts.ContainsKey(fullName);
         }
 

@@ -4,7 +4,7 @@ using SharpX.Library.ShaderLab.Primitives;
 
 namespace SharpX.Examples.ShaderLab.HLSL
 {
-    [Export("core.{extension}")]
+    [Export("core")]
     public static class Globals
     {
         #region Metadata

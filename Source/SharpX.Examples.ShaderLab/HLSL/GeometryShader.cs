@@ -7,7 +7,7 @@ using SharpX.Library.ShaderLab.Statements;
 
 namespace SharpX.Examples.ShaderLab.HLSL
 {
-    [Export("geom.{extension}")]
+    [Export("geom")]
     public class GeometryShader
     {
         private SlFloat2 GetUVFromOptions(SlFloat2 a, SlFloat2 b, SlFloat2 c)

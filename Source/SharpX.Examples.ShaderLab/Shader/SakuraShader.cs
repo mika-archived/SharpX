@@ -10,7 +10,7 @@ using SharpX.Library.ShaderLab.Attributes;
 
 namespace SharpX.Examples.ShaderLab.Shader
 {
-    [Export("Avatars.{extension}")]
+    [Export("Avatars")]
     internal class SakuraShader : ShaderLabDefinition
     {
         private static readonly ImmutableArray<SubShaderDefinition> Shaders = ImmutableArray.Create<SubShaderDefinition>(new SakuraShaderLod0());
