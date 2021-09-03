@@ -56,6 +56,11 @@ namespace SharpX.Compiler.Models.Plugin
             _extensionsMappings.Add(t.FullName ?? throw new ArgumentNullException(nameof(t)), extension);
         }
 
+        public void RegisterExtensionFor<T>(string extension)
+        {
+            _extensionsMappings.Add(typeof(T).FullName ?? throw new ArgumentNullException(nameof(T)), extension);
+        }
+
         public void RegisterSourceContextGenerator(Func<ISourceContextGeneratorArgs, ISourceContext> generator)
         {
             _generatorMappings.Add("*", generator);
@@ -66,6 +71,11 @@ namespace SharpX.Compiler.Models.Plugin
             _generatorMappings.Add(t.FullName ?? throw new ArgumentNullException(nameof(t)), generator);
         }
 
+        public void RegisterSourceContextGeneratorFor<T>(Func<ISourceContextGeneratorArgs, ISourceContext> generator)
+        {
+            _generatorMappings.Add(typeof(T).FullName ?? throw new ArgumentNullException(nameof(T)), generator);
+        }
+
         public void RegisterSourceContextFileMappingGenerator(Func<ISourceContextMappingArgs, string> generator)
         {
             _fileGeneratorMappings.Add("*", generator);
@@ -74,6 +84,11 @@ namespace SharpX.Compiler.Models.Plugin
         public void RegisterSourceContextFileMappingGeneratorFor(Type t, Func<ISourceContextMappingArgs, string> generator)
         {
             _fileGeneratorMappings.Add(t.FullName ?? throw new ArgumentNullException(nameof(t)), generator);
+        }
+
+        public void RegisterSourceContextFileMappingGeneratorFor<T>(Func<ISourceContextMappingArgs, string> generator)
+        {
+            _fileGeneratorMappings.Add(typeof(T).FullName ?? throw new ArgumentNullException(nameof(T)), generator);
         }
 
         public void RegisterPreSyntaxAction(WellKnownSyntax syntax, Action<ILanguageSyntaxActionContext> action, Func<ILanguageSyntaxActionContext, bool>? predicate = null)

@@ -4,7 +4,7 @@ using SharpX.Library.ShaderLab.Primitives;
 namespace SharpX.Examples.ShaderLab.HLSL
 {
     [Component("v2g")]
-    [Export("core.{extension}")]
+    [Export("core")]
     public class Vertex2Geometry
     {
         [Semantic("SV_POSITION")]

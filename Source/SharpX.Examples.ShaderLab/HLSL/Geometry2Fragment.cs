@@ -4,7 +4,7 @@ using SharpX.Library.ShaderLab.Primitives;
 namespace SharpX.Examples.ShaderLab.HLSL
 {
     [Component("g2f")]
-    [Export("core.{extension}")]
+    [Export("core")]
     public class Geometry2Fragment : Vertex2Geometry
     {
         [Semantic("TEXCOORD3")]

@@ -131,7 +131,7 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
                     continue;
 
                 var attr = t.GetAttribute<ExportAttribute>(_model)!;
-                references.Add(Path.Combine("includes", variant, attr.Source.Replace(".{extension}", ".cginc")));
+                references.Add(Path.Combine("includes", variant, $"{attr.Source}.cginc"));
             }
 
             return references.Distinct().ToList();

@@ -31,7 +31,15 @@ namespace SharpX.Compiler.Composition.Interfaces
         /// </summary>
         /// <param name="t"></param>
         /// <param name="extension"></param>
+        [Obsolete]
         void RegisterExtensionFor(Type t, string extension);
+
+        /// <summary>
+        ///     Registers the extension of the generated source based on the base class <paramref name="t" />.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="extension"></param>
+        void RegisterExtensionFor<T>(string extension);
 
         /// <summary>
         ///     Registers the generator of instantiating a new Source Context.
@@ -44,7 +52,15 @@ namespace SharpX.Compiler.Composition.Interfaces
         /// </summary>
         /// <param name="t"></param>
         /// <param name="generator"></param>
+        [Obsolete]
         void RegisterSourceContextGeneratorFor(Type t, Func<ISourceContextGeneratorArgs, ISourceContext> generator);
+
+        /// <summary>
+        ///     Registers the generator of instantiating a new Source Context based on the base class <paramref name="t" />.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="generator"></param>
+        void RegisterSourceContextGeneratorFor<T>(Func<ISourceContextGeneratorArgs, ISourceContext> generator);
 
         /// <summary>
         ///     Registers the generator of naming convention for context.
@@ -57,7 +73,15 @@ namespace SharpX.Compiler.Composition.Interfaces
         /// </summary>
         /// <param name="t"></param>
         /// <param name="generator"></param>
+        [Obsolete]
         void RegisterSourceContextFileMappingGeneratorFor(Type t, Func<ISourceContextMappingArgs, string> generator);
+
+        /// <summary>
+        /// Registers the generator of naming convention for context based on the base class <paramref name="t" />.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="generator"></param>
+        void RegisterSourceContextFileMappingGeneratorFor<T>(Func<ISourceContextMappingArgs, string> generator);
 
         /// <summary>
         ///     SharpX has completed the parsing and semantic analysis C# source, it will plug-in the new process based on the

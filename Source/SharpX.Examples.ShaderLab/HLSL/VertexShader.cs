@@ -6,7 +6,7 @@ using SharpX.Library.ShaderLab.Primitives;
 
 namespace SharpX.Examples.ShaderLab.HLSL
 {
-    [Export("vert.{extension}")]
+    [Export("vert")]
     public class VertexShader
     {
         [Function("vs")]

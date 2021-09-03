@@ -7,7 +7,7 @@ using SharpX.Library.ShaderLab.Statements;
 
 namespace SharpX.Examples.ShaderLab.HLSL
 {
-    [Export("frag.{extension}")]
+    [Export("frag")]
     public class FragmentShader
     {
         [FragmentShader]
