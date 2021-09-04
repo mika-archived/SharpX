@@ -7,8 +7,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 using SharpX.Compiler.Composition.Abstractions;
+using SharpX.Compiler.Composition.Abstractions.Errors;
 using SharpX.Compiler.Composition.Interfaces;
-using SharpX.Compiler.Extensions;
 using SharpX.Compiler.Models.Plugin;
 
 namespace SharpX.Compiler.Models
@@ -48,7 +48,7 @@ namespace SharpX.Compiler.Models
             SyntaxTree = rewriter.Visit(SyntaxTree.GetRoot()).SyntaxTree;
         }
 
-        public void Compile(SemanticModel model, AssemblyContext context, KeyValuePair<string, string[]> variant)
+        public void Compile(SemanticModel model, AssemblyContext assemblyContext, KeyValuePair<string, string[]> variant)
         {
             if (SyntaxTree.GetDiagnostics().Any(w => w.Severity == DiagnosticSeverity.Error))
             {
@@ -56,38 +56,12 @@ namespace SharpX.Compiler.Models
                 return;
             }
 
-            CompileByIntegratedWalker(model, context);
-            CompileByProvidedWalker(model, context, variant);
-        }
-
-        private void CompileByIntegratedWalker(SemanticModel model, AssemblyContext context)
-        {
-            var walker = new SharpXSyntaxWalker(model, context);
-
-            try
-            {
-                walker.Visit(SyntaxTree.GetRoot());
-            }
-            catch (Exception e)
-            {
-                if (Debugger.IsAttached)
-                    Debug.WriteLine(e.Message);
-            }
-            finally
-            {
-                _errors.AddRange(walker.Errors);
-                _warnings.AddRange(walker.Warnings);
-            }
-        }
-
-        private void CompileByProvidedWalker(SemanticModel model, AssemblyContext assembly, KeyValuePair<string, string[]> variant)
-        {
             if (SyntaxTree.GetRoot() is not CSharpSyntaxNode node)
                 return;
 
-            foreach (var (generator, predicator) in assembly.GetProvidedWalkers())
+            foreach (var (generator, predicator) in assemblyContext.GetProvidedWalkers())
             {
-                var context = new LanguageSyntaxWalkerContext( model, assembly.Default, new AddOnlyCollection<IError>(), new AddOnlyCollection<IError>(), assembly);
+                var context = new LanguageSyntaxWalkerContext(model, assemblyContext.Default, new AddOnlyCollection<IError>(), new AddOnlyCollection<IError>(), assemblyContext);
 
                 try
                 {

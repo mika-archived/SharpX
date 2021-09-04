@@ -76,16 +76,6 @@ namespace SharpX.Compiler.Models
             return CurrentLanguageBackendContext.Walkers;
         }
 
-        public List<(Action<ILanguageSyntaxActionContext> Action, Func<ILanguageSyntaxActionContext, bool> Predicator)> GetPreSyntaxActions(WellKnownSyntax syntax)
-        {
-            return CurrentLanguageBackendContext.GetPreSyntaxActions(syntax);
-        }
-
-        public List<(Action<ILanguageSyntaxActionContext> Action, Func<ILanguageSyntaxActionContext, bool> Predicator)> GetPostSyntaxActions(WellKnownSyntax syntax)
-        {
-            return CurrentLanguageBackendContext.GetPostSyntaxActions(syntax);
-        }
-
         public string Flush(string name)
         {
             if (_contexts.ContainsKey(name))
