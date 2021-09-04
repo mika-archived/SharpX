@@ -68,10 +68,8 @@ namespace SharpX.Compiler
             }
         }
 
-        public async Task CompileAsync(ImmutableArray<string> items)
+        public void LockBuildTarget()
         {
-            _errors.Clear();
-
             if (!_host.HasLanguageBackend(_options.Target))
             {
                 _errors.Add($"Failed to load language backend implementation of {_options.Target}.");
@@ -79,6 +77,11 @@ namespace SharpX.Compiler
             }
 
             _host.InitializeHostByIdentifier(_options.Target);
+        }
+
+        public async Task CompileAsync(ImmutableArray<string> items)
+        {
+            _errors.Clear();
 
             var context = new AssemblyContext(_host);
             var backend = context.CurrentLanguageBackendContext;

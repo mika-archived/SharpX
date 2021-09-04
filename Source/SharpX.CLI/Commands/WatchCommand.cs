@@ -44,8 +44,8 @@ namespace SharpX.CLI.Commands
             _compiler = new SharpXCompiler(configuration.ToCompilerOptions());
             _compiler.LockReferences();
             _compiler.LoadPluginModules();
-            _compiler.CompileAsync(configuration.ToItems().ToImmutableArray()).Wait();
-
+            _compiler.LockBuildTarget();
+            
             var source = new CancellationTokenSource();
             var handler = CreateThrottleEventHandler(TimeSpan.FromSeconds(1), (_, _) =>
             {

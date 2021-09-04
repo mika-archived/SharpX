@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Linq;
 
 using NLog;
 
@@ -31,16 +30,15 @@ namespace SharpX.CLI.Commands
             var compiler = new SharpXCompiler(configuration.ToCompilerOptions());
             compiler.LockReferences();
             compiler.LoadPluginModules();
+            compiler.LockBuildTarget();
             compiler.CompileAsync(configuration.ToItems().ToImmutableArray()).Wait();
 
-            if (compiler.Errors.Count == 0)
-            {
-                if (compiler.Warnings.Any())
-                    foreach (var warning in compiler.Warnings)
-                        _logger.Warn(warning);
+            foreach (var warning in compiler.Warnings)
+                _logger.Warn(warning);
 
+
+            if (compiler.Errors.Count == 0)
                 return 0;
-            }
 
             foreach (var error in compiler.Errors)
                 _logger.Error(error);
