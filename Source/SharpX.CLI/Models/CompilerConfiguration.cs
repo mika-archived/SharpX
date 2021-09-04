@@ -19,14 +19,18 @@ namespace SharpX.CLI.Models
 
         public SharpXCompilerOptions ToCompilerOptions()
         {
+            var options = new SharpXCompilerOptions(BaseDir, References.ToImmutableArray(), Plugins.ToImmutableArray(), Out, Target, CustomOptions.ToImmutableDictionary());
+            return options with { ProjectRoot = BaseDir };
+        }
+
+        public IEnumerable<string> ToItems()
+        {
             var matcher = new Matcher();
             matcher.AddIncludePatterns(Includes);
             matcher.AddExcludePatterns(Excludes);
 
             var items = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(BaseDir)));
-
-            var options = new SharpXCompilerOptions(items.Files.Select(w => w.Path).ToImmutableArray(), References.ToImmutableArray(), Plugins.ToImmutableArray(), Out, Target, CustomOptions.ToImmutableDictionary());
-            return options with { ProjectRoot = BaseDir };
+            return items.Files.Select(w => w.Path);
         }
     }
 }

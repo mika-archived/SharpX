@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.IO;
 using System.Reactive.Linq;
 using System.Threading;
@@ -10,16 +11,17 @@ using SharpX.Compiler;
 
 namespace SharpX.CLI.Commands
 {
-    public class WatchCommand
+    internal class WatchCommand
     {
         private readonly object _lockObj = new();
         private readonly Logger _logger;
         private readonly string _project;
+        private SharpXCompiler? _compiler;
 
-        public WatchCommand(Logger logger, string project)
+        public WatchCommand(Logger logger, WatchCommandArguments args)
         {
             _logger = logger;
-            _project = project;
+            _project = args.Project;
         }
 
         public int Run()
@@ -38,6 +40,11 @@ namespace SharpX.CLI.Commands
                 IncludeSubdirectories = true,
                 EnableRaisingEvents = true
             };
+
+            _compiler = new SharpXCompiler(configuration.ToCompilerOptions());
+            _compiler.LockReferences();
+            _compiler.LoadPluginModules();
+            _compiler.CompileAsync(configuration.ToItems().ToImmutableArray()).Wait();
 
             var source = new CancellationTokenSource();
 
@@ -67,23 +74,22 @@ namespace SharpX.CLI.Commands
 
         private void CompileAsync(CompilerConfiguration configuration, CancellationToken cancellationToken)
         {
+            if (_compiler == null)
+                return;
+
             lock (_lockObj)
             {
                 try
                 {
                     _logger.Info("File change detected. Staring compilation...");
+                    _compiler.CompileAsync(configuration.ToItems().ToImmutableArray()).Wait(cancellationToken);
 
-                    var compiler = new SharpXCompiler(configuration.ToCompilerOptions());
-                    compiler.LockReferences();
-                    compiler.LoadPluginModules();
-                    compiler.CompileAsync().Wait(cancellationToken);
+                    _logger.Info($"Compilation finished with {_compiler.Warnings.Count} warning(s) and {_compiler.Errors.Count} error(s)");
 
-                    _logger.Info($"Compilation finished with {compiler.Warnings.Count} warning(s) and {compiler.Errors.Count} error(s)");
-
-                    foreach (var warning in compiler.Warnings)
+                    foreach (var warning in _compiler.Warnings)
                         _logger.Warn(warning);
 
-                    foreach (var error in compiler.Errors)
+                    foreach (var error in _compiler.Errors)
                         _logger.Error(error);
                 }
                 catch (Exception e)

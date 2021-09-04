@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -67,7 +68,7 @@ namespace SharpX.Compiler
             }
         }
 
-        public async Task CompileAsync()
+        public async Task CompileAsync(ImmutableArray<string> items)
         {
             _errors.Clear();
 
@@ -98,7 +99,7 @@ namespace SharpX.Compiler
                                         .WithProjectParseOptions(projectId, CSharpParseOptions.Default.WithPreprocessorSymbols(preprocessors))
                                         .WithProjectCompilationOptions(projectId, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-                foreach (var path in _options.Items)
+                foreach (var path in items)
                 {
                     var absolute = string.IsNullOrWhiteSpace(_options.ProjectRoot) ? path : Path.Combine(_options.ProjectRoot, path);
                     if (!File.Exists(absolute))

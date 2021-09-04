@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Immutable;
+using System.Linq;
 
 using NLog;
 
@@ -7,15 +8,15 @@ using SharpX.Compiler;
 
 namespace SharpX.CLI.Commands
 {
-    public class BuildCommand
+    internal class BuildCommand
     {
         private readonly Logger _logger;
         private readonly string _project;
 
-        public BuildCommand(Logger logger, string project)
+        public BuildCommand(Logger logger, BuildCommandArguments args)
         {
             _logger = logger;
-            _project = project;
+            _project = args.Project;
         }
 
         public int Run()
@@ -30,7 +31,7 @@ namespace SharpX.CLI.Commands
             var compiler = new SharpXCompiler(configuration.ToCompilerOptions());
             compiler.LockReferences();
             compiler.LoadPluginModules();
-            compiler.CompileAsync().Wait();
+            compiler.CompileAsync(configuration.ToItems().ToImmutableArray()).Wait();
 
             if (compiler.Errors.Count == 0)
             {

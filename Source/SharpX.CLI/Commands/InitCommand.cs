@@ -13,10 +13,10 @@ namespace SharpX.CLI.Commands
         private readonly Logger _logger;
         private readonly string _path;
 
-        public InitCommand(Logger logger, string? path)
+        public InitCommand(Logger logger, InitCommandArguments args)
         {
             _logger = logger;
-            _path = path ?? Directory.GetCurrentDirectory();
+            _path = args.Path ?? Directory.GetCurrentDirectory();
         }
 
         public int Run()

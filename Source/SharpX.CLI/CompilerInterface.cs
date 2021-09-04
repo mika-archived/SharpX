@@ -5,6 +5,9 @@ using NLog.Config;
 using NLog.Targets;
 
 using SharpX.CLI.Commands;
+using SharpX.CLI.Models;
+
+using CommandLineParser = SharpX.CLI.Parser.CommandLineParser;
 
 namespace SharpX.CLI
 {
@@ -22,13 +25,13 @@ namespace SharpX.CLI
             switch (executor)
             {
                 case "init":
-                    return Init(logger, args[1..]);
+                    return Init(logger, CommandLineParser.Parse<InitCommandArguments>(args[1..]));
 
                 case "build":
-                    return Build(logger, args[1..]);
+                    return Build(logger, CommandLineParser.Parse<BuildCommandArguments>(args[1..]));
 
                 case "watch":
-                    return Watch(logger, args[1..]);
+                    return Watch(logger, CommandLineParser.Parse<WatchCommandArguments>(args[1..]));
 
                 default:
                     throw new InvalidOperationException($"{executor} is unavailable command");
@@ -70,28 +73,19 @@ namespace SharpX.CLI
             return LogManager.GetCurrentClassLogger();
         }
 
-        private static int Init(Logger logger, string[] args)
+        private static int Init(Logger logger, InitCommandArguments args)
         {
-            var path = args.Length > 0 ? args[0] : null;
-            return new InitCommand(logger, path).Run();
+            return new InitCommand(logger, args).Run();
         }
 
-        private static int Build(Logger logger, string[] args)
+        private static int Build(Logger logger, BuildCommandArguments args)
         {
-            if (args.Length != 1)
-                return -1;
-
-            var project = args[0];
-            return new BuildCommand(logger, project).Run();
+            return new BuildCommand(logger, args).Run();
         }
 
-        private static int Watch(Logger logger, string[] args)
+        private static int Watch(Logger logger, WatchCommandArguments args)
         {
-            if (args.Length != 1)
-                return -1;
-
-            var project = args[0];
-            return new WatchCommand(logger, project).Run();
+            return new WatchCommand(logger, args).Run();
         }
     }
 }
