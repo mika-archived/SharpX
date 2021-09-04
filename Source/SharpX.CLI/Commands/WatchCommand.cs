@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.IO;
-using System.Reactive.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 using NLog;
 
@@ -47,29 +47,43 @@ namespace SharpX.CLI.Commands
             _compiler.CompileAsync(configuration.ToItems().ToImmutableArray()).Wait();
 
             var source = new CancellationTokenSource();
-
-            // ReSharper disable AccessToDisposedClosure
-            var observable = Observable.FromEventPattern<FileSystemEventHandler, FileSystemEventArgs>(h =>
+            var handler = CreateThrottleEventHandler(TimeSpan.FromSeconds(1), (_, _) =>
             {
-                watcher.Created += h;
-                watcher.Changed += h;
-                watcher.Deleted += h;
-            }, h =>
-            {
-                watcher.Created -= h;
-                watcher.Changed -= h;
-                watcher.Deleted -= h;
-            }).Throttle(TimeSpan.FromSeconds(1)).Subscribe(_ => CompileAsync(configuration, source.Token));
+                _logger.Info("File change detected. Staring compilation...");
+                CompileAsync(configuration, source.Token);
+            });
 
+            watcher.Created += handler;
+            watcher.Changed += handler;
+            watcher.Deleted += handler;
             Console.CancelKeyPress += (_, _) => source.Cancel();
+
+            CompileAsync(configuration, source.Token);
 
             while (!source.IsCancellationRequested)
                 Console.ReadKey(true);
 
-            observable.Dispose();
+            watcher.Created -= handler;
+            watcher.Changed -= handler;
+            watcher.Deleted -= handler;
             watcher.Dispose();
 
             return 0;
+        }
+
+        private FileSystemEventHandler CreateThrottleEventHandler(TimeSpan throttle, FileSystemEventHandler handler)
+        {
+            var isThrottling = false;
+            return (sender, e) =>
+            {
+                if (isThrottling)
+                    return;
+
+                handler.Invoke(sender, e);
+                isThrottling = true;
+
+                Task.Delay(throttle).ContinueWith(_ => isThrottling = false);
+            };
         }
 
         private void CompileAsync(CompilerConfiguration configuration, CancellationToken cancellationToken)
@@ -81,7 +95,6 @@ namespace SharpX.CLI.Commands
             {
                 try
                 {
-                    _logger.Info("File change detected. Staring compilation...");
                     _compiler.CompileAsync(configuration.ToItems().ToImmutableArray()).Wait(cancellationToken);
 
                     _logger.Info($"Compilation finished with {_compiler.Warnings.Count} warning(s) and {_compiler.Errors.Count} error(s)");
