@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text.Json;
 
-using Microsoft.Extensions.Logging;
+using NLog;
 
 using SharpX.CLI.Models;
 
@@ -10,10 +10,10 @@ namespace SharpX.CLI.Commands
 {
     internal class InitCommand
     {
-        private readonly ILogger<CompilerInterface> _logger;
+        private readonly Logger _logger;
         private readonly string _path;
 
-        public InitCommand(ILogger<CompilerInterface> logger, string? path)
+        public InitCommand(Logger logger, string? path)
         {
             _logger = logger;
             _path = path ?? Directory.GetCurrentDirectory();
@@ -31,7 +31,7 @@ namespace SharpX.CLI.Commands
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Failed to generate sxc.config.json");
+                _logger.Error(e, "Failed to generate sxc.config.json");
                 return 1;
             }
 

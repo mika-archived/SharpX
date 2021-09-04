@@ -1,10 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 
-using Microsoft.Extensions.Logging;
+using NLog;
 
 using SharpX.CLI.Models;
 using SharpX.Compiler;
@@ -13,39 +12,25 @@ namespace SharpX.CLI.Commands
 {
     public class WatchCommand
     {
-        private readonly string? _baseDir;
-        private readonly string[]? _excludes;
-        private readonly string[]? _includes;
         private readonly object _lockObj = new();
-        private readonly ILogger<CompilerInterface> _logger;
-        private readonly string? _out;
-        private readonly string[]? _plugins;
-        private readonly string? _project;
-        private readonly string[]? _references;
-        private readonly string? _target;
+        private readonly Logger _logger;
+        private readonly string _project;
 
-        public WatchCommand(ILogger<CompilerInterface> logger, string? project, string? baseDir, string[]? includes, string[]? excludes, string? @out, string[]? references, string[]? plugins, string? target)
+        public WatchCommand(Logger logger, string project)
         {
             _logger = logger;
             _project = project;
-            _baseDir = baseDir;
-            _includes = includes;
-            _excludes = excludes;
-            _out = @out;
-            _references = references;
-            _plugins = plugins;
-            _target = target;
         }
 
         public int Run()
         {
-            if (!ParameterValidator.ValidateOptions(_logger, _project, _baseDir, _includes, _excludes, _out, _references, _plugins, _target))
+            if (!ParameterValidator.ValidateOptions(_logger, _project))
             {
-                _logger.LogError("Invalid compiler options, please check compiler CLI arguments.");
+                _logger.Error("Invalid compiler options, please check compiler CLI arguments.");
                 return 1;
             }
 
-            var configuration = ParameterValidator.CreateConfiguration(_project, _baseDir, _includes, _excludes, _out, _references, _plugins, _target, null);
+            var configuration = ParameterValidator.CreateConfiguration(_project);
             var watcher = new FileSystemWatcher(configuration.BaseDir)
             {
                 NotifyFilter = NotifyFilters.LastWrite,
@@ -86,26 +71,24 @@ namespace SharpX.CLI.Commands
             {
                 try
                 {
-                    _logger.LogInformation("File change detected. Staring compilation...");
+                    _logger.Info("File change detected. Staring compilation...");
 
                     var compiler = new SharpXCompiler(configuration.ToCompilerOptions());
                     compiler.LockReferences();
                     compiler.LoadPluginModules();
                     compiler.CompileAsync().Wait(cancellationToken);
 
-                    _logger.LogInformation($"Compilation finished with {compiler.Warnings.Count} warning(s) and {compiler.Errors.Count} error(s)");
+                    _logger.Info($"Compilation finished with {compiler.Warnings.Count} warning(s) and {compiler.Errors.Count} error(s)");
 
-                    if (compiler.Errors.Count == 0)
-                        if (compiler.Warnings.Any())
-                            foreach (var warning in compiler.Warnings)
-                                _logger.LogWarning(warning);
+                    foreach (var warning in compiler.Warnings)
+                        _logger.Warn(warning);
 
                     foreach (var error in compiler.Errors)
-                        _logger.LogError(error);
+                        _logger.Error(error);
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(new EventId(1, "Incremental Compilation"), e, "Failed to compile");
+                    _logger.Error(e, "Failed to compile");
                 }
             }
         }

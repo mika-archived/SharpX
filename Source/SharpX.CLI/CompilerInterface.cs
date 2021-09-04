@@ -1,45 +1,97 @@
-﻿using System.Threading.Tasks;
+﻿using System;
 
-using ConsoleAppFramework;
-
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
 
 using SharpX.CLI.Commands;
 
 namespace SharpX.CLI
 {
-    public class CompilerInterface : ConsoleAppBase
+    public class CompilerInterface
     {
-        private readonly ILogger<CompilerInterface> _logger;
-
-        public CompilerInterface(ILogger<CompilerInterface> logger)
+        private static int Main(string[] args)
         {
-            _logger = logger;
+            if (args.Length == 0)
+                return -1;
+
+            var executor = args[0];
+
+            var logger = ConfigureLogger();
+
+            switch (executor)
+            {
+                case "init":
+                    return Init(logger, args[1..]);
+
+                case "build":
+                    return Build(logger, args[1..]);
+
+                case "watch":
+                    return Watch(logger, args[1..]);
+
+                default:
+                    throw new InvalidOperationException($"{executor} is unavailable command");
+            }
         }
 
-        private static async Task Main(string[] args)
+        private static Logger ConfigureLogger()
         {
-            await Host.CreateDefaultBuilder().RunConsoleAppFrameworkAsync<CompilerInterface>(args);
+            var noErrorConsole = new ColoredConsoleTarget
+            {
+                Name = "ColoredConsole",
+                Layout = "${pad:padding=5:inner=${level}}: ${message}",
+                UseDefaultRowHighlightingRules = false,
+                WordHighlightingRules =
+                {
+                    new ConsoleWordHighlightingRule(LogLevel.Info.ToString(), ConsoleOutputColor.Green, ConsoleOutputColor.NoChange),
+                    new ConsoleWordHighlightingRule(LogLevel.Warn.ToString(), ConsoleOutputColor.Yellow, ConsoleOutputColor.NoChange),
+                }
+            };
+
+            var errorConsole = new ColoredConsoleTarget
+            {
+                Name = "ColoredErrorConsole",
+                Layout = "${pad:padding=5:inner=${level}}: ${message}${newline}${exception:format=Message, Type, ToString:separator=*}",
+                UseDefaultRowHighlightingRules = false,
+                WordHighlightingRules =
+                {
+                    new ConsoleWordHighlightingRule(LogLevel.Error.ToString(), ConsoleOutputColor.Black, ConsoleOutputColor.Red),
+                }
+            };
+
+            var config = new LoggingConfiguration();
+            config.AddRuleForOneLevel(LogLevel.Debug, noErrorConsole);
+            config.AddRuleForOneLevel(LogLevel.Warn, noErrorConsole);
+            config.AddRuleForOneLevel(LogLevel.Info, noErrorConsole);
+            config.AddRuleForOneLevel(LogLevel.Error, errorConsole);
+
+            LogManager.Configuration = config;
+            return LogManager.GetCurrentClassLogger();
         }
 
-        [Command("init")]
-        public int Init([Option(0)] string? path = null)
+        private static int Init(Logger logger, string[] args)
         {
-            return new InitCommand(_logger, path).Run();
+            var path = args.Length > 0 ? args[0] : null;
+            return new InitCommand(logger, path).Run();
         }
 
-        [Command("build")]
-        public int Build([Option("project")] string? project = null, [Option("baseDir")] string? baseDir = null, [Option("src")] string[]? src = null,  [Option("excludes")] string[]? excludes = null,  [Option("out")] string? @out = null, [Option("references")] string[]? references = null, [Option("plugins")] string[]? plugins = null, [Option("target")] string? target = null)
+        private static int Build(Logger logger, string[] args)
         {
-            return new BuildCommand(_logger, project, baseDir, src, excludes, @out, references, plugins, target).Run();
+            if (args.Length != 1)
+                return -1;
+
+            var project = args[0];
+            return new BuildCommand(logger, project).Run();
         }
 
-        [Command("watch")]
-        public int Watch([Option("project")] string? project = null, [Option("baseDir")] string? baseDir = null, [Option("src")] string[]? src = null, [Option("excludes")] string[]? excludes = null, [Option("out")] string? @out = null, [Option("references")] string[]? references = null, [Option("plugins")] string[]? plugins = null, [Option("target")] string? target = null)
+        private static int Watch(Logger logger, string[] args)
         {
-            return new WatchCommand(_logger, project, baseDir, src, excludes, @out, references, plugins, target).Run();
-        }
+            if (args.Length != 1)
+                return -1;
 
+            var project = args[0];
+            return new WatchCommand(logger, project).Run();
+        }
     }
 }
