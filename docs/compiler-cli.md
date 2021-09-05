@@ -18,32 +18,30 @@ $ dotnet exec sxc.dll
 Initializes the SharpX project.
 
 ```bash
-$ sxc.exe init
+$ sxc.exe init [path]
 ```
 
 ### `sxc build`
 
-Build and Compile C# Shaders to ShaderLab HLSL Shaders.
+Build and Compile C# to any backend languages.
 
 ```bash
-# build by project (sxconfig)
+# build by project (SharpX Project Configuration)
 $ sxc.exe build --project ./path/to/sxc.config.json
 
-# build by sources
-$ sxc.exe build --src **/*.cs --out dist --references /path/to/SharpX.Library.ShaderCommon.dll,/path/to/SharpX.Library.ShaderLab.dll --plugins /path/to/SharpX.Compiler.ShaderLab.dll --target ShaderLab
+# build by solution (SharpX Solution Configuration)
+$ sxc.exe build --solution ./path/to/sxc.sol.json
 ```
 
-It is recommended to build in a project format using the following configuration (JSON format) file.
+### `sxc watch`
 
-```json
-{
-  "Sources": ["**/*.cs"],
-  "Out": "dist",
-  "References": [
-    "/path/to/SharpX.Library.ShaderCommon.dll",
-    "/path/to/SharpX.Library.ShaderLab.dll"
-  ],
-  "Plugins": ["/path/to/SharpX.Compiler.ShaderLab.dll"],
-  "Target": "ShaderLab"
-}
+Watch and Compile C# to any backend languages.
+It detects file changes and automatically compiles them.
+
+```bash
+# build by project (SharpX Project Configuration)
+$ sxc.exe watch --project ./path/to/sxc.config.json
+
+# build by solution (SharpX Solution Configuration)
+$ sxc.exe watch --solution ./path/to/sxc.sol.json
 ```
