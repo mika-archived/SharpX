@@ -1,49 +1,62 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
 
 using NLog;
 
 using SharpX.CLI.Models;
-using SharpX.Compiler;
 
 namespace SharpX.CLI.Commands
 {
     internal class BuildCommand
     {
+        private readonly BuildCommandArguments _args;
         private readonly Logger _logger;
-        private readonly string _project;
 
         public BuildCommand(Logger logger, BuildCommandArguments args)
         {
             _logger = logger;
-            _project = args.Project;
+            _args = args;
         }
 
         public int Run()
         {
-            if (!ParameterValidator.ValidateOptions(_logger, _project))
-            {
-                _logger.Error("Invalid compiler options, please check compiler CLI arguments.");
-                return 1;
-            }
+            if (string.IsNullOrWhiteSpace(_args.Project) && string.IsNullOrWhiteSpace(_args.Solution))
+                throw new ArgumentException("project or solution is required");
+            if (string.IsNullOrWhiteSpace(_args.Project))
+                return BuildSolution(null);
+            return BuildProject();
+        }
 
-            var configuration = ParameterValidator.CreateConfiguration(_project);
-            var compiler = new SharpXCompiler(configuration.ToCompilerOptions());
-            compiler.LockReferences();
-            compiler.LoadPluginModules();
-            compiler.LockBuildTarget();
-            compiler.CompileAsync(configuration.ToItems().ToImmutableArray()).Wait();
+        private int BuildProject()
+        {
+            var solution = new Solution("1", new[] { _args.Project });
+            return BuildSolution(solution);
+        }
 
-            foreach (var warning in compiler.Warnings)
-                _logger.Warn(warning);
+        private int BuildSolution(Solution? providedSolution)
+        {
+            var solution = providedSolution ?? LoadSolution();
+            var projects = solution.GetProjects();
+            var hasErrors = projects.Aggregate(false, (current, project) => current | !project.Build(_logger));
 
+            foreach (var project in projects) 
+                project.Dispose();
 
-            if (compiler.Errors.Count == 0)
-                return 0;
+            return hasErrors ? -1 : 0;
+        }
 
-            foreach (var error in compiler.Errors)
-                _logger.Error(error);
+        private Solution LoadSolution()
+        {
+            if (!File.Exists(_args.Solution))
+                throw new FileNotFoundException(null, _args.Solution);
 
-            return 1;
+            var solution = JsonSerializer.Deserialize<Solution>(File.ReadAllText(_args.Solution));
+            if (solution == null)
+                throw new ArgumentException();
+
+            return solution with { BaseDirectory = Path.GetDirectoryName(_args.Solution) };
         }
     }
 }

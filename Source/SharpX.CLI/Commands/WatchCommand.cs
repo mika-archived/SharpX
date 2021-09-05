@@ -1,115 +1,74 @@
 ﻿using System;
-using System.Collections.Immutable;
 using System.IO;
+using System.Text.Json;
 using System.Threading;
-using System.Threading.Tasks;
 
 using NLog;
 
 using SharpX.CLI.Models;
-using SharpX.Compiler;
 
 namespace SharpX.CLI.Commands
 {
     internal class WatchCommand
     {
-        private readonly object _lockObj = new();
+        private readonly WatchCommandArguments _args;
         private readonly Logger _logger;
-        private readonly string _project;
-        private SharpXCompiler? _compiler;
 
         public WatchCommand(Logger logger, WatchCommandArguments args)
         {
             _logger = logger;
-            _project = args.Project;
+            _args = args;
         }
 
         public int Run()
         {
-            if (!ParameterValidator.ValidateOptions(_logger, _project))
-            {
-                _logger.Error("Invalid compiler options, please check compiler CLI arguments.");
-                return 1;
-            }
+            if (string.IsNullOrWhiteSpace(_args.Project) && string.IsNullOrWhiteSpace(_args.Solution))
+                throw new ArgumentException("project or solution is required");
+            if (string.IsNullOrWhiteSpace(_args.Project))
+                return WatchSolution(null);
+            return WatchProject();
+        }
 
-            var configuration = ParameterValidator.CreateConfiguration(_project);
-            var watcher = new FileSystemWatcher(configuration.BaseDir)
-            {
-                NotifyFilter = NotifyFilters.LastWrite,
-                Filter = "*",
-                IncludeSubdirectories = true,
-                EnableRaisingEvents = true
-            };
+        private int WatchProject()
+        {
+            var solution = new Solution("1", new[] { _args.Project });
+            return WatchSolution(solution);
+        }
 
-            _compiler = new SharpXCompiler(configuration.ToCompilerOptions());
-            _compiler.LockReferences();
-            _compiler.LoadPluginModules();
-            _compiler.LockBuildTarget();
-            
+        private int WatchSolution(Solution? providedSolution)
+        {
+            var solution = providedSolution ?? LoadSolution();
             var source = new CancellationTokenSource();
-            var handler = CreateThrottleEventHandler(TimeSpan.FromSeconds(1), (_, _) =>
-            {
-                _logger.Info("File change detected. Staring compilation...");
-                CompileAsync(configuration, source.Token);
-            });
+            var projects = solution.GetProjects();
 
-            watcher.Created += handler;
-            watcher.Changed += handler;
-            watcher.Deleted += handler;
+            _logger.Info("Initial compilation...");
+
+            foreach (var project in projects)
+                project.Watch(_logger, source.Token);
+
+            _logger.Info("Start watching projects and its source items...");
+
             Console.CancelKeyPress += (_, _) => source.Cancel();
-
-            CompileAsync(configuration, source.Token);
 
             while (!source.IsCancellationRequested)
                 Console.ReadKey(true);
 
-            watcher.Created -= handler;
-            watcher.Changed -= handler;
-            watcher.Deleted -= handler;
-            watcher.Dispose();
+            foreach (var project in projects)
+                project.Dispose();
 
             return 0;
         }
 
-        private FileSystemEventHandler CreateThrottleEventHandler(TimeSpan throttle, FileSystemEventHandler handler)
+        private Solution LoadSolution()
         {
-            var isThrottling = false;
-            return (sender, e) =>
-            {
-                if (isThrottling)
-                    return;
+            if (!File.Exists(_args.Solution))
+                throw new FileNotFoundException(null, _args.Solution);
 
-                handler.Invoke(sender, e);
-                isThrottling = true;
+            var solution = JsonSerializer.Deserialize<Solution>(File.ReadAllText(_args.Solution));
+            if (solution == null)
+                throw new ArgumentException();
 
-                Task.Delay(throttle).ContinueWith(_ => isThrottling = false);
-            };
-        }
-
-        private void CompileAsync(CompilerConfiguration configuration, CancellationToken cancellationToken)
-        {
-            if (_compiler == null)
-                return;
-
-            lock (_lockObj)
-            {
-                try
-                {
-                    _compiler.CompileAsync(configuration.ToItems().ToImmutableArray()).Wait(cancellationToken);
-
-                    _logger.Info($"Compilation finished with {_compiler.Warnings.Count} warning(s) and {_compiler.Errors.Count} error(s)");
-
-                    foreach (var warning in _compiler.Warnings)
-                        _logger.Warn(warning);
-
-                    foreach (var error in _compiler.Errors)
-                        _logger.Error(error);
-                }
-                catch (Exception e)
-                {
-                    _logger.Error(e, "Failed to compile");
-                }
-            }
+            return solution with { BaseDirectory = Path.GetDirectoryName(_args.Solution) };
         }
     }
 }

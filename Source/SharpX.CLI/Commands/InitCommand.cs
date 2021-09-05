@@ -23,15 +23,21 @@ namespace SharpX.CLI.Commands
         {
             try
             {
-                var defaultConfig = new CompilerConfiguration("", new[] { "**/*.cs" }, Array.Empty<string>(), Array.Empty<string>(), Array.Empty<string>(), "dist", "None");
                 var options = new JsonSerializerOptions { WriteIndented = true };
-                var json = JsonSerializer.Serialize(defaultConfig, options);
 
-                File.WriteAllText(Path.Combine(_path, "sxc.config.json"), json);
+                var project = new Project("1", "./", new[] { "**/*.cs" }, Array.Empty<string>(), Array.Empty<string>(), Array.Empty<string>(), "dist", "None");
+                var projectJson = JsonSerializer.Serialize(project, options);
+
+                File.WriteAllText(Path.Combine(_path, "sxc.config.json"), projectJson);
+
+                var solution = new Solution("1", new[] { "./sxc.config.json" });
+                var solutionJson = JsonSerializer.Serialize(solution, options);
+
+                File.WriteAllText(Path.Combine(_path, "sxc.sol.json"), solutionJson);
             }
             catch (Exception e)
             {
-                _logger.Error(e, "Failed to generate sxc.config.json");
+                _logger.Error(e, "Failed to generate sxc.config.json and sxc.sol.json");
                 return 1;
             }
 
