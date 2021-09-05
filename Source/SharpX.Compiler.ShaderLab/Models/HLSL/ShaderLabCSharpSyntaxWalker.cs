@@ -71,9 +71,9 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 {
                     ProcessInclude(TypeDeclarationCapture.Capture(property.ContainingType, _context.SemanticModel));
 
-                        var capture = new PropertySymbolCapture(property, _context.SemanticModel);
+                    var capture = new PropertySymbolCapture(property, _context.SemanticModel);
 
-                    if (CapturingStack.Contains(WellKnownSyntax.InitializerExpressionSyntax))
+                    if (CapturingStack.Contains(WellKnownSyntax.InitializerExpressionSyntax) && !property.IsStatic)
                         Statement?.AddSourcePart(new Span("_auto_generated_initializer_."));
                     Statement?.AddSourcePart(new Span(capture.GetIdentifierName()));
                     break;
@@ -731,7 +731,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 declarator.GetAttribute<PatchConstantFuncAttribute>()
             };
 
-            foreach (var attribute in attributes.Where(w => w != null)) 
+            foreach (var attribute in attributes.Where(w => w != null))
                 context.FunctionDeclaration.AddAttribute(attribute!.ToSourcePart());
 
 
