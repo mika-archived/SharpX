@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.Text;
 
 using SharpX.Compiler.Models;
@@ -86,13 +85,15 @@ namespace SharpX.Compiler
             var context = new AssemblyContext(_host);
             var backend = context.CurrentLanguageBackendContext;
 
+            const string predefinedPreprocessor = "SHARPX_COMPILER";
+
             foreach (var variant in backend.PreprocessorVariants)
             {
                 context.SwitchVariant(variant.Key);
 
                 var preprocessors = variant.Value.ToList();
-                if (!preprocessors.Contains("SHARPX_COMPILER"))
-                    preprocessors.Add("SHARPX_COMPILER");
+                if (!preprocessors.Contains(predefinedPreprocessor))
+                    preprocessors.Add(predefinedPreprocessor);
 
                 var modules = new ConcurrentBag<CompilationModule>();
                 var projectId = ProjectId.CreateNewId("SharpX.Assembly");
@@ -133,12 +134,14 @@ namespace SharpX.Compiler
                     var model = await project.GetDocument(module.Id)!.GetSemanticModelAsync().ConfigureAwait(false);
                     if (model == null)
                         continue;
-                    
+
                     var rewriter = generator.Invoke(new LanguageSyntaxRewriterContext(solution, model));
                     module.Rewrite(rewriter);
 
                     solution = solution.WithDocumentSyntaxRoot(module.Id, await module.SyntaxTree.GetRootAsync().ConfigureAwait(false));
-                    module.UpdateSyntaxTree(await solution.Projects.First(w => w.Id == projectId)!.GetDocument(module.Id)!.GetSyntaxTreeAsync().ConfigureAwait(false));
+
+                    var newSyntaxTree = await solution.Projects.First(w => w.Id == projectId).GetDocument(module.Id)!.GetSyntaxTreeAsync().ConfigureAwait(false);
+                    module.UpdateSyntaxTree(newSyntaxTree!);
                 }
 
                 foreach (var module in modules)

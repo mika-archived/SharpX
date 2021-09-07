@@ -19,7 +19,10 @@ namespace SharpX.Library.ShaderLab.Attributes
             Name = name;
         }
 
+#if NET6_0_OR_GREATER
         [MemberNotNullWhen(true, nameof(Name))]
+#else
+#endif
         public bool IsValidName()
         {
             if (string.IsNullOrWhiteSpace(Name))

@@ -844,16 +844,22 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 if (capture.IsArray())
                 {
                     // NOTE: Is it possible to have a function that accepts an array with Semantics?
-                    var attr = node.GetAttribute<InputPrimitiveAttribute>(_context.SemanticModel);
-                    if (attr == null)
+                    var inputPrimitiveAttr = node.GetAttribute<InputPrimitiveAttribute>(_context.SemanticModel);
+                    var arrayInputAttr = node.GetAttribute<ArrayInputAttribute>(_context.SemanticModel);
+                    if (inputPrimitiveAttr != null)
                     {
-                        var name = $"{node.Identifier.ValueText}[]";
+                        var name = $"{node.Identifier.ValueText}[{inputPrimitiveAttr.Primitives.GetArrayElement()}]";
+                        attribute += $" {inputPrimitiveAttr.Primitives.ToString().ToLowerInvariant()}";
+                        context?.FunctionDeclaration?.AddAttributedArgument(attribute, capture.GetActualName(), name);
+                    }
+                    else if (arrayInputAttr != null)
+                    {
+                        var name = $"{node.Identifier.Value}[{arrayInputAttr.ArraySize}]";
                         context?.FunctionDeclaration?.AddAttributedArgument(attribute, capture.GetActualName(), name);
                     }
                     else
                     {
-                        var name = $"{node.Identifier.ValueText}[{attr.Primitives.GetArrayElement()}]";
-                        attribute += $" {attr.Primitives.ToString().ToLowerInvariant()}";
+                        var name = $"{node.Identifier.ValueText}[]";
                         context?.FunctionDeclaration?.AddAttributedArgument(attribute, capture.GetActualName(), name);
                     }
                 }
