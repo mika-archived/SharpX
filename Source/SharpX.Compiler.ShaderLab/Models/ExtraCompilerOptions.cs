@@ -7,7 +7,7 @@ namespace SharpX.Compiler.ShaderLab.Models
 {
     public class ExtraCompilerOptions
     {
-        public ImmutableArray<ShaderVariant>? ShaderVariants { get; private set; }
+        public ImmutableArray<ShaderVariant>? ShaderVariants { get; set; }
 
         public static ExtraCompilerOptions Create(JsonElement element)
         {
