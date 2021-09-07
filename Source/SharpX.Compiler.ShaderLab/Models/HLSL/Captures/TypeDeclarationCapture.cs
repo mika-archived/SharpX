@@ -13,11 +13,12 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
 {
     internal class TypeDeclarationCapture
     {
-        private static readonly ImmutableDictionary<string, string> CSharpPrimitiveToShaderPrimitive = new Dictionary<string, string>
+        private static readonly ImmutableDictionary<SpecialType, string> CSharpPrimitiveToShaderPrimitive = new Dictionary<SpecialType, string>
         {
-            { "int", "int" },
-            { "bool", "bool" },
-            { "float", "float" }
+            { SpecialType.System_Void , "void"},
+            { SpecialType.System_Boolean , "bool"},
+            { SpecialType.System_Int32, "int"},
+            { SpecialType.System_Single, "float"},
         }.ToImmutableDictionary();
 
         private readonly CapturedAs _captured;
@@ -115,8 +116,6 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
             // enums
             if (symbol?.EnumUnderlyingType != null)
                 return "int";
-            if (symbol?.Name == "Void")
-                return "void";
 
             // arrays
             var array = _captured switch
@@ -129,10 +128,10 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
             if (array != null)
                 return $"{Capture(array.ElementType, _model).GetActualName()}";
 
-            if (CSharpPrimitiveToShaderPrimitive.ContainsKey(symbol?.Name ?? ""))
-                return CSharpPrimitiveToShaderPrimitive[symbol!.Name!];
+            if (CSharpPrimitiveToShaderPrimitive.ContainsKey(symbol?.SpecialType ?? SpecialType.None))
+                return CSharpPrimitiveToShaderPrimitive[symbol!.SpecialType];
 
-            return "void /* UNKNOWN */";
+            return "float /* UNKNOWN */";
         }
 
         public bool IsArray()
