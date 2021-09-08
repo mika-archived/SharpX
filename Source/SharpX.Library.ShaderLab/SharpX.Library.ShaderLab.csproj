@@ -1,11 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>$(ProjectDir)..\Generated</CompilerGeneratedFilesOutputPath>
     <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <Reference Include="netstandard" />
+    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="Functions\Resources\builtin.txt" />
