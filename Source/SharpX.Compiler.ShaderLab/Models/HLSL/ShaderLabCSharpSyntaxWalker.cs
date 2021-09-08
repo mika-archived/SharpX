@@ -668,7 +668,9 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 if (!node.HasModifiers(SyntaxKind.StaticKeyword))
                     _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler recommended to declare global member as static properties or fields", ErrorConstants.NotSupportedGlobalMemberDeclarationAsInstanceVariable));
 
-                context.AddGlobalMember(capture.GetDeclaredType(), capture.GetIdentifierName());
+                var attr = capture.GetAttribute<GlobalMemberAttribute>()!;
+                if (!attr.IsNotDeclareInSource)
+                    context.AddGlobalMember(capture.GetDeclaredType(), capture.GetIdentifierName());
                 return;
             }
 
@@ -780,7 +782,9 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 if (!node.HasModifiers(SyntaxKind.StaticKeyword))
                     _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler recommended to declare global member as static properties or fields", ErrorConstants.NotSupportedGlobalMemberDeclarationAsInstanceVariable));
 
-                context.AddGlobalMember(capture.GetDeclaredType(), capture.GetIdentifierName());
+                var attr = capture.GetAttribute<GlobalMemberAttribute>()!;
+                if (!attr.IsNotDeclareInSource)
+                    context.AddGlobalMember(capture.GetDeclaredType(), capture.GetIdentifierName());
                 return;
             }
 
