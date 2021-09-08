@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 using SharpX.Compiler.Composition.Interfaces;
 
-namespace SharpX.Compiler.Composition.Abstractions
+namespace SharpX.Compiler.Composition.Abstractions.Errors
 {
     public class VisualStudioCatchError : IError
     {
@@ -46,11 +46,11 @@ namespace SharpX.Compiler.Composition.Abstractions
             return $"{path}({position.Line + 1},{position.Character}): Error {diagnostic.Id}: {diagnostic.GetMessage()}";
         }
 
-        private static string GetMessage(CSharpSyntaxNode node, string msg, int? code)
+        private static string GetMessage(CSharpSyntaxNode node, string msg, int? code, string category = "SXC")
         {
             var path = node.SyntaxTree.FilePath;
             var position = node.GetLocation().GetLineSpan().StartLinePosition;
-            return $"{path}({position.Line + 1},{position.Character}): Error SXC{(code.HasValue ? code.Value.ToString("0000") : "9999")}: {msg}";
+            return $"{path}({position.Line + 1},{position.Character}): Error {category}{(code.HasValue ? code.Value.ToString("0000") : "9999")}: {msg}";
         }
 
         private enum CapturedType

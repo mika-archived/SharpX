@@ -3,7 +3,7 @@
 using SharpX.Compiler.Composition.Interfaces;
 using SharpX.Compiler.Extensions;
 
-namespace SharpX.Compiler.Composition.Abstractions
+namespace SharpX.Compiler.Composition.Abstractions.Errors
 {
     public class DefaultError : IError
     {

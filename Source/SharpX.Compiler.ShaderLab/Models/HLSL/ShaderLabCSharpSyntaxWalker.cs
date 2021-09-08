@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-using SharpX.Compiler.Composition.Abstractions;
+using SharpX.Compiler.Composition.Abstractions.Errors;
 using SharpX.Compiler.Composition.Enums;
 using SharpX.Compiler.Composition.Interfaces;
 using SharpX.Compiler.Extensions;

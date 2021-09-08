@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CSharp.RuntimeBinder;
 
-using SharpX.Compiler.Composition.Abstractions;
+using SharpX.Compiler.Composition.Abstractions.Errors;
 using SharpX.Compiler.Composition.Interfaces;
 using SharpX.Compiler.Extensions;
 using SharpX.Library.ShaderLab.Abstractions;
