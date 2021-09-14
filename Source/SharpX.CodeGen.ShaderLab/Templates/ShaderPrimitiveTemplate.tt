@@ -199,6 +199,69 @@ namespace SharpX.Library.ShaderLab.Primitives
             return default;
         }
 
+<# if (target == "int" || target == "float") { #>
+
+        public static <#= ClassName #> operator +(<#= target #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+        public static <#= ClassName #> operator -(<#= target #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+        public static <#= ClassName #> operator *(<#= target #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+        public static <#= ClassName #> operator /(<#= target #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+        public static <#= ClassName #> operator %(<#= target #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+<# } #>
+
+<# if (target == ClassName) { #>
+<# var template = Template == "1" ? "" : Template; #>
+
+        public static SlBool<#= template #> operator >(<#= ClassName #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+        public static SlBool<#= template #> operator >=(<#= ClassName #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+        public static SlBool<#= template #> operator <(<#= ClassName #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+        public static SlBool<#= template #> operator <=(<#= ClassName #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+        public static SlBool<#= template #> operator !=(<#= ClassName #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+
+        public static SlBool<#= template #> operator ==(<#= ClassName #> a, <#= ClassName #> b)
+        {
+            return default;
+        }
+<# } #>
+
 <# } #>
 
 <# } else if (IsMatrix()) { #>
