@@ -3,7 +3,7 @@
     internal static class ErrorConstants
     {
         // 0001 - 1000 : NotSupported
-        public const int NotSupportedTypeException = 1;
+        public const int NotSupportedType = 1;
 
         public const int NotSupportedNestTypeDeclaration = 2;
 
@@ -73,12 +73,19 @@
 
         public const int NotSupportedHandlingExceptions = 35;
 
+        public const int NotSupportedVariableMemberDeclarationsOutsideOfStruct = 36;
+
+        public const int NotSupportedModifierFieldDeclarationAsStaticVariable = 8;
+
         // 1000 - 2000 : Invalid
         public const int InvalidComponentName = 1000;
 
         public const int InvalidParameterInAndOutAttribute = 1001;
 
         public const int InvalidSemanticsName = 1002;
+
+        // 3000 - 4000 : Compiler Errors
+        public const int FailedToCaptureSymbols = 3000;
 
         // 8000 -      : Warnings
         public const int SemanticIsNotSpecifiedInStruct = 8000;
