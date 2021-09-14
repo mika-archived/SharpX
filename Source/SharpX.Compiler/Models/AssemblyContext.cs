@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Microsoft.CodeAnalysis.CSharp;
-
 using SharpX.Compiler.Composition.Abstractions;
-using SharpX.Compiler.Composition.Enums;
 using SharpX.Compiler.Composition.Interfaces;
 using SharpX.Compiler.Models.Plugin;
 
@@ -19,7 +16,7 @@ namespace SharpX.Compiler.Models
 
         public ISourceContext Default => _contexts["source"];
 
-        public LanguageBackendContext CurrentLanguageBackendContext => (LanguageBackendContext) _host.CurrentLanguageBackendContext!;
+        public LanguageBackendContext CurrentLanguageBackendContext => (LanguageBackendContext)_host.CurrentLanguageBackendContext!;
 
         public AssemblyContext(SharpXPluginHost host)
         {

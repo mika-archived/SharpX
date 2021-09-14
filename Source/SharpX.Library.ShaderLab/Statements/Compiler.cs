@@ -11,6 +11,9 @@ namespace SharpX.Library.ShaderLab.Statements
         public static extern void AnnotatedStatement(string attribute, Action action);
 
         [CompilerAnnotated(nameof(Raw))]
+        public static extern T Raw<T>(string raw);
+
+        [CompilerAnnotated(nameof(Raw))]
         public static extern void Raw(string raw);
 
     }
