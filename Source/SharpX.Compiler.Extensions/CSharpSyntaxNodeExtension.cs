@@ -19,12 +19,12 @@ namespace SharpX.Compiler.Extensions
 
         public static T? GetAttribute<T>(this CSharpSyntaxNode obj, SemanticModel model) where T : Attribute
         {
-            var fullyQualifiedMetadataName = typeof(T).FullName;
-            if (string.IsNullOrWhiteSpace(fullyQualifiedMetadataName))
-                return null;
-            var t = model.Compilation.GetTypeByMetadataName(fullyQualifiedMetadataName);
+            return model.GetDeclaredSymbol(obj)?.GetAttribute<T>(model);
+        }
 
-            return model.GetDeclaredSymbol(obj)?.GetAttributes().FirstOrDefault(w => w.AttributeClass != null && w.AttributeClass.Equals(t, SymbolEqualityComparer.Default))?.AsAttributeInstance<T>();
+        public static List<T> GetAttributes<T>(this CSharpSyntaxNode obj, SemanticModel semanticModel) where T : Attribute
+        {
+            return semanticModel.GetDeclaredSymbol(obj)?.GetAttributes<T>(semanticModel) ?? new List<T>();
         }
 
         public static string ToLocationString(this CSharpSyntaxNode obj)

@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+
 using SharpX.Compiler.Composition.Abstractions;
 using SharpX.Compiler.Composition.Interfaces;
 
@@ -8,16 +11,19 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
 {
     internal class Statement : INestableStatement
     {
+        private readonly bool _hasSemicolonToken;
         private readonly List<IStatement> _statements;
 
-        public Statement()
+        public Statement(SyntaxToken semi)
         {
             _statements = new List<IStatement>();
+            _hasSemicolonToken = semi.IsKind(SyntaxKind.SemicolonToken);
         }
 
-        public Statement(params IStatement[] statements)
+        public Statement(SyntaxToken semi, params IStatement[] statements)
         {
             _statements = statements.ToList();
+            _hasSemicolonToken = semi.IsKind(SyntaxKind.SemicolonToken);
         }
 
         public void WriteTo(SourceBuilder sb)
@@ -28,7 +34,8 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
             foreach (var statement in _statements)
                 statement.WriteTo(sb);
 
-            sb.WriteSpan(";");
+            if (_hasSemicolonToken)
+                sb.WriteSpan(";");
             sb.WriteNewLine();
         }
 
@@ -46,7 +53,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements
         public Expression IntoExpression()
         {
             var expression = new Expression();
-            foreach (var statement in _statements) 
+            foreach (var statement in _statements)
                 expression.AddSourcePart(statement);
 
             return expression;

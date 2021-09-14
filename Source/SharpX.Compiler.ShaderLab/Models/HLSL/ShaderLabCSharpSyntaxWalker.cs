@@ -151,7 +151,12 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
         {
             var value = _context.SemanticModel.GetConstantValue(node);
             if (value.HasValue)
-                Statement?.AddSourcePart(new Span(value!.Value!.ToString()!));
+            {
+                if (value.Value! is bool)
+                    Statement?.AddSourcePart(new Span(bool.Parse(value.Value!.ToString()!) ? "1" : "0"));
+                else
+                    Statement?.AddSourcePart(new Span(value!.Value!.ToString()!));
+            }
         }
 
         public override void VisitInvocationExpression(InvocationExpressionSyntax node)
@@ -191,7 +196,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
                         case "Raw":
                         {
-                            var expression = new Expression(true);
+                            var expression = new Expression();
 
                             using (var scope = SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.InvocationExpressionSyntax, new Expression()))
                             {
@@ -200,7 +205,6 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                             }
 
                             Statement?.AddSourcePart(expression);
-                            Statement?.AddSourcePart(new EmptyStatement());
                             break;
                         }
 
@@ -378,7 +382,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             {
                 foreach (var expression in node.Expressions)
                 {
-                    var statement = new Statement();
+                    var statement = new Statement(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
                     using (SyntaxCaptureScope<Statement>.Create(this, WellKnownSyntax.InitializerExpressionSyntax, statement))
                         Visit(expression);
 
@@ -458,7 +462,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 if (variable.ArgumentList != null)
                     _context.Errors.Add(new VisualStudioCatchError(variable.ArgumentList, "SharpX.ShaderLab does not currently supports bracket argument list yet", ErrorConstants.NotSupportedBracketedArgumentList));
 
-                var statement = new Statement();
+                var statement = new Statement(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
                 using (var scope = SyntaxCaptureScope<VariableDeclaration>.Create(this, WellKnownSyntax.VariableDeclarationSyntax, new VariableDeclaration(capture.GetActualName(), variable.Identifier.ValueText)))
                 {
                     Visit(variable.Initializer);
@@ -475,8 +479,18 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
         public override void VisitExpressionStatement(ExpressionStatementSyntax node)
         {
-            var nodes = node.Expression.DescendantNodes(w => w is InvocationExpressionSyntax or ArgumentListSyntax or ArgumentSyntax);
-            if (nodes.Any(w => w is ParenthesizedLambdaExpressionSyntax))
+            bool HasRawInvocationInChildren(InvocationExpressionSyntax expr)
+            {
+                var info = _context.SemanticModel.GetSymbolInfo(expr);
+                if (info.Symbol is not IMethodSymbol method)
+                    return false;
+                var attr = method.GetAttribute<CompilerAnnotatedAttribute>(_context.SemanticModel);
+                if (attr is null)
+                    return false;
+                return attr.Method == "Raw" && method.ReturnsVoid;
+            }
+
+            if (node.Expression.DescendantNodes(w => w is InvocationExpressionSyntax or ArgumentListSyntax or ArgumentSyntax).Any(w => w is ParenthesizedLambdaExpressionSyntax))
             {
                 var statement = new Expression();
                 using (SyntaxCaptureScope<Expression>.Create(this, WellKnownSyntax.ExpressionStatementSyntax, statement))
@@ -484,9 +498,17 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
                 Statement?.AddSourcePart(statement);
             }
+            else if (node.Expression is InvocationExpressionSyntax i && HasRawInvocationInChildren(i))
+            {
+                var statement = new Statement(SyntaxFactory.Token(SyntaxKind.None));
+                using (SyntaxCaptureScope<Statement>.Create(this, WellKnownSyntax.ExpressionStatementSyntax, statement))
+                    Visit(node.Expression);
+
+                Statement?.AddSourcePart(statement);
+            }
             else
             {
-                var statement = new Statement();
+                var statement = new Statement(node.SemicolonToken);
                 using (SyntaxCaptureScope<Statement>.Create(this, WellKnownSyntax.ExpressionStatementSyntax, statement))
                     Visit(node.Expression);
 
@@ -496,7 +518,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
         public override void VisitBreakStatement(BreakStatementSyntax node)
         {
-            Statement?.AddSourcePart(new Statement(new Span("break")));
+            Statement?.AddSourcePart(new Statement(node.SemicolonToken, new Span("break")));
         }
 
         public override void VisitReturnStatement(ReturnStatementSyntax node)
@@ -505,7 +527,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
             if (declaration == null)
                 return;
 
-            var statement = new Statement();
+            var statement = new Statement(node.SemicolonToken);
             using (var scope = SyntaxCaptureScope<ReturnStatement>.Create(this, WellKnownSyntax.ReturnStatementSyntax, new ReturnStatement()))
             {
                 Visit(node.Expression);
@@ -1032,7 +1054,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                                     if (propertyCapture.HasValidType())
                                         context.StructDeclaration?.AddMember(propertyCapture.GetDeclaredType(), propertyCapture.GetIdentifierName(), propertyCapture.GetSemanticsName());
                                     else
-                                        _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab does not support this type currently", ErrorConstants.NotSupportedTypeException));
+                                        _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab does not support this type currently", ErrorConstants.NotSupportedType));
                                 }
 
                                 break;
@@ -1052,7 +1074,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                                     if (fieldCapture.HasValidType())
                                         context.StructDeclaration?.AddMember(fieldCapture.GetDeclaredType(), fieldCapture.GetIdentifierName(), fieldCapture.GetSemanticsName());
                                     else
-                                        _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab does not support this type currently", ErrorConstants.NotSupportedTypeException));
+                                        _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab does not support this type currently", ErrorConstants.NotSupportedType));
                                 }
 
                                 break;
