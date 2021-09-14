@@ -709,6 +709,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 return;
             }
 
+            var semantics = (string?)null;
             if (capture.HasAttribute<SemanticAttribute>())
             {
                 if (node.HasModifiers(SyntaxKind.StaticKeyword))
@@ -717,13 +718,24 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 var attr = capture.GetAttribute<SemanticAttribute>()!;
                 if (attr.IsValidSemantics())
                 {
-                    context.StructDeclaration.AddMember(capture.GetDeclaredType(), capture.GetIdentifierName(), attr.Semantic);
-                    return;
+                    semantics = attr.Semantic;
                 }
             }
 
-            _context.Warnings.Add(new VisualStudioCatchError(node, "The SharpX.ShaderLab compiler will transpile without SEMANTIC specification, but this may cause the ShaderLab compiler to throw an error", ErrorConstants.SemanticIsNotSpecifiedInStruct));
-            context.StructDeclaration.AddMember(capture.GetDeclaredType(), capture.GetIdentifierName(), null);
+            var modifier = (string?)null;
+            if (capture.HasAttribute<InterpolationModifierAttribute>())
+            {
+                if (node.HasModifiers(SyntaxKind.StaticKeyword))
+                    _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not process semantic members to be declared as static modifier", ErrorConstants.NotSupportedModifierFieldDeclarationAsStaticVariable));
+
+                var attr = capture.GetAttribute<InterpolationModifierAttribute>()!;
+                modifier = attr.ToModifierString();
+            }
+
+            context.StructDeclaration.AddMember(capture.GetDeclaredType(), capture.GetIdentifierName(), semantics, modifier);
+
+            if (string.IsNullOrWhiteSpace(semantics))
+                _context.Warnings.Add(new VisualStudioCatchError(node, "The SharpX.ShaderLab compiler will transpile without SEMANTIC specification, but this may cause the ShaderLab compiler to throw an error", ErrorConstants.SemanticIsNotSpecifiedInStruct));
         }
 
         public override void VisitMethodDeclaration(MethodDeclarationSyntax node)
@@ -823,6 +835,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                 return;
             }
 
+            var semantic = (string?)null;
             if (capture.HasAttribute<SemanticAttribute>())
             {
                 if (node.HasModifiers(SyntaxKind.StaticKeyword))
@@ -830,14 +843,23 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
 
                 var attr = capture.GetAttribute<SemanticAttribute>()!;
                 if (attr.IsValidSemantics())
-                {
-                    context.StructDeclaration.AddMember(capture.GetDeclaredType(), capture.GetIdentifierName(), attr.Semantic);
-                    return;
-                }
+                    semantic = attr.Semantic;
             }
 
-            _context.Warnings.Add(new VisualStudioCatchError(node, "The SharpX.ShaderLab compiler will transpile without SEMANTIC specification, but this may cause the ShaderLab compiler to throw an error", ErrorConstants.SemanticIsNotSpecifiedInStruct));
-            context.StructDeclaration.AddMember(capture.GetDeclaredType(), capture.GetIdentifierName(), null);
+            var modifier = (string?)null;
+            if (capture.HasAttribute<InterpolationModifierAttribute>())
+            {
+                if (node.HasModifiers(SyntaxKind.StaticKeyword))
+                    _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab Compiler does not process semantic members to be declared as static modifier", ErrorConstants.NotSupportedModifierFieldDeclarationAsStaticVariable));
+
+                var attr = capture.GetAttribute<InterpolationModifierAttribute>()!;
+                modifier = attr.ToModifierString();
+            }
+
+            context.StructDeclaration.AddMember(capture.GetDeclaredType(), capture.GetIdentifierName(), semantic, modifier);
+
+            if (string.IsNullOrWhiteSpace(semantic))
+                _context.Warnings.Add(new VisualStudioCatchError(node, "The SharpX.ShaderLab compiler will transpile without SEMANTIC specification, but this may cause the ShaderLab compiler to throw an error", ErrorConstants.SemanticIsNotSpecifiedInStruct));
         }
 
         public override void VisitParameter(ParameterSyntax node)
@@ -1052,7 +1074,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                                 else
                                 {
                                     if (propertyCapture.HasValidType())
-                                        context.StructDeclaration?.AddMember(propertyCapture.GetDeclaredType(), propertyCapture.GetIdentifierName(), propertyCapture.GetSemanticsName());
+                                        context.StructDeclaration?.AddMember(propertyCapture.GetDeclaredType(), propertyCapture.GetIdentifierName(), propertyCapture.GetSemanticsName(), propertyCapture.GetModifier());
                                     else
                                         _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab does not support this type currently", ErrorConstants.NotSupportedType));
                                 }
@@ -1072,7 +1094,7 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL
                                 else
                                 {
                                     if (fieldCapture.HasValidType())
-                                        context.StructDeclaration?.AddMember(fieldCapture.GetDeclaredType(), fieldCapture.GetIdentifierName(), fieldCapture.GetSemanticsName());
+                                        context.StructDeclaration?.AddMember(fieldCapture.GetDeclaredType(), fieldCapture.GetIdentifierName(), fieldCapture.GetSemanticsName(), fieldCapture.GetModifier());
                                     else
                                         _context.Errors.Add(new VisualStudioCatchError(node, "SharpX.ShaderLab does not support this type currently", ErrorConstants.NotSupportedType));
                                 }

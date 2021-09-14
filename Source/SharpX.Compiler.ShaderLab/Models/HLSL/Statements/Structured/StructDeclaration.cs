@@ -31,9 +31,9 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements.Structured
                 if (member.IsMacro)
                     sb.WriteLineWithIndent(member.Name);
                 else if (string.IsNullOrWhiteSpace(member.Semantics))
-                    sb.WriteLineWithIndent($"{member.Type} {member.Name};");
+                    sb.WriteLineWithIndent(string.IsNullOrWhiteSpace(member.Modifier) ? $"{member.Type} {member.Name};" : $"{member.Modifier} {member.Type} {member.Name};");
                 else
-                    sb.WriteLineWithIndent($"{member.Type} {member.Name} : {member.Semantics};");
+                    sb.WriteLineWithIndent(string.IsNullOrWhiteSpace(member.Modifier) ? $"{member.Type} {member.Name} : {member.Semantics};" : $"{member.Modifier} {member.Type} {member.Name} : {member.Semantics};");
 
             sb.DecrementIndent();
             sb.WriteLine("};");
@@ -42,14 +42,19 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Statements.Structured
 
         public void AddMember(string str)
         {
-            _members.Add(new ShaderLabFieldMember(null, str, null, true));
+            _members.Add(new ShaderLabFieldMember(null, str, null, true, null));
         }
 
         public void AddMember(string type, string name, string? semantics)
         {
-            _members.Add(new ShaderLabFieldMember(type, name, semantics, false));
+            _members.Add(new ShaderLabFieldMember(type, name, semantics, false, null));
         }
 
-        private record ShaderLabFieldMember(string? Type, string Name, string? Semantics, bool IsMacro);
+        public void AddMember(string type, string name, string? semantics, string? modifier)
+        {
+            _members.Add(new ShaderLabFieldMember(type, name, semantics, false, modifier));
+        }
+
+        private record ShaderLabFieldMember(string? Type, string Name, string? Semantics, bool IsMacro, string? Modifier);
     }
 }

@@ -57,5 +57,13 @@ namespace SharpX.Compiler.ShaderLab.Models.HLSL.Captures
                 return null;
             return attr.Semantic;
         }
+
+        public string? GetModifier()
+        {
+            var attr = GetAttribute<InterpolationModifierAttribute>();
+            if (attr == null)
+                return null;
+            return attr.ToModifierString();
+        }
     }
 }
