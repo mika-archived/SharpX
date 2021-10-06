@@ -77,33 +77,41 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
         private ShaderPassStructure BuildShaderPass(dynamic pass)
         {
             if (pass.GrabPass != null)
-                return new ShaderPassStructure { GrabPass = pass.GrabPass };
-
-            var s = new ShaderPassStructure
             {
-                AlphaToMask = pass.AlphaToMask,
-                Blend = pass.Blend,
-                BlendOp = pass.BlendOp,
-                ColorMask = pass.ColorMask,
-                Culling = pass.Cull,
-                Name = pass.Name,
-                Offset = pass.Offset,
-                ZTest = pass.ZTest,
-                ZWrite = pass.ZWrite
-            };
+                var s = new ShaderPassStructure { GrabPass = pass.GrabPass };
+                foreach (var tag in pass.Tags)
+                    s.Tags.Add(tag.Key, tag.Value);
 
-            if (pass.Stencil != null)
-                s.Stencil = BuildStencil(pass.Stencil);
+                return s;
+            }
+            else
+            {
+                var s = new ShaderPassStructure
+                {
+                    AlphaToMask = pass.AlphaToMask,
+                    Blend = pass.Blend,
+                    BlendOp = pass.BlendOp,
+                    ColorMask = pass.ColorMask,
+                    Culling = pass.Cull,
+                    Name = pass.Name,
+                    Offset = pass.Offset,
+                    ZTest = pass.ZTest,
+                    ZWrite = pass.ZWrite
+                };
 
-            foreach (var pragma in pass.Pragmas)
-                s.Pragmas.Add(pragma.Key, pragma.Value);
+                if (pass.Stencil != null)
+                    s.Stencil = BuildStencil(pass.Stencil);
 
-            foreach (var tag in pass.Tags)
-                s.Tags.Add(tag.Key, tag.Value);
+                foreach (var pragma in pass.Pragmas)
+                    s.Pragmas.Add(pragma.Key, pragma.Value);
 
-            s.ShaderIncludes.AddRange(BuildIncludeShaders(pass.ShaderReferences, pass.ShaderVariant ?? ""));
+                foreach (var tag in pass.Tags)
+                    s.Tags.Add(tag.Key, tag.Value);
 
-            return s;
+                s.ShaderIncludes.AddRange(BuildIncludeShaders(pass.ShaderReferences, pass.ShaderVariant ?? ""));
+
+                return s;
+            }
         }
 
         private StencilStructure BuildStencil(dynamic stencil)

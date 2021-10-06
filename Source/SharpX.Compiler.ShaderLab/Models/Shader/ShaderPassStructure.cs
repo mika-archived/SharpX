@@ -40,12 +40,13 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
             if (GrabPass != null)
             {
                 sb.WriteLineWithIndent("GrabPass {");
-                if (!string.IsNullOrWhiteSpace(GrabPass))
-                {
-                    sb.IncrementIndent();
+                sb.IncrementIndent();
+                if (!string.IsNullOrWhiteSpace(GrabPass)) 
                     sb.WriteLineWithIndent($"\"{GrabPass}\"");
-                    sb.DecrementIndent();
-                }
+
+                RenderTags(sb);
+
+                sb.DecrementIndent();
                 sb.WriteLineWithIndent("}");
 
                 return;
@@ -75,6 +76,23 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
             if (Stencil != null)
                 Stencil.WriteTo(sb);
 
+            RenderTags(sb);
+
+            sb.WriteLineWithIndent("CGPROGRAM");
+
+            foreach (var pragma in Pragmas)
+                sb.WriteLineWithIndent($"#pragma {pragma.Key} {pragma.Value}".Trim());
+            foreach (var include in ShaderIncludes)
+                sb.WriteLineWithIndent($"#include \"{include}\"");
+
+            sb.WriteLineWithIndent("ENDCG");
+
+            sb.DecrementIndent();
+            sb.WriteLineWithIndent("}");
+        }
+
+        private void RenderTags(SourceBuilder sb)
+        {
             if (Tags.Keys.Count > 0)
             {
                 sb.WriteLineWithIndent("Tags {");
@@ -86,18 +104,6 @@ namespace SharpX.Compiler.ShaderLab.Models.Shader
                 sb.DecrementIndent();
                 sb.WriteLineWithIndent("}");
             }
-
-            sb.WriteLineWithIndent("CGPROGRAM");
-
-            foreach (var pragma in Pragmas)
-                sb.WriteLineWithIndent($"#pragma {pragma.Key} {pragma.Value}".Trim());
-            foreach (var include in ShaderIncludes) 
-                sb.WriteLineWithIndent($"#include \"{include}\"");
-
-            sb.WriteLineWithIndent("ENDCG");
-
-            sb.DecrementIndent();
-            sb.WriteLineWithIndent("}");
         }
     }
 }
