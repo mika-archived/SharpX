@@ -1,3 +1,5 @@
+# REPOSITORY ARCHIVED: Next-Gen -> [natsuneko-laboratory/SharpX](https://github.com/natsuneko-laboratory/SharpX)
+
 # SharpX
 
 Extensible Experimental C# to _X_ Transpiler.  
